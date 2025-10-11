@@ -1,0 +1,19 @@
+audience:
+  - breaker
+  - builder
+leaders:
+  - name: Sreejith Sreekandan Nair
+    email: cybersreejith@owasp.org
+level: 2
+name: OWASP Webshield Library
+pitch: A very brief, one-line description of your project
+repositories:
+  - name: www-project-webshield-library
+    url: https://github.com/OWASP/www-project-webshield-library
+    description: OWASP Foundation web repository
+tags:
+  - example-tag
+  - custom-tag-1
+  - custom-tag-2
+type: code
+website: https://owasp.org/www-project-webshield-library
