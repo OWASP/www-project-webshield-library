@@ -241,7 +241,13 @@ export class InputSanitizer {
    * Sanitize CSS to prevent CSS injection
    */
   static sanitizeCSS(css: string): string {
-    // Remove dangerous CSS properties
+    // Remove dangerous CSS properties and functions
+    let sanitized = css;
+    
+    // Remove expression() function calls
+    sanitized = sanitized.replace(/expression\s*\([^)]*\)/gi, '');
+    
+    // Remove dangerous properties
     const dangerousProps = [
       'behavior',
       '-moz-binding',
@@ -249,7 +255,6 @@ export class InputSanitizer {
       'javascript:',
     ];
 
-    let sanitized = css;
     for (const prop of dangerousProps) {
       const regex = new RegExp(`${prop}\\s*:`, 'gi');
       sanitized = sanitized.replace(regex, '');

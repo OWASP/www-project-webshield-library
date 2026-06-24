@@ -166,7 +166,7 @@ export class ACLManager {
    */
   isOwner(resourceId: string, userId: string): boolean {
     const resource = this.resources.get(resourceId);
-    return resource?.ownerId === userId ?? false;
+    return resource != null && resource.ownerId === userId;
   }
 
   /**

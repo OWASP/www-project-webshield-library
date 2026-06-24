@@ -23,8 +23,8 @@ const createDefaultStorageAdapter = (): StorageAdapter => {
     const store = new Map<string, string>();
     return {
       getItem: async (key: string) => store.get(key) ?? null,
-      setItem: async (key: string, value: string) => store.set(key, value),
-      removeItem: async (key: string) => store.delete(key),
+      setItem: async (key: string, value: string) => { store.set(key, value); },
+      removeItem: async (key: string) => { store.delete(key); },
     };
   }
 

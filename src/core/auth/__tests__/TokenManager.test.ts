@@ -14,8 +14,8 @@ describe('TokenManager', () => {
     store = new Map();
     mockStorage = {
       getItem: async (key: string) => store.get(key) ?? null,
-      setItem: async (key: string, value: string) => store.set(key, value),
-      removeItem: async (key: string) => store.delete(key),
+      setItem: async (key: string, value: string) => { store.set(key, value); },
+      removeItem: async (key: string) => { store.delete(key); },
     };
     tokenManager = new TokenManager(mockStorage);
   });
@@ -82,7 +82,7 @@ describe('TokenManager', () => {
     it('should check if token needs refresh', () => {
       const tokenNeedingRefresh: AuthToken = {
         accessToken: 'test-token',
-        expiresIn: 400000, // expires in ~6.6 minutes
+        expiresIn: 200000, // expires in ~3.3 minutes (less than 5 min threshold)
         type: 'Bearer',
         issuedAt: Date.now(),
       };
@@ -107,8 +107,9 @@ describe('TokenManager', () => {
 
   describe('Token Validation', () => {
     it('should validate JWT structure', () => {
-      const validJWT = 'header.payload.signature';
-      expect(tokenManager.validateTokenStructure(validJWT)).toBe(true);
+      // Use properly base64-encoded parts (three dot-separated parts)
+      const validToken = 'aGVhZGVy.cGF5bG9hZA==.c2lnbmF0dXJl';
+      expect(tokenManager.validateTokenStructure(validToken)).toBe(true);
     });
 
     it('should reject invalid JWT structure', () => {
