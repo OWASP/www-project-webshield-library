@@ -1,74 +1,46 @@
 {
-  "name": "@owasp/webshield",
+  "name": "@owl/core",
   "version": "0.1.0",
-  "description": "Framework-agnostic OWASP security library for JavaScript applications",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist/index.esm.js",
+  "description": "OWL (OWASP Web Shield Library): practical OWASP Top 10 mitigation helpers for JavaScript apps",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "src/adapters/react"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.esm.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
-    "./react": {
-      "types": "./dist/adapters/react/index.d.ts",
-      "require": "./dist/adapters/react/index.js",
-      "import": "./dist/adapters/react/index.esm.js"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "require": "./dist/core/index.js",
-      "import": "./dist/core/index.esm.js"
-    }
+    "./src/*": "./src/*"
   },
   "scripts": {
-    "build": "tsc && tsc -m esnext -d false --outDir dist --declarationMap false",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "dev": "tsc --watch",
-    "prepublishOnly": "npm run build && npm run test"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "jest": "^29.5.0",
-    "prettier": "^3.0.0",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "react-dom": {
-      "optional": true
-    }
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "esbuild src/index.js --bundle --platform=node --format=esm --outfile=dist/index.js",
+    "build:cjs": "esbuild src/index.js --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "lint": "eslint .",
+    "check": "npm run lint && npm run test"
   },
   "keywords": [
-    "security",
     "owasp",
-    "authentication",
-    "access-control",
-    "rbac",
-    "acl",
-    "csrf",
-    "input-validation",
-    "sanitization"
+    "security",
+    "javascript",
+    "react",
+    "webshield"
   ],
-  "author": "OWASP",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/OWASP/webshield.git"
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.16.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "globals": "^15.13.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@testing-library/react": "^16.1.0"
   }
 }

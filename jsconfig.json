@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@owl/core": [
+        "src/index.js"
+      ],
+      "@owl/react-adapter": [
+        "src/adapters/react/index.js"
+      ]
+    },
+    "checkJs": false,
+    "allowJs": true,
+    "jsx": "react-jsx"
+  },
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

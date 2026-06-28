@@ -1,0 +1,14 @@
+{
+  "name": "@owl/react-adapter",
+  "version": "0.1.0",
+  "description": "React adapter for OWL (OWASP Web Shield Library)",
+  "type": "module",
+  "main": "./index.js",
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "@owl/core": "file:../../.."
+  }
+}

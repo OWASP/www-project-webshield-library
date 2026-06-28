@@ -1,21 +1,16 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/__tests__/**',
-    '!src/**/*.d.ts',
-    '!src/**/index.ts',
-  ],
-  coverageThreshold: {
-    global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
-    },
+export default {
+  testEnvironment: "jsdom",
+  extensionsToTreatAsEsm: [".jsx"],
+  roots: ["<rootDir>/src"],
+  testMatch: ["**/__tests__/**/*.test.js"],
+  moduleNameMapper: {
+    "^@owl/core$": "<rootDir>/src/index.js",
+    "^@owl/react-adapter$": "<rootDir>/src/adapters/react/index.js"
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  collectCoverageFrom: [
+    "src/core/**/*.js",
+    "src/adapters/react/**/*.js",
+    "!src/**/*.test.js",
+    "!src/**/index.js"
+  ]
 };

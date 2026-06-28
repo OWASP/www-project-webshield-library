@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-owl-50 via-white to-slate-100 text-slate-900;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm;
+  }
+
+  .surface-hero {
+    @apply border-owl-100 bg-gradient-to-r from-white via-owl-50 to-white;
+  }
+
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-owl-700;
+  }
+
+  .panel-title {
+    @apply text-lg font-semibold text-slate-900;
+  }
+
+  .metric-card {
+    @apply rounded-lg border border-slate-200 bg-white/90 px-4 py-3;
+  }
+
+  .metric-label {
+    @apply text-xs uppercase tracking-wide text-slate-500;
+  }
+
+  .metric-value {
+    @apply mt-1 text-2xl font-semibold text-slate-800;
+  }
+
+  .btn {
+    @apply inline-flex items-center rounded-md bg-owl-700 px-3 py-2 text-sm font-medium text-white hover:bg-owl-600;
+  }
+
+  .chip {
+    @apply rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700;
+  }
+
+  .input {
+    @apply w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none ring-owl-300 focus:ring;
+  }
+
+  .code-block {
+    @apply overflow-x-auto rounded-md bg-slate-900 p-3 text-xs text-slate-100;
+  }
+
+  .todo-row {
+    @apply w-full rounded-lg border p-3 text-left text-sm transition;
+  }
+
+  .status-pill {
+    @apply rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize;
+  }
+
+  .status-todo {
+    @apply bg-slate-200 text-slate-700;
+  }
+
+  .status-progress {
+    @apply bg-amber-100 text-amber-700;
+  }
+
+  .status-blocked {
+    @apply bg-rose-100 text-rose-700;
+  }
+
+  .status-done {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+
+  .priority-pill {
+    @apply rounded-full px-2 py-0.5 text-[11px] font-medium capitalize;
+  }
+
+  .priority-high {
+    @apply bg-rose-50 text-rose-700;
+  }
+
+  .priority-medium {
+    @apply bg-amber-50 text-amber-700;
+  }
+
+  .priority-low {
+    @apply bg-slate-100 text-slate-600;
+  }
+}
