@@ -1,5 +1,5 @@
 ---
-title: OWASP Web Shield Library
+title: OWASP Web Shield Library ( OWL )
 layout: col-sidebar
 tags: owasp javascript react security-library top10
 level: 2
@@ -7,7 +7,29 @@ type: tool
 pitch: A developer-first JavaScript security library that maps directly to OWASP Top 10 controls, with a framework-agnostic core and React adapter
 ---
 
-# OWASP Web Shield Library (OWL)
+## OWASP Web Shield Library (OWL)
+
+> Developer-first JavaScript security primitives aligned to OWASP Top 10 categories.
+
+[![OWASP Project](https://img.shields.io/badge/OWASP-Project%20Tool-000000)](https://owasp.org/projects)
+[![JavaScript](https://img.shields.io/badge/Language-JavaScript-F7DF1E?logo=javascript&logoColor=000)](https://developer.mozilla.org/docs/Web/JavaScript)
+[![React Adapter](https://img.shields.io/badge/Adapter-React-61DAFB?logo=react&logoColor=000)](https://react.dev/)
+
+### At a Glance
+
+- Project maturity: `v0.1.0` foundation release
+- Coverage: Core security modules for **A01-A10**
+- Architecture: Framework-agnostic core + React adapter
+- Quality posture: ESLint + Jest + CI workflows
+
+### Quick Navigation
+
+- [Why OWL](#why-owl)
+- [Core Module Map (A01-A10)](#core-module-map-a01-a10)
+- [Getting Started](#getting-started)
+- [Example Usage](#example-usage)
+- [Roadmap](#roadmap)
+- [Contributing](#getting-involved)
 
 ## Description
 
@@ -20,8 +42,6 @@ The project focuses on security by default:
 - Typed security errors and predictable policy behavior
 - Test-driven implementation with CI-ready outputs
 
-Current maturity: v0.1.0 foundation release.
-
 ## Why OWL
 
 Most teams know what they should protect but lose time implementing and reviewing one-off security logic. OWL reduces that gap with composable APIs for access control, token/session handling, CSRF integrity, sanitization, secure logging, SSRF defense, and misconfiguration checks.
@@ -32,6 +52,15 @@ Design philosophy:
 - Explicit policy wiring over hidden behavior
 - Thin framework adapters that consume core logic
 - Incremental adoption by OWASP category
+
+## Key Features
+
+- End-to-end OWASP category mapping from A01 to A10
+- SSRF-aware HTTP client policy integration
+- Pluggable KDF architecture for cryptographic key derivation
+- Deterministic authorization decisions with reason metadata
+- Secure logging with automatic sensitive-field redaction
+- ESLint + Jest quality gates for contributor confidence
 
 ## Core Module Map (A01-A10)
 
@@ -58,15 +87,6 @@ Examples:
 - A07: AuthProvider, useAuth, useAuthToken, AuthGate
 - A08: useSecureHttpClient with CSRF defaults and request policy support
 - A09: SecurityProvider and monitoring hooks
-
-## Key Features
-
-- End-to-end OWASP category mapping from A01 to A10
-- SSRF-aware HTTP client policy integration
-- Pluggable KDF architecture for cryptographic key derivation
-- Deterministic authorization decisions with reason metadata
-- Secure logging with automatic sensitive-field redaction
-- ESLint + Jest quality gates for contributor confidence
 
 ## Getting Started
 
@@ -95,6 +115,10 @@ Build package outputs:
 ```bash
 npm run build
 ```
+
+### Package Scope
+
+OWL is designed for incremental adoption. Teams can start with a single OWASP category and expand module-by-module as application complexity grows.
 
 ## Example Usage
 
@@ -132,6 +156,14 @@ Minimal GitHub Actions example:
 
 For SARIF-style reporting workflows, you can integrate OWL outputs with your existing security pipelines.
 
+## Documentation
+
+- [README.md](README.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/framework.md](docs/framework.md)
+- [docs/troubleshooting.md](docs/troubleshooting.md)
+- [examples/README.md](examples/README.md)
+
 ## Roadmap
 
 ### Phase 1 (Completed)
@@ -161,9 +193,9 @@ Contributions are welcome across:
 
 See:
 
-- CONTRIBUTING.md
-- SECURITY.md
-- CODE_OF_CONDUCT.md
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 ## Related Projects
 
@@ -176,6 +208,7 @@ See:
 
 MIT License.
 
-## Project Leadership
+## Project Leaders
 
-Project maintainers and co-leads are currently community-driven. Open a discussion or issue to participate in governance and release management.
+- [Sreejith Nair](mailto:cybersreejith@owasp.org) — Project Leader
+- GitHub: [@cybersreejith](https://github.com/cybersreejith)
