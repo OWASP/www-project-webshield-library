@@ -210,5 +210,5 @@ MIT License.
 
 ## Project Leaders
 
-- [Sreejith Nair](mailto:cybersreejith@owasp.org) — Project Leader
+- [Sreejith Nair](mailto:cybersreejith@gmail.com) — Project Leader
 - GitHub: [@cybersreejith](https://github.com/cybersreejith)
