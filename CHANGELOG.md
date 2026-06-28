@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-06-28
+
+### Added
+
+- Stable, documented public API for OWL core modules A01-A10.
+- CI and security workflows for lint/test/build and dependency/static analysis gates.
+- Tab-based OWASP project site content structure for overview, getting started, and contributing guidance.
+
+### Changed
+
+- Promoted package from `0.x` foundation to `1.0.0` stable release.
+- Hardened npm publish metadata with explicit package files, repository metadata, and prepublish validation.
+- Restricted package exports to stable entry points.
+
+### Security
+
+- Formalized `1.x` support expectations and release posture.
+- Retained deny-overrides authorization behavior and security log redaction defaults.
+
 ## [0.1.0] - 2026-06-28
 
 ### Added

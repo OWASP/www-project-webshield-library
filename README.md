@@ -116,7 +116,7 @@ export function App({ authManager, aclManager, rbacManager }) {
 - Security Policy: `SECURITY.md`
 - Changelog: `CHANGELOG.md`
 - Support: `SUPPORT.md`
-- Governance: `docs/GOVERNANCE.md`
+- Governance: `GOVERNANCE.md`
 - Enhanced docs: `docs/enhanced-documentation.md`
 - Architecture: `docs/architecture.md`
 - Framework guide: `docs/framework.md`
