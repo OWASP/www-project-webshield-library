@@ -2,7 +2,13 @@
 
 ## Supported Versions
 
-OWL is currently in `0.x` development. Only the latest minor release is supported for security fixes.
+OWL is in `1.x` stable release mode.
+
+Supported security update policy:
+
+- Latest `1.x` release: full security fixes
+- Previous `1.x` release line: best-effort critical fixes
+- `0.x` releases: no longer supported
 
 ## Reporting a Vulnerability
 
@@ -17,8 +23,8 @@ Report privately with:
 
 Use one of these channels:
 
-- Security email: security@owl-project.example
-- Private maintainer contact in repository settings
+- Security email: cybersreejith@gmail.com
+- GitHub Security Advisories: https://github.com/OWASP/www-project-webshield-library/security/advisories
 
 ## Response Process
 
