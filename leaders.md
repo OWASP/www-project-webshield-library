@@ -1,3 +1,3 @@
 ### Leaders
 
-* [Sreejith Sreekandan Nair](mailto:xxx@owasp.org)
+* [Sreejith Sreekandan Nair](mailto:cybersreejith@gmail.com)

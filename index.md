@@ -7,8 +7,6 @@ type: tool
 pitch: A developer-first JavaScript security library that maps directly to OWASP Top 10 controls, with a framework-agnostic core and React adapter
 ---
 
-## OWASP Web Shield Library (OWL)
-
 > Developer-first JavaScript security primitives aligned to OWASP Top 10 categories.
 
 [![OWASP Project](https://img.shields.io/badge/OWASP-Project%20Tool-000000)](https://owasp.org/projects)
@@ -191,11 +189,6 @@ Contributions are welcome across:
 - Documentation and quick-start paths
 - Performance and API ergonomics
 
-See:
-
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [SECURITY.md](SECURITY.md)
-- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 ## Related Projects
 
@@ -206,9 +199,9 @@ See:
 
 ## License
 
-MIT License.
+This project is licensed under the Apache 2.0 License.
 
 ## Project Leaders
 
-- [Sreejith Nair](mailto:cybersreejith@owasp.org) — Project Leader
+- [Sreejith Nair](mailto:cybersreejith@gmail.com) — Project Leader
 - GitHub: [@cybersreejith](https://github.com/cybersreejith)

@@ -3,8 +3,6 @@
 - [Incubator Project](https://owasp.org/projects/)
 - [Tool Project](https://github.com/OWASP/www-project-webshield-library.git)
 - [Version 0.1.0](https://github.com/OWASP/www-project-webshield-library/releases)
-- [Builder](https://owasp.org/www-community/controls/)
-- [Breaker](https://owasp.org/www-community/attacks/)
 
 ### Downloads or Social Links
 
@@ -28,9 +26,4 @@
 - [Security Policy](./SECURITY.md)
 - [Contributing Guide](./CONTRIBUTING.md)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
-- [Support](./SUPPORT.md)
 
-### Maintainers
-
-- Community-driven maintainership (open to contributors)
-- To join as a maintainer, open a discussion in the repository
