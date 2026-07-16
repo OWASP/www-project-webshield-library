@@ -118,6 +118,7 @@ export function App({ authManager, aclManager, rbacManager }) {
 - Support: `SUPPORT.md`
 - Governance: `GOVERNANCE.md`
 - Enhanced docs: `docs/enhanced-documentation.md`
+- API reference: `docs/api-reference.md`
 - Architecture: `docs/architecture.md`
 - Framework guide: `docs/framework.md`
 - Troubleshooting: `docs/troubleshooting.md`

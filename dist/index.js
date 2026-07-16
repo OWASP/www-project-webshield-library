@@ -79,7 +79,7 @@ var PermissionChecker = class {
 var ACCESS_CONTROL_TYPES = {};
 
 // src/core/a02-crypto-integrity/CryptoManager.js
-import { createCipheriv, createDecipheriv, pbkdf2Sync, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes as randomBytes2 } from "node:crypto";
 
 // src/core/error/SecurityError.js
 var SecurityError = class extends Error {
@@ -106,6 +106,39 @@ var SecurityErrorCode = Object.freeze({
   CRYPTO_ERROR: "CRYPTO_ERROR"
 });
 
+// src/core/a02-crypto-integrity/KDFAdapters.js
+import { pbkdf2Sync, randomBytes } from "node:crypto";
+var PBKDF2Adapter = class {
+  constructor({ iterations = 21e4, keyLength = 32, digest = "sha256" } = {}) {
+    this.iterations = iterations;
+    this.keyLength = keyLength;
+    this.digest = digest;
+  }
+  deriveKey(password, salt) {
+    return pbkdf2Sync(password, salt, this.iterations, this.keyLength, this.digest);
+  }
+};
+var Argon2Adapter = class {
+  /**
+   * @param {{deriveFn: (password: string, salt: Buffer, options?: Record<string, unknown>) => Buffer}} options
+   */
+  constructor(options = {}) {
+    this.deriveFn = options.deriveFn || null;
+  }
+  deriveKey(password, salt, options = {}) {
+    if (!this.deriveFn) {
+      throw new SecurityError(
+        SecurityErrorCode.CRYPTO_ERROR,
+        "Argon2 deriveFn is required. Provide a plugin implementation."
+      );
+    }
+    return this.deriveFn(password, salt, options);
+  }
+};
+function generateSalt(size = 16) {
+  return randomBytes(size);
+}
+
 // src/core/a02-crypto-integrity/CryptoManager.js
 function toBase64(buffer) {
   return Buffer.from(buffer).toString("base64");
@@ -115,16 +148,19 @@ function fromBase64(value) {
 }
 var CryptoManager = class {
   constructor(options = {}) {
-    this.iterations = options.iterations || 21e4;
-    this.keyLength = options.keyLength || 32;
-    this.digest = options.digest || "sha256";
+    this.kdfAdapter = options.kdfAdapter || new PBKDF2Adapter({
+      iterations: options.iterations || 21e4,
+      keyLength: options.keyLength || 32,
+      digest: options.digest || "sha256"
+    });
   }
   random(size = 32) {
-    return randomBytes(size);
+    return randomBytes2(size);
   }
   deriveKey(password, salt = this.random(16)) {
-    const key = pbkdf2Sync(password, salt, this.iterations, this.keyLength, this.digest);
-    return { key, salt };
+    const normalizedSalt = Buffer.isBuffer(salt) ? salt : Buffer.from(String(salt));
+    const key = this.kdfAdapter.deriveKey(password, normalizedSalt, {});
+    return { key, salt: normalizedSalt };
   }
   encrypt(plaintext, key) {
     try {
@@ -529,7 +565,7 @@ var TokenManager = class {
 var AUTH_TYPES = {};
 
 // src/core/a08-data-integrity/CSRFTokenManager.js
-import { randomBytes as randomBytes2 } from "node:crypto";
+import { randomBytes as randomBytes3 } from "node:crypto";
 function defaultStorage() {
   let value = null;
   return {
@@ -548,7 +584,7 @@ var CSRFTokenManager = class {
     this.tokenLength = options.tokenLength || 32;
   }
   generateToken() {
-    return randomBytes2(this.tokenLength).toString("base64url");
+    return randomBytes3(this.tokenLength).toString("base64url");
   }
   getToken() {
     return this.storage.get();
@@ -576,13 +612,14 @@ var CSRFTokenManager = class {
 // src/core/a08-data-integrity/HTTPClient.js
 var HTTPClient = class {
   /**
-   * @param {{baseUrl?: string, csrfManager?: import('./CSRFTokenManager.js').CSRFTokenManager, tokenProvider?: ()=>Promise<string|null>|string|null, fetchImpl?: typeof fetch}} [options]
+   * @param {{baseUrl?: string, csrfManager?: import('./CSRFTokenManager.js').CSRFTokenManager, tokenProvider?: ()=>Promise<string|null>|string|null, fetchImpl?: typeof fetch, outboundRequestPolicy?: { validateUrl: (url: string) => unknown }}} [options]
    */
   constructor(options = {}) {
     this.baseUrl = options.baseUrl || "";
     this.csrfManager = options.csrfManager || null;
     this.tokenProvider = options.tokenProvider || null;
     this.fetchImpl = options.fetchImpl || fetch;
+    this.outboundRequestPolicy = options.outboundRequestPolicy || null;
     this.requestInterceptors = [];
     this.responseInterceptors = [];
   }
@@ -613,7 +650,11 @@ var HTTPClient = class {
     for (const interceptor of this.requestInterceptors) {
       config = await interceptor(config) || config;
     }
-    const response = await this.fetchImpl(`${this.baseUrl}${url}`, config);
+    const requestUrl = `${this.baseUrl}${url}`;
+    if (this.outboundRequestPolicy) {
+      this.outboundRequestPolicy.validateUrl(requestUrl);
+    }
+    const response = await this.fetchImpl(requestUrl, config);
     const normalized = {
       ok: response.ok,
       status: response.status,
@@ -748,6 +789,7 @@ export {
   ACCESS_CONTROL_TYPES,
   ACLManager,
   AUTH_TYPES,
+  Argon2Adapter,
   AuthManager,
   CSRFTokenManager,
   ComponentPolicy,
@@ -761,6 +803,7 @@ export {
   INJECTION_DEFENSE_TYPES,
   InputSanitizer,
   InputValidator,
+  PBKDF2Adapter,
   PermissionChecker,
   RBACManager,
   SSRFGuard,
@@ -771,5 +814,6 @@ export {
   SecurityErrorCode,
   SecurityLogger,
   ThreatModelGuard,
-  TokenManager
+  TokenManager,
+  generateSalt
 };

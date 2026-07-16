@@ -4,19 +4,69 @@ export const AuthContext = React.createContext(null);
 
 export function AuthProvider({ authManager, children }) {
 	const [session, setSession] = React.useState(authManager?.getSession() || null);
+	const [accessToken, setAccessToken] = React.useState(authManager?.tokenManager.getAccessToken() || null);
 
 	React.useEffect(() => {
+		setSession(authManager?.getSession() || null);
+		setAccessToken(authManager?.tokenManager.getAccessToken() || null);
+
 		if (!authManager) return undefined;
-		return authManager.events.on("auth:changed", setSession);
+
+		let expiryTimer = null;
+
+		const syncAuthState = () => {
+			setSession(authManager.getSession());
+			setAccessToken(authManager.tokenManager.getAccessToken());
+		};
+
+		const scheduleExpiry = () => {
+			if (expiryTimer) {
+				clearTimeout(expiryTimer);
+				expiryTimer = null;
+			}
+
+			const tokens = authManager.tokenManager.getTokens();
+			if (!tokens?.expiresAt) return;
+
+			const msUntilExpiry = tokens.expiresAt - Date.now();
+			if (msUntilExpiry <= 0) {
+				syncAuthState();
+				return;
+			}
+
+			expiryTimer = setTimeout(syncAuthState, msUntilExpiry);
+		};
+
+		const handleTokenChange = () => {
+			syncAuthState();
+			scheduleExpiry();
+		};
+
+		scheduleExpiry();
+
+		const unsubscribeAuth = authManager.events.on("auth:changed", syncAuthState);
+		const unsubscribeChanged = authManager.tokenManager.events.on("token:changed", handleTokenChange);
+		const unsubscribeCleared = authManager.tokenManager.events.on("token:cleared", handleTokenChange);
+		const unsubscribeRotated = authManager.tokenManager.events.on("token:rotated", handleTokenChange);
+
+		return () => {
+			unsubscribeAuth();
+			unsubscribeChanged();
+			unsubscribeCleared();
+			unsubscribeRotated();
+			if (expiryTimer) {
+				clearTimeout(expiryTimer);
+			}
+		};
 	}, [authManager]);
 
 	const value = React.useMemo(
 		() => ({
 			authManager,
 			session,
-			isAuthenticated: Boolean(authManager?.isAuthenticated())
+			isAuthenticated: Boolean(session && accessToken)
 		}),
-		[authManager, session]
+		[authManager, session, accessToken]
 	);
 
 	return React.createElement(AuthContext.Provider, { value }, children);
@@ -35,10 +85,21 @@ export function useAuthToken() {
 	const [token, setToken] = React.useState(authManager?.tokenManager.getAccessToken() || null);
 
 	React.useEffect(() => {
+		setToken(authManager?.tokenManager.getAccessToken() || null);
+
 		if (!authManager) return undefined;
-		return authManager.tokenManager.events.on("token:changed", () => {
+
+		const syncToken = () => {
 			setToken(authManager.tokenManager.getAccessToken());
-		});
+		};
+
+		const unsubscribeChanged = authManager.tokenManager.events.on("token:changed", syncToken);
+		const unsubscribeCleared = authManager.tokenManager.events.on("token:cleared", syncToken);
+
+		return () => {
+			unsubscribeChanged();
+			unsubscribeCleared();
+		};
 	}, [authManager]);
 
 	return token;
