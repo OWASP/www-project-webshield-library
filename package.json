@@ -50,12 +50,28 @@
   },
   "keywords": [
     "owasp",
+    "owasp-top10",
     "security",
     "javascript",
+    "typescript",
     "react",
-    "webshield"
+    "webshield",
+    "rbac",
+    "acl",
+    "csrf",
+    "ssrf",
+    "authentication",
+    "authorization",
+    "crypto",
+    "input-sanitization",
+    "secure-coding"
   ],
+  "sideEffects": false,
   "license": "Apache-2.0",
+  "funding": {
+    "type": "individual",
+    "url": "https://owasp.org/donate/"
+  },
   "devDependencies": {
     "@eslint/js": "^9.16.0",
     "esbuild": "^0.24.2",
