@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # OWASP Web Shield Library — Architecture
 
 ## What This Architecture Is Designed For

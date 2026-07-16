@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # OWASP Web Shield Library API Reference
 
 This page documents the public runtime API exported by `@owl/core` and `@owl/react-adapter`.
@@ -61,7 +65,7 @@ function SecureArticleList() {
 
 export function App() {
   return (
-    <SecurityProvider logger={console} events={{ on: () => () => {} }}>
+    <SecurityProvider logger={logger} events={events}>
       <AuthProvider authManager={authManager}>
         <ACLProvider aclManager={aclManager}>
           <RBACProvider rbacManager={rbacManager}>
