@@ -1,6 +1,15 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+<p align="center">
+  <a href="https://github.com/OWASP/www-project-webshield-library/releases"><img src="https://img.shields.io/github/v/release/OWASP/www-project-webshield-library?sort=semver" alt="Latest Release" /></a>
+  &nbsp;
+  <img src="https://img.shields.io/badge/versioning-semver-blue" alt="Semver" />
+</p>
+
+All notable changes to this project are documented in this file.
+This project follows [Semantic Versioning](https://semver.org/).
+
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.0.0] - 2026-06-28
 
