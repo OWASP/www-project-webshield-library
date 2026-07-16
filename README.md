@@ -1,6 +1,54 @@
-# OWL - OWASP Web Shield Library
+<p align="center">
+  <img src="https://owasp.org/assets/images/logo.png" width="180" alt="OWASP Logo" />
+</p>
 
-OWL is a production-focused JavaScript security toolkit with OWASP-numbered modules and a React adapter.
+<h1 align="center">OWASP Web Shield Library</h1>
+
+<p align="center">
+  <strong>OWL — Practical, reusable OWASP Top 10 security controls for modern JavaScript applications.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/OWASP/www-project-webshield-library/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License" /></a>
+  <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/owasp-lab%20project-blue" alt="OWASP Lab Project" /></a>
+  <a href="https://github.com/OWASP/www-project-webshield-library/actions"><img src="https://img.shields.io/github/check-runs/OWASP/www-project-webshield-library/main?label=CI" alt="CI" /></a>
+  <a href="https://github.com/OWASP/www-project-webshield-library/releases"><img src="https://img.shields.io/github/v/release/OWASP/www-project-webshield-library?sort=semver" alt="Release" /></a>
+  <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen" alt="Node 20+" />
+  <img src="https://img.shields.io/badge/coverage-A01--A10-success" alt="OWASP A01-A10" />
+</p>
+
+---
+
+> **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package and a full React adapter — making security primitives as easy to use as any other NPM library.
+
+## Contents
+
+- [Why OWL](#why-owl)
+- [Quick Start](#quick-start)
+- [Module Map](#module-map-by-owasp-number)
+- [Core Usage](#core-usage)
+- [React Adapter](#react-adapter-usage)
+- [Examples](#integration-examples)
+- [Scripts](#scripts)
+- [Project Docs](#project-docs)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
+---
+
+## Why OWL
+
+| Problem | OWL Solution |
+|---|---|
+| Security scattered across ad-hoc snippets | Category-aligned modules A01–A10 |
+| No shared language between dev and security teams | OWASP-numbered APIs and typed errors |
+| Inconsistent deny/allow logic | Deterministic deny-overrides policy engine |
+| Risky outbound requests | SSRF guard wired directly into `HTTPClient` |
+| Secrets leaking through logs | Redaction-first `SecurityLogger` |
+| React apps with no auth or permission guard | `AuthGate`, `PermissionGate`, and provider hooks |
+
+---
 
 ## Installation
 
@@ -37,18 +85,20 @@ console.log(permissions.check({ role: "admin", action: "read", resource: "invoic
 
 ## Module Map by OWASP Number
 
-- A01 Access Control: `src/core/a01-access-control`
-- A02 Crypto & Integrity: `src/core/a02-crypto-integrity`
-- A03 Injection Defense: `src/core/a03-injection-defense`
-- A04 Insecure Design Guard: `src/core/a04-insecure-design-guard`
-- A05 Security Misconfiguration: `src/core/a05-security-misconfiguration`
-- A06 Vulnerable Components: `src/core/a06-vulnerable-components`
-- A07 Auth & Session: `src/core/a07-auth-session`
-- A08 Data Integrity & CSRF: `src/core/a08-data-integrity`
-- A09 Logging & Monitoring: `src/core/a09-logging-monitoring`
-- A10 SSRF Defense: `src/core/a10-ssrf-defense`
+| # | OWASP Category | Core Module | Key Exports |
+|---|---|---|---|
+| A01 | Broken Access Control | `a01-access-control` | `RBACManager`, `ACLManager`, `PermissionChecker` |
+| A02 | Crypto Failures | `a02-crypto-integrity` | `CryptoManager`, `PBKDF2Adapter`, `Argon2Adapter`, `SecretPolicy` |
+| A03 | Injection | `a03-injection-defense` | `InputSanitizer`, `InputValidator` |
+| A04 | Insecure Design | `a04-insecure-design-guard` | `ThreatModelGuard`, `DesignChecklist` |
+| A05 | Security Misconfiguration | `a05-security-misconfiguration` | `SecurityConfigManager`, `HardeningReporter` |
+| A06 | Vulnerable Components | `a06-vulnerable-components` | `DependencyRiskScanner`, `ComponentPolicy` |
+| A07 | Auth & Session Failures | `a07-auth-session` | `AuthManager`, `TokenManager` |
+| A08 | Data Integrity Failures | `a08-data-integrity` | `CSRFTokenManager`, `HTTPClient` |
+| A09 | Security Logging Failures | `a09-logging-monitoring` | `SecurityLogger`, `EventEmitter` |
+| A10 | SSRF | `a10-ssrf-defense` | `SSRFGuard`, `SafeFetcher` |
 
-Cross-mapping note: `HTTPClient` in A08 can integrate A10 SSRF policies for outbound request enforcement.
+> `HTTPClient` (A08) natively accepts an `outboundRequestPolicy` from `SSRFGuard` (A10), composing transport hardening and SSRF defense in one client.
 
 ## Core Usage
 
@@ -96,47 +146,64 @@ export function App({ authManager, aclManager, rbacManager }) {
 
 ## Integration Examples
 
-- Examples index: `examples/README.md`
-- React app integration: `examples/react-app-integration.md`
-- Node API integration: `examples/node-api-integration.md`
-- Deployment recipes: `examples/deployment-recipes.md`
-- GitHub Actions security gate: `examples/github-actions-security-gate.md`
+| Example | Description |
+|---|---|
+| [Core JS usage](examples/core-js-usage.md) | Full composition guide for `@owl/core` |
+| [React adapter usage](examples/react-adapter-usage.md) | Provider + hook composition for `@owl/react-adapter` |
+| [Core Node demo ▶](examples/core-node-demo/README.md) | Runnable Node script — `node index.js` |
+| [React adapter demo ▶](examples/react-adapter-demo/README.md) | Runnable Vite app — `npm run dev` |
+| [OWL enabled app ▶](examples/owl-enabled-app/README.md) | Full multi-page reference app (A01–A10 demo pages) |
+| [Node API integration](examples/node-api-integration.md) | Express-style middleware patterns |
+| [Deployment recipes](examples/deployment-recipes.md) | Production and CI deployment patterns |
+| [GitHub Actions gate](examples/github-actions-security-gate.md) | Security quality gate for CI/CD |
 
 ## Scripts
 
-- `npm run build`: Build ESM and CJS outputs.
-- `npm run test`: Run unit tests.
-- `npm run lint`: Run ESLint checks.
-- `npm run check`: Run quality checks.
+```bash
+npm run build    # Build ESM and CJS outputs
+npm run test     # Run Jest unit tests
+npm run lint     # Run ESLint
+npm run check    # lint + test (full quality gate)
+```
 
 ## Project Docs
 
-- Contributing: `CONTRIBUTING.md`
-- Code of Conduct: `CODE_OF_CONDUCT.md`
-- Security Policy: `SECURITY.md`
-- Changelog: `CHANGELOG.md`
-- Support: `SUPPORT.md`
-- Governance: `GOVERNANCE.md`
-- Enhanced docs: `docs/enhanced-documentation.md`
-- Architecture: `docs/architecture.md`
-- Framework guide: `docs/framework.md`
-- Troubleshooting: `docs/troubleshooting.md`
+| Document | Purpose |
+|---|---|
+| [docs/api-reference.md](docs/api-reference.md) | Full API reference with copyable examples |
+| [docs/architecture.md](docs/architecture.md) | System architecture and module layout |
+| [docs/framework.md](docs/framework.md) | Framework guide and adoption patterns |
+| [docs/enhanced-documentation.md](docs/enhanced-documentation.md) | Enhanced capability overview |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Common issues and fixes |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [SECURITY.md](SECURITY.md) | Vulnerability disclosure policy |
+| [SUPPORT.md](SUPPORT.md) | Getting help |
+| [GOVERNANCE.md](GOVERNANCE.md) | Project governance |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
 
-## Security Notes
+## Contributing
 
-- Default token handling is in-memory.
-- ACL conflict strategy is deny-overrides.
-- Security logs redact common sensitive fields.
-- SSRF guard blocks loopback/private targets and protocol abuse.
+Pull requests, bug reports, and feedback are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
 
-## Roadmap Alignment
+Before submitting a PR:
 
-- Phase 1 Foundation: A01, A03, A07, A08, A09 complete with tests.
-- Phase 2 Expansion: A02, A04, A05, A06, A10 plus React adapter implemented.
-- Phase 3 Completion: integration snippets, docs, and extension guidance included.
+```bash
+npm run check   # must pass
+```
 
-## Extending with New OWASP Modules
+Tests must cover security-relevant success and failure paths.
 
-1. Create `src/core/aXX-name/` with focused classes and `index.js` exports.
-2. Add tests under `src/__tests__/core/` for positive/negative/edge behavior.
-3. Export from `src/core/index.js` and document in this README module map.
+## Security
+
+Do **not** open public issues for security vulnerabilities. Follow the private reporting process in [SECURITY.md](SECURITY.md).
+
+## License
+
+Apache 2.0 — see [LICENSE.md](LICENSE.md).
+
+---
+
+<p align="center">
+  <sub>OWASP Web Shield Library &mdash; <em>making security controls as natural as any other dependency.</em></sub>
+</p>

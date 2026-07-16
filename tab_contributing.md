@@ -6,36 +6,105 @@ order: 3
 tags: owasp javascript react security-library top10
 ---
 
-> # Key Contributors
-> **Sreejith Nair** - OWL Project Leader
+## Contributing to OWL
 
-## Contributing Guidelines
+<p align="center">
+  <a href="https://github.com/OWASP/www-project-webshield-library/graphs/contributors">
+    <img src="https://img.shields.io/github/contributors/OWASP/www-project-webshield-library" alt="Contributors" />
+  </a>
+  &nbsp;
+  <a href="https://owasp.org/slack/invite">
+    <img src="https://img.shields.io/badge/chat-OWASP%20Slack-4A154B?logo=slack" alt="OWASP Slack" />
+  </a>
+</p>
 
-Thank you for your interest in contributing to OWASP Web Shield Library (OWL). We welcome contributions that improve security quality, developer experience, and documentation.
+---
 
-## Getting Started
+### Project Leader
 
-1. [Join](https://owasp.org/slack/invite) the OWASP Slack workspace.
-2. Fork the repository and clone it locally.
-3. Install dependencies with `npm install`.
-4. Run the quality gate with `npm run check`.
-5. Implement your change with tests where applicable.
-6. Submit a pull request with a clear description.
+| Name | Role | Contact |
+|---|---|---|
+| **Sreejith Sreekandan Nair** | OWL Project Leader | [cybersreejith@gmail.com](mailto:cybersreejith@gmail.com) |
 
-## Pull Request Guidelines
+---
 
-Before submitting a pull request, please make sure:
+### Ways to Contribute
 
-1. Your changes align with project goals and OWASP principles.
-2. Your code and docs are clear and maintainable.
-3. Existing behavior is not broken.
-4. Tests cover security-relevant and failure paths.
-5. The PR description explains problem, approach, and validation.
+| Type | How |
+|---|---|
+| 🐛 Bug fix | Open an issue first, then a focused PR |
+| ✨ New security control | Discuss on Slack or open a feature issue first |
+| 📖 Docs improvement | Direct PR welcome |
+| 🧪 Additional tests | Always welcome — especially failure paths |
+| 🔍 Security review | Review open PRs for security impact |
 
-## Code of Conduct
+---
 
-All contributors are expected to follow the [OWASP Code of Conduct](https://owasp.org/www-policy/operational/code-of-conduct).
+### Quickstart
 
-## Security Reporting
+```bash
+# 1. Fork and clone
+git clone https://github.com/<you>/www-project-webshield-library.git
+cd www-project-webshield-library
 
-Do not open public issues for vulnerabilities. Follow the private reporting guidance in [SECURITY.md](SECURITY.md).
+# 2. Install dependencies
+npm install
+
+# 3. Verify gate passes before any changes
+npm run check
+
+# 4. Create a branch
+git checkout -b feature/your-change
+
+# 5. Keep gate green throughout development
+npm run check
+
+# 6. Open a pull request against main
+```
+
+---
+
+### Pull Request Checklist
+
+Before submitting, confirm all of the following:
+
+- [ ] `npm run check` passes (lint + tests)
+- [ ] Changes align with OWASP principles and project goals
+- [ ] Existing behavior is not silently broken
+- [ ] Tests cover new code including **failure and abuse paths**
+- [ ] PR description includes: **what**, **why**, and **how to verify**
+- [ ] Docs updated if the public API or any security default changes
+
+---
+
+### Testing Requirements
+
+OWL enforces security-first testing. All contributions to core modules or adapter hooks must include:
+
+| Scenario | Required? |
+|---|---|
+| Successful operation | ✅ |
+| Invalid input or boundary conditions | ✅ |
+| Security rejection path (deny, block, throw) | ✅ |
+| Error code and metadata shape | ✅ for `SecurityError` throws |
+
+```bash
+npm run test
+```
+
+---
+
+### Community
+
+- [Join OWASP Slack](https://owasp.org/slack/invite)
+- Channel: `#project-webshield-library`
+- [OWASP Code of Conduct](https://owasp.org/www-policy/operational/code-of-conduct)
+- [CODE_OF_CONDUCT.md](https://github.com/OWASP/www-project-webshield-library/blob/main/CODE_OF_CONDUCT.md)
+
+---
+
+### Security Reporting
+
+> Do not open public issues for vulnerabilities.
+
+Follow the private reporting process in [SECURITY.md](https://github.com/OWASP/www-project-webshield-library/blob/main/SECURITY.md).

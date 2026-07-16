@@ -8,6 +8,23 @@ describe("A04 insecure design guard", () => {
     expect(guard.validateTransition("draft", "approved").valid).toBe(false);
   });
 
+  test("evaluates abuse rules and returns structured violations", () => {
+    const guard = new ThreatModelGuard({
+      abuseRules: [
+        { id: "rate-limit", message: "Too many attempts", check: (context) => context.attempts < 5 },
+        { id: "mfa", message: "MFA required", check: (context) => context.mfaVerified === true }
+      ]
+    });
+
+    expect(guard.evaluateAbuseCase({ attempts: 8, mfaVerified: false })).toEqual({
+      valid: false,
+      violations: [
+        { id: "rate-limit", message: "Too many attempts" },
+        { id: "mfa", message: "MFA required" }
+      ]
+    });
+  });
+
   test("checklist detects missing controls", () => {
     const checklist = new DesignChecklist(["2fa", "audit-log"]);
     const result = checklist.validate(["2fa"]);

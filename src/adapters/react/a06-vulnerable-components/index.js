@@ -7,18 +7,23 @@ import { DependencyRiskScanner } from "../../../core/a06-vulnerable-components/D
 export function useDependencyRiskScanner(provider) {
   const scanner = React.useMemo(() => new DependencyRiskScanner(provider), [provider]);
   const [state, setState] = React.useState({ loading: false, results: [], error: null });
+  const scannerRef = React.useRef(scanner);
+
+  React.useEffect(() => {
+    scannerRef.current = scanner;
+  }, [scanner]);
 
   const runScan = React.useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const results = await scanner.scan();
+      const results = await scannerRef.current.scan();
       setState({ loading: false, results, error: null });
       return results;
     } catch (error) {
       setState({ loading: false, results: [], error });
       throw error;
     }
-  }, [scanner]);
+  }, []);
 
   return { ...state, runScan, scanner };
 }

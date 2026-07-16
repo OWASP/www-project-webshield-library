@@ -5,6 +5,7 @@ import {
   PBKDF2Adapter,
   SecretPolicy
 } from "../../core/a02-crypto-integrity/index.js";
+import { SecurityErrorCode } from "../../core/error/index.js";
 
 describe("A02 crypto integrity", () => {
   test("encrypts and decrypts with AES-GCM", () => {
@@ -34,5 +35,28 @@ describe("A02 crypto integrity", () => {
     const { key } = manager.deriveKey("secret");
     expect(Buffer.isBuffer(key)).toBe(true);
     expect(key.length).toBe(22);
+  });
+
+  test("wraps decrypt failures in a SecurityError", () => {
+    const manager = new CryptoManager();
+    const { key } = manager.deriveKey("strong-password");
+    const payload = manager.encrypt("hello", key);
+
+    expect(() => manager.decrypt({ ...payload, tag: Buffer.alloc(16).toString("base64") }, key)).toThrow(
+      expect.objectContaining({ code: SecurityErrorCode.CRYPTO_ERROR })
+    );
+  });
+
+  test("requires an Argon2 derive plugin when using Argon2Adapter", () => {
+    const adapter = new Argon2Adapter();
+    expect(() => adapter.deriveKey("secret", Buffer.from("salt"))).toThrow(
+      expect.objectContaining({ code: SecurityErrorCode.CRYPTO_ERROR })
+    );
+  });
+
+  test("treats the entropy threshold boundary as sufficient", () => {
+    const secret = "abcd1234";
+    const entropy = SecretPolicy.minimumEntropyBits(secret);
+    expect(SecretPolicy.isEntropySufficient(secret, entropy)).toBe(true);
   });
 });

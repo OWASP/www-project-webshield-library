@@ -12,6 +12,19 @@ describe("A09 logging and monitoring", () => {
     expect(received.ok).toBe(true);
   });
 
+  test("event emitter unsubscribes listeners", () => {
+    const emitter = new EventEmitter();
+    let calls = 0;
+    const unsubscribe = emitter.on("auth", () => {
+      calls += 1;
+    });
+
+    unsubscribe();
+    emitter.emit("auth", { ok: true });
+
+    expect(calls).toBe(0);
+  });
+
   test("logger redacts sensitive values", () => {
     let output = null;
     const logger = new SecurityLogger({ sink: (entry) => (output = entry) });
@@ -19,5 +32,19 @@ describe("A09 logging and monitoring", () => {
     expect(output.details.password).toBe("[REDACTED]");
     expect(output.details.token).toBe("[REDACTED]");
     expect(output.details.keep).toBe("x");
+  });
+
+  test("logger preserves level and redacts nested sensitive values", () => {
+    let output = null;
+    const logger = new SecurityLogger({ sink: (entry) => (output = entry) });
+
+    logger.error("auth.failed", {
+      request: { authorization: "Bearer token" },
+      cookies: [{ cookie: "session=1" }]
+    });
+
+    expect(output.level).toBe("error");
+    expect(output.details.request.authorization).toBe("[REDACTED]");
+    expect(output.details.cookies).toBe("[REDACTED]");
   });
 });

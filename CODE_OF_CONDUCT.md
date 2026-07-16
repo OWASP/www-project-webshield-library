@@ -1,40 +1,76 @@
 # Code of Conduct
 
+<p align="center">
+  <img src="https://img.shields.io/badge/contributor%20covenant-2.1-4baaaa" alt="Contributor Covenant 2.1" />
+</p>
+
+---
+
 ## Our Pledge
 
-We as contributors and maintainers pledge to make participation in this project a harassment-free experience for everyone.
+We as contributors and maintainers of OWASP Web Shield Library pledge to make participation in our project and community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socioeconomic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
+
+---
 
 ## Our Standards
 
-Examples of behavior that contributes to a positive environment include:
+**Examples of behavior that contributes to a positive environment:**
 
-- Being respectful and inclusive.
-- Giving and accepting constructive feedback.
-- Focusing on what is best for the community and users.
+- ✅ Using welcoming and inclusive language
+- ✅ Being respectful of differing viewpoints and experiences
+- ✅ Giving and gracefully accepting constructive feedback
+- ✅ Focusing on what is best for the community and library users
+- ✅ Showing empathy toward other community members
 
-Examples of unacceptable behavior include:
+**Examples of unacceptable behavior:**
 
-- Harassment, trolling, or insulting/derogatory comments.
-- Public or private abuse.
-- Publishing private information without explicit permission.
+- ❌ Harassment, trolling, or insulting/derogatory comments
+- ❌ Public or private abuse of any kind
+- ❌ Publishing private information without explicit permission
+- ❌ Sustained disruption of community discussions or contributions
+- ❌ Conduct that would be considered inappropriate in a professional setting
+
+---
 
 ## Enforcement Responsibilities
 
-Maintainers are responsible for clarifying and enforcing standards of acceptable behavior.
+Project maintainers are responsible for clarifying and enforcing standards of acceptable behavior. They will take appropriate and fair corrective action in response to any behavior deemed inappropriate, threatening, offensive, or harmful.
+
+Maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that do not align with this Code of Conduct.
+
+---
 
 ## Scope
 
-This Code of Conduct applies in all project spaces and public interactions related to the project.
+This Code of Conduct applies within all project spaces — GitHub repository, discussions, issues, pull requests, and any public communication representing the project.
 
-## Reporting
+---
 
-To report violations, contact maintainers through the project security/support channels.
+## Reporting Violations
 
-## Enforcement
+Report violations privately through the project support channels:
 
-Maintainers may remove, edit, or reject contributions and may temporarily or permanently ban participants for behavior deemed inappropriate.
+| Channel | Details |
+|---|---|
+| 📧 Email | [cybersreejith@gmail.com](mailto:cybersreejith@gmail.com) |
+| 🔒 OWASP Slack | `#project-webshield-library` |
+
+All reports will be reviewed promptly and treated with confidentiality.
+
+---
+
+## Enforcement Guidelines
+
+| Severity | Consequence |
+|---|---|
+| Minor, first offense | Private correction and clarification |
+| Repeated or moderate offense | Formal warning with behavioral expectations |
+| Severe or repeated violations | Temporary or permanent ban from project spaces |
+
+---
 
 ## Attribution
 
-This document is adapted from the Contributor Covenant, version 2.1:
-https://www.contributor-covenant.org/version/2/1/code_of_conduct/
+This Code of Conduct is adapted from the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
