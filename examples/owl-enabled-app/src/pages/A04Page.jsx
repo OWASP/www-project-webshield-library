@@ -1,5 +1,5 @@
 import React from "react";
-import { useThreatModelGuard } from "@owl/react-adapter/a04-insecure-design-guard/index.js";
+import { useThreatModelGuard } from "@owasp-core/owl-react/a04-insecure-design-guard/index.js";
 
 export default function A04Page() {
   const guard = useThreatModelGuard({

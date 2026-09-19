@@ -1,5 +1,5 @@
 import React from "react";
-import { useDependencyRiskScanner } from "@owl/react-adapter/a06-vulnerable-components/index.js";
+import { useDependencyRiskScanner } from "@owasp-core/owl-react/a06-vulnerable-components/index.js";
 
 const provider = {
   async scan() {

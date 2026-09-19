@@ -1,5 +1,5 @@
 import React from "react";
-import { useSafeFetcher } from "@owl/react-adapter/a10-ssrf-defense/index.js";
+import { useSafeFetcher } from "@owasp-core/owl-react/a10-ssrf-defense/index.js";
 
 export default function A10Page() {
   const [result, setResult] = React.useState("No request yet");

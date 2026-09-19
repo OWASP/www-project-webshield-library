@@ -106,6 +106,6 @@ Benefits:
 
 ## Architecture Evolution Targets
 
-- Publishable per-category package model (@owl/a01-...)
+- Publishable per-category package model (@owasp-core/owl-a01-...)
 - Stronger DNS-backed SSRF validation mode
 - Additional adapter layers for Angular and Vue

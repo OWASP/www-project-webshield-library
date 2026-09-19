@@ -2,7 +2,7 @@
 
 ## Goal
 
-Show how to wire `@owl/react-adapter` providers, hooks, and guard components around real `@owl/core` managers.
+Show how to wire `@owasp-core/owl-react` providers, hooks, and guard components around real `@owasp-core/owl` managers.
 
 ## Bootstrap managers once
 
@@ -13,7 +13,7 @@ import {
   RBACManager,
   SecurityLogger,
   TokenManager
-} from "@owl/core";
+} from "@owasp-core/owl";
 
 export const tokenManager = new TokenManager({
   onRefresh: async (refreshToken) => ({
@@ -54,7 +54,7 @@ import {
   RBACProvider,
   SecurityAlert,
   SecurityProvider
-} from "@owl/react-adapter";
+} from "@owasp-core/owl-react";
 import {
   aclManager,
   authManager,
@@ -103,7 +103,7 @@ import {
   useSecurityMonitoring,
   useThreatModelGuard,
   withSecurityHeaders
-} from "@owl/react-adapter";
+} from "@owasp-core/owl-react";
 import { tokenManager } from "./security-bootstrap.js";
 
 export function ArticleWorkspace({ rawHtml }) {

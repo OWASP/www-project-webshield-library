@@ -66,7 +66,7 @@ import {
 	AuthGate,
 	PermissionGate,
 	useSecureHttpClient
-} from "@owl/react-adapter";
+} from "@owasp-core/owl-react";
 ```
 
 Recommended provider composition:

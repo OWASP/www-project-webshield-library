@@ -1,5 +1,5 @@
 import React from "react";
-import { useHardeningReport } from "@owl/react-adapter/a05-security-misconfiguration/index.js";
+import { useHardeningReport } from "@owasp-core/owl-react/a05-security-misconfiguration/index.js";
 
 export default function A05Page() {
   const findings = useHardeningReport({

@@ -1,7 +1,7 @@
 import React from "react";
-import { ACLProvider, RBACProvider } from "@owl/react-adapter/a01-access-control/index.js";
-import { AuthProvider } from "@owl/react-adapter/a07-auth-session/index.js";
-import { SecurityProvider } from "@owl/react-adapter/a09-logging-monitoring/index.js";
+import { ACLProvider, RBACProvider } from "@owasp-core/owl-react/a01-access-control/index.js";
+import { AuthProvider } from "@owasp-core/owl-react/a07-auth-session/index.js";
+import { SecurityProvider } from "@owasp-core/owl-react/a09-logging-monitoring/index.js";
 import { Link, Route, Routes } from "react-router-dom";
 import { security } from "./security";
 import A01Page from "./pages/A01Page";

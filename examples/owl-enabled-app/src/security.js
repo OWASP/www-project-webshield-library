@@ -7,7 +7,7 @@ import {
   SSRFGuard,
   SecurityLogger,
   TokenManager
-} from "@owl/core";
+} from "@owasp-core/owl";
 
 const tokenManager = new TokenManager({ now: () => Date.now() });
 tokenManager.setTokens({

@@ -1,6 +1,6 @@
 import React from "react";
-import { useAuthToken } from "@owl/react-adapter/a07-auth-session/index.js";
-import { HTTPClient } from "@owl/core";
+import { useAuthToken } from "@owasp-core/owl-react/a07-auth-session/index.js";
+import { HTTPClient } from "@owasp-core/owl";
 
 export default function A08Page() {
   const token = useAuthToken();

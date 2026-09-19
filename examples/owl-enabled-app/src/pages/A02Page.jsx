@@ -1,5 +1,5 @@
 import React from "react";
-import { SecretPolicy } from "@owl/core";
+import { SecretPolicy } from "@owasp-core/owl";
 
 export default function A02Page() {
   const [secret, setSecret] = React.useState("api-key-demo-value");

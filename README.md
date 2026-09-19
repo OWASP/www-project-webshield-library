@@ -66,7 +66,7 @@ import {
   RBACManager,
   ACLManager,
   PermissionChecker
-} from "@owl/core";
+} from "@owasp-core/owl";
 
 const tokenManager = new TokenManager();
 tokenManager.setTokens({ accessToken: "jwt", expiresAt: Date.now() + 3600000 });
@@ -104,7 +104,7 @@ console.log(permissions.check({ role: "admin", action: "read", resource: "invoic
 ## Core Usage
 
 ```js
-import { InputSanitizer, InputValidator } from "@owl/core";
+import { InputSanitizer, InputValidator } from "@owasp-core/owl";
 
 const sanitizer = new InputSanitizer("strict");
 const clean = sanitizer.sanitizeHTML('<img src=x onerror=alert(1)>safe');
@@ -126,7 +126,7 @@ import {
   RBACProvider,
   AuthGate,
   PermissionGate
-} from "@owl/react-adapter";
+} from "@owasp-core/owl-react";
 
 export function App({ authManager, aclManager, rbacManager }) {
   return (
@@ -149,8 +149,8 @@ export function App({ authManager, aclManager, rbacManager }) {
 
 | Example | Description |
 |---|---|
-| [Core JS usage](examples/core-js-usage.md) | Full composition guide for `@owl/core` |
-| [React adapter usage](examples/react-adapter-usage.md) | Provider + hook composition for `@owl/react-adapter` |
+| [Core JS usage](examples/core-js-usage.md) | Full composition guide for `@owasp-core/owl` |
+| [React adapter usage](examples/react-adapter-usage.md) | Provider + hook composition for `@owasp-core/owl-react` |
 | [Core Node demo ▶](examples/core-node-demo/README.md) | Runnable Node script — `node index.js` |
 | [React adapter demo ▶](examples/react-adapter-demo/README.md) | Runnable Vite app — `npm run dev` |
 | [OWL enabled app ▶](examples/owl-enabled-app/README.md) | Full multi-page reference app (A01–A10 demo pages) |

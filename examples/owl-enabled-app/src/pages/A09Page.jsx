@@ -1,5 +1,5 @@
 import React from "react";
-import { SecurityAlert, useSecurityMonitoring } from "@owl/react-adapter/a09-logging-monitoring/index.js";
+import { SecurityAlert, useSecurityMonitoring } from "@owasp-core/owl-react/a09-logging-monitoring/index.js";
 
 export default function A09Page() {
   const { logger, events } = useSecurityMonitoring();

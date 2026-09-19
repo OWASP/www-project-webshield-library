@@ -1,5 +1,5 @@
 import React from "react";
-import { SanitizedText, useInputSanitizer } from "@owl/react-adapter/a03-injection-defense/index.js";
+import { SanitizedText, useInputSanitizer } from "@owasp-core/owl-react/a03-injection-defense/index.js";
 
 export default function A03Page() {
   const sanitizer = useInputSanitizer("strict");

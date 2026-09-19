@@ -15,7 +15,7 @@ import {
   CSRFTokenManager,
   HTTPClient,
   SSRFGuard
-} from "@owl/core";
+} from "@owasp-core/owl";
 
 const tokenManager = new TokenManager();
 const authManager = new AuthManager({ tokenManager });
@@ -49,7 +49,7 @@ import {
   RBACProvider,
   AuthGate,
   PermissionGate
-} from "@owl/react-adapter";
+} from "@owasp-core/owl-react";
 import { security } from "./security-bootstrap";
 
 export function AppShell({ children }) {

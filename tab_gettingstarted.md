@@ -50,7 +50,7 @@ import {
   PermissionChecker,
   RBACManager,
   TokenManager
-} from "@owl/core";
+} from "@owasp-core/owl";
 
 // 1. Set up auth and token management
 const tokenManager = new TokenManager();
@@ -79,7 +79,7 @@ console.log(checker.check({ role: "admin", action: "read", resource: "invoice" }
 
 ```jsx
 import { AuthProvider, ACLProvider, RBACProvider, AuthGate, PermissionGate }
-  from "@owl/react-adapter";
+  from "@owasp-core/owl-react";
 
 export function AppShell({ authManager, aclManager, rbacManager, children }) {
   return (

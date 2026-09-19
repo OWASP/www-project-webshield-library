@@ -63,7 +63,7 @@ OWL maps reusable security controls directly to OWASP categories so teams speak 
 ## React Adapter Highlights
 
 ```
-@owl/react-adapter
+@owasp-core/owl-react
  ├── A01  ACLProvider, RBACProvider, useACL, usePermission, PermissionGate
  ├── A02  useCryptoManager
  ├── A03  useInputSanitizer, SanitizedText

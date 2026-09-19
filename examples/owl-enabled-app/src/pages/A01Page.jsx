@@ -1,6 +1,6 @@
 import React from "react";
-import { usePermission } from "@owl/react-adapter/a01-access-control/index.js";
-import { useAuth } from "@owl/react-adapter/a07-auth-session/index.js";
+import { usePermission } from "@owasp-core/owl-react/a01-access-control/index.js";
+import { useAuth } from "@owasp-core/owl-react/a07-auth-session/index.js";
 
 export default function A01Page() {
   const { session } = useAuth();

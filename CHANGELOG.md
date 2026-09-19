@@ -25,7 +25,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- Renamed the published npm scope from `@owl/*` to `@owsl/*` and back to `@owl/*` (see `docs/release-process.md`) — `package.json`/`src/adapters/react/package.json`, all documentation, and example code samples now consistently use the `@owl/*` scope.
+- Renamed the published npm scope from `@owl/*` to `@owsl/*` and back to `@owl/*` (see `docs/release-process.md`) — `package.json`/`src/adapters/react/package.json`, all documentation, and example code samples now consistently used the `@owl/*` scope.
+- Renamed the npm scope again, from `@owl/*` to `@owasp-core/*` (`@owl/core` → `@owasp-core/owl`, `@owl/react-adapter` → `@owasp-core/owl-react`), because the `owl` npm organization name was unavailable at publish time. All `package.json` files, documentation, and example code samples now consistently use the `@owasp-core/*` scope.
 
 ## [1.0.0] - 2026-07-16
 
@@ -43,7 +44,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - A09: `SecurityLogger` (redaction-first, sink-configurable), `EventEmitter`
   - A10: `SSRFGuard` (private-IP + protocol allowlist), `SafeFetcher`
   - `SecurityError` / `SecurityErrorCode` — typed error surface across all modules
-- **React adapter (`@owl/react-adapter`)** — Category-aligned providers, hooks, and guards for A01–A10:
+- **React adapter (`@owasp-core/owl-react`)** — Category-aligned providers, hooks, and guards for A01–A10:
   - `AuthProvider`, `useAuth`, `useAuthToken`, `AuthGate` — token expiry scheduling, token-cleared reactivity
   - `ACLProvider`, `RBACProvider`, `useACL`, `usePermission`, `PermissionGate`
   - `useCryptoManager`, `useInputSanitizer`, `SanitizedText`

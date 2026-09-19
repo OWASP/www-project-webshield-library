@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@owl/core": "file:../..",
-    "@owl/react-adapter": "file:../../src/adapters/react",
+    "@owasp-core/owl": "file:../..",
+    "@owasp-core/owl-react": "file:../../src/adapters/react",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.1",

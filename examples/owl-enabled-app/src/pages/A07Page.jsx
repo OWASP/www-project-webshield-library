@@ -1,5 +1,5 @@
 import React from "react";
-import { AuthGate, useAuth, useAuthToken } from "@owl/react-adapter/a07-auth-session/index.js";
+import { AuthGate, useAuth, useAuthToken } from "@owasp-core/owl-react/a07-auth-session/index.js";
 
 export default function A07Page() {
   const { session, authManager, isAuthenticated } = useAuth();

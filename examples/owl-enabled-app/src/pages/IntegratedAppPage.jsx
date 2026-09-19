@@ -1,13 +1,13 @@
 import React from "react";
-import { usePermission } from "@owl/react-adapter/a01-access-control/index.js";
-import { useAuth, useAuthToken } from "@owl/react-adapter/a07-auth-session/index.js";
-import { useInputSanitizer } from "@owl/react-adapter/a03-injection-defense/index.js";
-import { useThreatModelGuard } from "@owl/react-adapter/a04-insecure-design-guard/index.js";
-import { useHardeningReport } from "@owl/react-adapter/a05-security-misconfiguration/index.js";
-import { useDependencyRiskScanner } from "@owl/react-adapter/a06-vulnerable-components/index.js";
-import { useSecurityMonitoring } from "@owl/react-adapter/a09-logging-monitoring/index.js";
-import { useSafeFetcher } from "@owl/react-adapter/a10-ssrf-defense/index.js";
-import { SecretPolicy } from "@owl/core";
+import { usePermission } from "@owasp-core/owl-react/a01-access-control/index.js";
+import { useAuth, useAuthToken } from "@owasp-core/owl-react/a07-auth-session/index.js";
+import { useInputSanitizer } from "@owasp-core/owl-react/a03-injection-defense/index.js";
+import { useThreatModelGuard } from "@owasp-core/owl-react/a04-insecure-design-guard/index.js";
+import { useHardeningReport } from "@owasp-core/owl-react/a05-security-misconfiguration/index.js";
+import { useDependencyRiskScanner } from "@owasp-core/owl-react/a06-vulnerable-components/index.js";
+import { useSecurityMonitoring } from "@owasp-core/owl-react/a09-logging-monitoring/index.js";
+import { useSafeFetcher } from "@owasp-core/owl-react/a10-ssrf-defense/index.js";
+import { SecretPolicy } from "@owasp-core/owl";
 import { security } from "../security";
 
 const dependencyProvider = {

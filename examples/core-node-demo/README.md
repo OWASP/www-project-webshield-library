@@ -1,6 +1,6 @@
 # OWL Core Node Demo
 
-Runnable Node example showing how to compose the framework-agnostic `@owl/core` APIs.
+Runnable Node example showing how to compose the framework-agnostic `@owasp-core/owl` APIs.
 
 ## Run
 
