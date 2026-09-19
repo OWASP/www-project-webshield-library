@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/OWASP/www-project-webshield-library/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License" /></a>
-  <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/owasp-lab%20project-blue" alt="OWASP Lab Project" /></a>
+  <a href="https://owasp.org/www-project-webshield-library/"><img src="https://img.shields.io/badge/owasp-incubator-blue.svg" alt="OWASP Incubator" /></a>
   <a href="https://github.com/OWASP/www-project-webshield-library/actions"><img src="https://img.shields.io/github/check-runs/OWASP/www-project-webshield-library/main?label=CI" alt="CI" /></a>
   <a href="https://github.com/OWASP/www-project-webshield-library/releases"><img src="https://img.shields.io/github/v/release/OWASP/www-project-webshield-library?sort=semver" alt="Release" /></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen" alt="Node 20+" />
