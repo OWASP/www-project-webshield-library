@@ -7,7 +7,7 @@ import { useHardeningReport } from "@owl/react-adapter/a05-security-misconfigura
 import { useDependencyRiskScanner } from "@owl/react-adapter/a06-vulnerable-components/index.js";
 import { useSecurityMonitoring } from "@owl/react-adapter/a09-logging-monitoring/index.js";
 import { useSafeFetcher } from "@owl/react-adapter/a10-ssrf-defense/index.js";
-import { SecretPolicy } from "@owl/core/src/core/a02-crypto-integrity/SecretPolicy.js";
+import { SecretPolicy } from "@owl/core";
 import { security } from "../security";
 
 const dependencyProvider = {

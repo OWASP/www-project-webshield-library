@@ -1,5 +1,5 @@
 import React from "react";
-import { SecretPolicy } from "@owl/core/src/core/a02-crypto-integrity/SecretPolicy.js";
+import { SecretPolicy } from "@owl/core";
 
 export default function A02Page() {
   const [secret, setSecret] = React.useState("api-key-demo-value");

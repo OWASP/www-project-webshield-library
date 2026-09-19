@@ -1,11 +1,13 @@
 import {
-  ACLManager
-} from "@owl/core/src/core/a01-access-control/index.js";
-import { AuthManager, TokenManager } from "@owl/core/src/core/a07-auth-session/index.js";
-import { EventEmitter, SecurityLogger } from "@owl/core/src/core/a09-logging-monitoring/index.js";
-import { HTTPClient } from "@owl/core/src/core/a08-data-integrity/HTTPClient.js";
-import { RBACManager } from "@owl/core/src/core/a01-access-control/RBACManager.js";
-import { SSRFGuard } from "@owl/core/src/core/a10-ssrf-defense/index.js";
+  ACLManager,
+  AuthManager,
+  EventEmitter,
+  HTTPClient,
+  RBACManager,
+  SSRFGuard,
+  SecurityLogger,
+  TokenManager
+} from "@owl/core";
 
 const tokenManager = new TokenManager({ now: () => Date.now() });
 tokenManager.setTokens({
