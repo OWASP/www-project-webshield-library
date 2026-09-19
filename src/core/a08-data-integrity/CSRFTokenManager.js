@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 
 function defaultStorage() {
@@ -42,7 +42,14 @@ export class CSRFTokenManager {
 
   validate(token) {
     const expected = this.getToken();
-    const valid = Boolean(expected && token && expected === token);
+    const expectedBytes = typeof expected === "string" ? Buffer.from(expected) : null;
+    const tokenBytes = typeof token === "string" ? Buffer.from(token) : null;
+    const valid = Boolean(
+      expectedBytes &&
+      tokenBytes &&
+      expectedBytes.length === tokenBytes.length &&
+      timingSafeEqual(expectedBytes, tokenBytes)
+    );
     if (!valid) {
       throw new SecurityError(SecurityErrorCode.CSRF_INVALID, "CSRF token validation failed");
     }
