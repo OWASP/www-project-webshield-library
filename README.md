@@ -33,6 +33,7 @@
 - [Project Docs](#project-docs)
 - [Contributing](#contributing)
 - [Security](#security)
+- [Star History](#star-history)
 - [License](#license)
 
 ---
@@ -198,6 +199,18 @@ Tests must cover security-relevant success and failure paths.
 ## Security
 
 Do **not** open public issues for security vulnerabilities. Follow the private reporting process in [SECURITY.md](SECURITY.md).
+
+## Star History
+
+<a href="https://star-history.com/#OWASP/www-project-webshield-library&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=OWASP/www-project-webshield-library&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=OWASP/www-project-webshield-library&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=OWASP/www-project-webshield-library&type=Date" />
+  </picture>
+</a>
+
+If OWL is useful to you, a star helps others discover it. ⭐
 
 ## License
 
