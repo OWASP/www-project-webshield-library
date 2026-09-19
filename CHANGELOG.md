@@ -23,10 +23,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **A02 `SecretPolicy`** — Fixed `minimumEntropyBits()`/`isEntropySufficient()` overestimating the strength of long, repetitive secrets (e.g. `"ab".repeat(32)`). Entropy is now estimated from the number of distinct characters used times the bits-per-symbol implied by the character classes present, instead of raw length times unique-character count.
 - **A09 `SecurityLogger`** — Fixed a denial-of-service where logging an object containing a circular reference threw a stack-overflow error; `redact()` now detects cycles and enforces a maximum recursion depth. Also added value-pattern-based redaction (JWT-shaped strings) so secrets logged under a non-sensitive field name are still redacted.
 
-### Fixed
+### Changed
 
-- Renamed the published npm scope from `@owl/*` to `@owsl/*` and back to `@owl/*` (see `docs/release-process.md`) — `package.json`/`src/adapters/react/package.json`, all documentation, and example code samples now consistently used the `@owl/*` scope.
-- Renamed the npm scope again, from `@owl/*` to `@owasp-core/*` (`@owl/core` → `@owasp-core/owl`, `@owl/react-adapter` → `@owasp-core/owl-react`), because the `owl` npm organization name was unavailable at publish time. All `package.json` files, documentation, and example code samples now consistently use the `@owasp-core/*` scope.
+- Renamed the published npm scope from `@owsl/*` to `@owasp-core/*` (`@owsl/core` → `@owasp-core/owl`, `@owl/react-adapter` → `@owasp-core/owl-react`) after the `owl` npm organization name proved unavailable at publish time — `package.json` files, documentation, and example code now consistently use the `@owasp-core/*` scope.
+
+## [1.0.1] - 2026-07-16
+
+### Changed
+
+- Renamed the published npm scope from `@owl/core` to `@owsl/core`.
 
 ## [1.0.0] - 2026-07-16
 
@@ -74,27 +79,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - All `SecurityError` throws carry a typed `code` from `SecurityErrorCode` and a structured `details` payload.
 
 ---
-
-## [0.1.0] - 2026-06-28
-
-### Added
-
-- Core OWASP modules A01-A10 with JavaScript APIs.
-- React adapter modules grouped by A01-A10.
-- Access control, auth/session, CSRF/data integrity, logging, SSRF, crypto, misconfiguration, design guard, and vulnerable component helpers.
-- Jest unit tests for core and key adapter hooks.
-- ESLint quality gate and `check` script.
-
-### Changed
-
-- React adapter organization consolidated into A01-A10 folders.
-- A08 HTTPClient now supports outbound SSRF policy integration.
-- A02 crypto now supports pluggable KDF adapters (PBKDF2 default + Argon2 plugin pattern).
-
-### Security
-
-- Deny-overrides conflict strategy for ACL checks.
-- Sensitive field redaction in security logging.
 
 ## [0.1.0] - 2026-06-28
 
