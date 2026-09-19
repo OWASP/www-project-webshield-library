@@ -47,4 +47,22 @@ describe("A09 logging and monitoring", () => {
     expect(output.details.request.authorization).toBe("[REDACTED]");
     expect(output.details.cookies).toBe("[REDACTED]");
   });
+
+  test("logger tolerates circular references instead of crashing", () => {
+    let output = null;
+    const logger = new SecurityLogger({ sink: (entry) => (output = entry) });
+    const cyclic = { a: 1 };
+    cyclic.self = cyclic;
+
+    expect(() => logger.info("evt", cyclic)).not.toThrow();
+    expect(output.details.a).toBe(1);
+    expect(output.details.self).toBe("[Circular]");
+  });
+
+  test("logger redacts JWT-shaped values even under a non-sensitive field name", () => {
+    let output = null;
+    const logger = new SecurityLogger({ sink: (entry) => (output = entry) });
+    logger.info("login", { data: "eyJhbGciOiJIUzI1NiJ9.secretJWTpayload.sig" });
+    expect(output.details.data).toBe("[REDACTED]");
+  });
 });
