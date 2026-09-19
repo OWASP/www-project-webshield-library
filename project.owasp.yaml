@@ -6,14 +6,18 @@ leaders:
     email: cybersreejith@owasp.org
 level: 2
 name: OWASP Webshield Library
-pitch: A very brief, one-line description of your project
+pitch: Practical, reusable OWASP Top 10 security controls for modern JavaScript applications
 repositories:
   - name: www-project-webshield-library
     url: https://github.com/OWASP/www-project-webshield-library
     description: OWASP Foundation web repository
 tags:
-  - example-tag
-  - custom-tag-1
-  - custom-tag-2
+  - owasp-top-10
+  - javascript
+  - react
+  - security-library
+  - rbac
+  - csrf
+  - ssrf
 type: code
 website: https://owasp.org/www-project-webshield-library
