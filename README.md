@@ -17,9 +17,15 @@
   <img src="https://img.shields.io/badge/coverage-A01--A10-success" alt="OWASP A01-A10" />
 </p>
 
+<p align="center">
+  <a href="https://shimmering-parfait-3d0863.netlify.app/"><img src="https://img.shields.io/badge/docs-shimmering--parfait--3d0863.netlify.app-3c8772" alt="Documentation" /></a>
+</p>
+
 ---
 
 > **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package and a full React adapter — making security primitives as easy to use as any other NPM library.
+
+📖 **Full documentation and usage guide: [shimmering-parfait-3d0863.netlify.app](https://shimmering-parfait-3d0863.netlify.app/)**
 
 ## Contents
 
