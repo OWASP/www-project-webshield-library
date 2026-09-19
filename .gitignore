@@ -6,6 +6,9 @@ dist/
 *.tgz
 *.tar.gz
 
+# VitePress docs site
+website/.vitepress/cache/
+
 # Environment and secrets
 .env
 .env.*
