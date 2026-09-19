@@ -21,6 +21,16 @@ describe("A02 crypto integrity", () => {
     expect(SecretPolicy.isEntropySufficient("correct-horse-battery-staple", 20)).toBe(true);
   });
 
+  test("rejects long low-diversity secrets that only repeat a couple of characters", () => {
+    expect(SecretPolicy.isEntropySufficient("ab".repeat(32))).toBe(false);
+    expect(SecretPolicy.isEntropySufficient("a".repeat(80) + "b")).toBe(false);
+    expect(SecretPolicy.isEntropySufficient("01".repeat(32))).toBe(false);
+  });
+
+  test("accepts a genuinely diverse, sufficiently long secret", () => {
+    expect(SecretPolicy.isEntropySufficient("K9$mP2#vL8@xQ4!zR7&nT1^")).toBe(true);
+  });
+
   test("uses PBKDF2 adapter by default", () => {
     const manager = new CryptoManager({ kdfAdapter: new PBKDF2Adapter() });
     const { key } = manager.deriveKey("secret");
