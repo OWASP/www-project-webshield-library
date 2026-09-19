@@ -13,9 +13,46 @@ describe("A03 injection defense", () => {
     const sanitizer = new InputSanitizer("moderate");
     const result = sanitizer.sanitizeHTML('<a href="javascript:alert(1)" onclick="alert(1)">safe</a>');
 
-    expect(result).toContain("<a href=\"alert(1)\">safe</a>");
+    expect(result).toContain("<a>safe</a>");
     expect(result.includes("onclick")).toBe(false);
     expect(result.includes("javascript:")).toBe(false);
+  });
+
+  test("moderate profile drops unclosed script tags and their content entirely", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    const result = sanitizer.sanitizeHTML('<script src="//evil.example/x.js">');
+    expect(result.includes("<script")).toBe(false);
+    expect(result.includes("evil.example")).toBe(false);
+  });
+
+  test("moderate profile blocks attribute-separator event handlers (no whitespace before 'on*')", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    const result = sanitizer.sanitizeHTML("<svg/onload=alert(document.domain)>");
+    expect(/on\w+\s*=/i.test(result)).toBe(false);
+    expect(result.includes("<svg")).toBe(false);
+  });
+
+  test("moderate profile blocks obfuscated javascript: protocol (case, whitespace, entities)", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    const mixedCase = sanitizer.sanitizeHTML('<a href="jAvAsCrIpT:alert(1)">x</a>');
+    const whitespace = sanitizer.sanitizeHTML('<a href="java\tscript:alert(1)">x</a>');
+    const entityEncoded = sanitizer.sanitizeHTML('<a href="&#106;avascript:alert(1)">x</a>');
+    for (const result of [mixedCase, whitespace, entityEncoded]) {
+      expect(result.includes("href")).toBe(false);
+      expect(/javascript\s*:/i.test(result)).toBe(false);
+    }
+  });
+
+  test("moderate profile allows safe links and formatting tags through", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    const result = sanitizer.sanitizeHTML('<a href="https://example.com">safe</a> <strong>bold</strong>');
+    expect(result).toBe('<a href="https://example.com">safe</a> <strong>bold</strong>');
+  });
+
+  test("strict profile blocks tags not anticipated by a fixed allowlist (e.g. custom/unknown tags)", () => {
+    const sanitizer = new InputSanitizer("strict");
+    const result = sanitizer.sanitizeHTML("<x-evil onclick=alert(1)>text</x-evil>");
+    expect(result).toBe("text");
   });
 
   test("returns structured validation failures", () => {
