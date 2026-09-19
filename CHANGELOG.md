@@ -13,6 +13,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Security
+
+- **A10 `SSRFGuard`/`SafeFetcher`** — Fixed fail-open behavior for IPv4-mapped/expanded IPv6 loopback and `0.0.0.0` literals, and closed a DNS-rebinding gap: hostnames are now resolved and every returned address is validated via the new `assertResolvedSafe()` method (configurable `resolveHost` option). `SafeFetcher` now follows redirects manually and re-validates every hop instead of letting `fetch` auto-follow them unchecked.
+- **A03 `InputSanitizer`** — Replaced the regex-based blocklist sanitizer with a tokenizer-based allowlist sanitizer, closing bypasses via unclosed `<script>` tags, `/`-separated event handlers (e.g. `<svg/onload=...>`), and case/whitespace/HTML-entity-obfuscated `javascript:` URLs (including named references like `&colon;`). **Behavior change:** the `moderate` profile now only allows a fixed set of formatting tags instead of passing through arbitrary markup.
+- **A08 `HTTPClient`** — Fixed a cross-origin credential leak: `Authorization`/`X-CSRF-Token` headers were previously attached to any absolute URL regardless of origin. Requests to an absolute URL now require the target to match `baseUrl`'s origin or an explicit new `allowedOrigins` option, otherwise a `CREDENTIAL_LEAK_BLOCKED` `SecurityError` is thrown. **Breaking:** cross-origin credentialed requests that previously worked implicitly now require `allowedOrigins` to be configured.
+- **A02 `SecretPolicy`** — Fixed `minimumEntropyBits()`/`isEntropySufficient()` overestimating the strength of long, repetitive secrets (e.g. `"ab".repeat(32)`). Entropy is now estimated from the number of distinct characters used times the bits-per-symbol implied by the character classes present, instead of raw length times unique-character count.
+- **A09 `SecurityLogger`** — Fixed a denial-of-service where logging an object containing a circular reference threw a stack-overflow error; `redact()` now detects cycles and enforces a maximum recursion depth. Also added value-pattern-based redaction (JWT-shaped strings) so secrets logged under a non-sensitive field name are still redacted.
+
+### Fixed
+
+- Renamed the published npm scope from `@owl/*` to `@owsl/*` and back to `@owl/*` (see `docs/release-process.md`) — `package.json`/`src/adapters/react/package.json`, all documentation, and example code samples now consistently use the `@owl/*` scope.
+
 ## [1.0.0] - 2026-07-16
 
 ### Added

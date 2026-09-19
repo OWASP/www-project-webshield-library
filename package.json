@@ -1,5 +1,5 @@
 {
-  "name": "@owsl/core",
+  "name": "@owl/core",
   "version": "1.0.1",
   "description": "OWL (OWASP Web Shield Library): practical OWASP Top 10 mitigation helpers for JavaScript apps",
   "private": false,
@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/OWASP/www-project-webshield-library/issues"
   },
-  "author": "OWASP Web Shield Library Project",
+  "author": "OWASP Webshield Library Project",
   "engines": {
     "node": ">=20"
   },
