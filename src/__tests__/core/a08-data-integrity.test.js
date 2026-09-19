@@ -8,6 +8,8 @@ describe("A08 data integrity", () => {
     const token = csrf.rotateToken();
     expect(csrf.attach({})["X-CSRF-Token"]).toBe(token);
     expect(csrf.validate(token)).toBe(true);
+    expect(() => csrf.validate(`${token}x`)).toThrow();
+    expect(() => csrf.validate(`${"x".repeat(token.length - 1)}y`)).toThrow();
   });
 
   test("injects auth and csrf headers in request", async () => {
