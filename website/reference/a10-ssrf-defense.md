@@ -24,7 +24,7 @@ await safeFetcher.fetch("https://api.example.com/users", { method: "GET" });
 ```
 
 - `SafeFetcher` follows redirects manually and re-validates every hop, including IPv4-mapped/expanded IPv6 loopback and `0.0.0.0` literals.
-- Hostnames are resolved and every returned address is validated via `assertResolvedSafe()` (configurable through the `resolveHost` option), closing DNS-rebinding gaps. See [CHANGELOG](/changelog) for the 2.0.0 fix.
+- Hostnames are resolved and every returned address is validated via `assertResolvedSafe()` (configurable through the `resolveHost` option), closing DNS-rebinding gaps. See [CHANGELOG](/changelog) for the 1.0.2 fix.
 
 ## React Adapter (`@owasp-core/owl-react`)
 

@@ -30,7 +30,7 @@ unsubscribe();
 ```
 
 ::: tip Circular references and depth limits
-`redact()` detects cycles and enforces a maximum recursion depth, so logging an object with a circular reference can't cause a stack-overflow denial of service. See [CHANGELOG](/changelog) for the 2.0.0 fix.
+`redact()` detects cycles and enforces a maximum recursion depth, so logging an object with a circular reference can't cause a stack-overflow denial of service. See [CHANGELOG](/changelog) for the 1.0.2 fix.
 :::
 
 ## React Adapter (`@owasp-core/owl-react`)

@@ -29,7 +29,7 @@ console.log(response.ok, response.data, DATA_INTEGRITY_TYPES);
 ```
 
 - `HTTPClient` accepts a `tokenProvider` function that may return a string, `null`, or a promise for either value. The client always awaits it before sending the request.
-- `Authorization` / `X-CSRF-Token` headers are only attached to requests whose target matches `baseUrl`'s origin, or an origin explicitly listed in `allowedOrigins` — otherwise a `CREDENTIAL_LEAK_BLOCKED` `SecurityError` is thrown. This closes a cross-origin credential leak; see [CHANGELOG](/changelog) for the 2.0.0 fix.
+- `Authorization` / `X-CSRF-Token` headers are only attached to requests whose target matches `baseUrl`'s origin, or an origin explicitly listed in `allowedOrigins` — otherwise a `CREDENTIAL_LEAK_BLOCKED` `SecurityError` is thrown. This closes a cross-origin credential leak; see [CHANGELOG](/changelog) for the 1.0.2 fix.
 - Passing an `outboundRequestPolicy` (typically a [`SSRFGuard`](/reference/a10-ssrf-defense)) composes transport hardening with SSRF defense in one client.
 
 ## React Adapter (`@owasp-core/owl-react`)

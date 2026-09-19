@@ -36,7 +36,7 @@ SecretPolicy.isRotationWindowExceeded(Date.now() - 86_500_000, 86_400_000);
 ```
 
 - `Argon2Adapter` takes a `deriveFn` you supply — OWL does not bundle an Argon2 implementation itself, keeping the core dependency-free.
-- `SecretPolicy.minimumEntropyBits()` / `isEntropySufficient()` estimate entropy from distinct-character count × bits-per-symbol implied by the character classes present, not raw length — see [CHANGELOG](/changelog) for the 2.0.0 fix to this estimate.
+- `SecretPolicy.minimumEntropyBits()` / `isEntropySufficient()` estimate entropy from distinct-character count × bits-per-symbol implied by the character classes present, not raw length — see [CHANGELOG](/changelog) for the 1.0.2 fix to this estimate.
 
 ## React Adapter (`@owasp-core/owl-react`)
 
