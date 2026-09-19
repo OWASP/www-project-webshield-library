@@ -1,8 +1,10 @@
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 
+const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+
 export class HTTPClient {
   /**
-   * @param {{baseUrl?: string, csrfManager?: import('./CSRFTokenManager.js').CSRFTokenManager, tokenProvider?: ()=>Promise<string|null>|string|null, fetchImpl?: typeof fetch, outboundRequestPolicy?: { validateUrl: (url: string) => unknown }}} [options]
+   * @param {{baseUrl?: string, csrfManager?: import('./CSRFTokenManager.js').CSRFTokenManager, tokenProvider?: ()=>Promise<string|null>|string|null, fetchImpl?: typeof fetch, outboundRequestPolicy?: { validateUrl: (url: string) => unknown }, allowedOrigins?: string[]}} [options]
    */
   constructor(options = {}) {
     this.baseUrl = options.baseUrl || "";
@@ -10,6 +12,7 @@ export class HTTPClient {
     this.tokenProvider = options.tokenProvider || null;
     this.fetchImpl = options.fetchImpl || fetch;
     this.outboundRequestPolicy = options.outboundRequestPolicy || null;
+    this.allowedOrigins = new Set(options.allowedOrigins || []);
     this.requestInterceptors = [];
     this.responseInterceptors = [];
   }
@@ -22,6 +25,31 @@ export class HTTPClient {
     this.responseInterceptors.push(interceptor);
   }
 
+  // Relative URLs always resolve under baseUrl/the current origin, so only an
+  // absolute request URL can point somewhere else and needs an origin check.
+  _isCredentialSafeOrigin(requestUrl) {
+    if (!ABSOLUTE_URL_PATTERN.test(requestUrl)) return true;
+
+    let targetOrigin;
+    try {
+      targetOrigin = new URL(requestUrl).origin;
+    } catch {
+      return false;
+    }
+
+    if (this.allowedOrigins.has(targetOrigin)) return true;
+
+    if (this.baseUrl) {
+      try {
+        return new URL(this.baseUrl).origin === targetOrigin;
+      } catch {
+        return false;
+      }
+    }
+
+    return false;
+  }
+
   async request(url, options = {}) {
     let config = {
       ...options,
@@ -31,6 +59,18 @@ export class HTTPClient {
         ...(options.headers || {})
       }
     };
+
+    const requestUrl = ABSOLUTE_URL_PATTERN.test(url) ? url : `${this.baseUrl}${url}`;
+
+    if (this.csrfManager || this.tokenProvider) {
+      if (!this._isCredentialSafeOrigin(requestUrl)) {
+        throw new SecurityError(
+          SecurityErrorCode.CREDENTIAL_LEAK_BLOCKED,
+          "Refusing to attach Authorization/CSRF credentials to a cross-origin request",
+          { url: requestUrl }
+        );
+      }
+    }
 
     if (this.csrfManager) {
       config.headers = this.csrfManager.attach(config.headers);
@@ -47,7 +87,6 @@ export class HTTPClient {
       config = (await interceptor(config)) || config;
     }
 
-    const requestUrl = `${this.baseUrl}${url}`;
     if (this.outboundRequestPolicy) {
       this.outboundRequestPolicy.validateUrl(requestUrl);
     }

@@ -87,4 +87,58 @@ describe("A08 data integrity", () => {
 
     await expect(client.request("http://127.0.0.1/internal", { method: "GET" })).rejects.toThrow();
   });
+
+  test("refuses to attach Authorization/CSRF credentials to an absolute cross-origin URL", async () => {
+    const csrf = new CSRFTokenManager();
+    csrf.rotateToken();
+    const fetchImpl = async () => {
+      throw new Error("fetch should not be called");
+    };
+    const client = new HTTPClient({
+      baseUrl: "",
+      csrfManager: csrf,
+      tokenProvider: () => "SECRET-BEARER-TOKEN",
+      fetchImpl
+    });
+
+    await expect(client.request("https://evil.example.com/collect")).rejects.toThrow();
+  });
+
+  test("allows credentialed requests to baseUrl's own origin", async () => {
+    const csrf = new CSRFTokenManager();
+    csrf.rotateToken();
+    let captured = null;
+    const fetchImpl = async (url, cfg) => {
+      captured = { url, headers: cfg.headers };
+      return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+    };
+    const client = new HTTPClient({
+      baseUrl: "https://api.example.com",
+      csrfManager: csrf,
+      tokenProvider: () => "token",
+      fetchImpl
+    });
+
+    await client.request("/users");
+    expect(captured.headers.Authorization).toContain("Bearer");
+
+    await expect(client.request("https://attacker.example.com/steal")).rejects.toThrow();
+  });
+
+  test("allows credentialed requests to an explicitly allowlisted origin", async () => {
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      clone: () => ({ json: async () => ({}) }),
+      text: async () => ""
+    });
+    const client = new HTTPClient({
+      tokenProvider: () => "token",
+      allowedOrigins: ["https://trusted-partner.example.com"],
+      fetchImpl
+    });
+
+    await expect(client.request("https://trusted-partner.example.com/api")).resolves.toMatchObject({ ok: true });
+  });
 });
