@@ -108,15 +108,9 @@ export function AppShell({ authManager, aclManager, rbacManager, children }) {
 node examples/core-node-demo/index.js
 ```
 
-**React Vite demo**
+**Full-featured React Todo app (every OWASP category, one product)**
 ```bash
-cd examples/react-adapter-demo
-npm install && npm run dev
-```
-
-**Full multi-page reference app**
-```bash
-cd examples/owl-enabled-app
+cd examples/owl-enabled-react-todo-app
 npm install && npm run dev
 ```
 

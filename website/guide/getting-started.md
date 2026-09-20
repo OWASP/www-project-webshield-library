@@ -77,5 +77,4 @@ The repository ships several runnable examples you can clone and run directly:
 | Example | Description |
 |---|---|
 | [Core Node demo](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/core-node-demo) | Plain Node script — `node index.js`, no build step |
-| [React adapter demo](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/react-adapter-demo) | Vite app exercising the React hooks and providers |
-| [OWL enabled app](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-app) | Full multi-page reference app with one page per OWASP category |
+| [OWL Enabled React Todo App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) | Full-featured Todo app on the React adapter, covering every OWASP category (A01–A10) in one product |

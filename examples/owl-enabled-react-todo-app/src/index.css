@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-white to-owl-50/60 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-slate-200/70 bg-white/90 p-6 shadow-soft backdrop-blur-sm;
+  }
+
+  .surface-hero {
+    @apply border-owl-100 bg-gradient-to-br from-owl-50 via-white to-owl-100/50;
+  }
+
+  .section-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-owl-600;
+  }
+
+  .panel-title {
+    @apply text-lg font-semibold tracking-tight text-slate-900;
+  }
+
+  .metric-card {
+    @apply rounded-xl border border-slate-200/70 bg-white px-4 py-3.5 shadow-soft;
+  }
+
+  .metric-label {
+    @apply text-[11px] font-medium uppercase tracking-wide text-slate-500;
+  }
+
+  .metric-value {
+    @apply mt-1 text-3xl font-bold tracking-tight text-slate-900;
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-lg bg-owl-600 px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition duration-150 hover:bg-owl-700 hover:shadow-lift active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:scale-100;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-soft transition duration-150 hover:border-owl-200 hover:bg-owl-50 hover:text-owl-700 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-none transition duration-150 hover:border-owl-200 hover:bg-owl-50 hover:text-owl-700;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-soft outline-none transition duration-150 placeholder:text-slate-400 focus:border-owl-400 focus:ring-2 focus:ring-owl-100;
+  }
+
+  .code-block {
+    @apply overflow-x-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200 shadow-soft;
+  }
+
+  .todo-row {
+    @apply w-full rounded-xl border p-4 text-left text-sm transition duration-150 hover:shadow-lift;
+  }
+
+  .avatar {
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-owl-600 text-xs font-bold uppercase text-white shadow-soft;
+  }
+
+  .badge-role {
+    @apply inline-flex items-center rounded-full bg-owl-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-owl-700 ring-1 ring-inset ring-owl-200;
+  }
+
+  .status-pill {
+    @apply rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize tracking-wide;
+  }
+
+  .status-todo {
+    @apply bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200;
+  }
+
+  .status-progress {
+    @apply bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200;
+  }
+
+  .status-blocked {
+    @apply bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200;
+  }
+
+  .status-done {
+    @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200;
+  }
+
+  .priority-pill {
+    @apply rounded-full px-2.5 py-1 text-[11px] font-medium capitalize tracking-wide;
+  }
+
+  .priority-high {
+    @apply bg-rose-50 text-rose-700;
+  }
+
+  .priority-medium {
+    @apply bg-amber-50 text-amber-700;
+  }
+
+  .priority-low {
+    @apply bg-slate-100 text-slate-600;
+  }
+
+  [role="alert"] {
+    @apply rounded-xl border-l-4 px-4 py-3 text-sm font-medium shadow-soft;
+  }
+
+  [role="alert"][data-level="error"] {
+    @apply border-rose-500 bg-rose-50 text-rose-700;
+  }
+
+  [role="alert"][data-level="warn"] {
+    @apply border-amber-500 bg-amber-50 text-amber-800;
+  }
+
+  [role="alert"][data-level="info"] {
+    @apply border-owl-500 bg-owl-50 text-owl-900;
+  }
+}
