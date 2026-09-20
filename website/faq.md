@@ -2,11 +2,17 @@
 
 ## Can I use OWL in a browser bundle?
 
-Partially, today. `CryptoManager`/`PBKDF2Adapter` ([A02](/reference/a02-crypto-integrity)) and `SSRFGuard`/`SafeFetcher` ([A10](/reference/a10-ssrf-defense)) import Node's built-in `node:crypto` and `node:dns/promises` directly. The published `dist/index.js` is bundled with esbuild's `--platform=node`, so a browser bundler (Vite, webpack, etc.) that tries to include those specific exports will fail unless you polyfill those Node built-ins.
+Partially, and the failure mode is at the *package* level, not the module level — importing anything from `@owasp-core/owl`'s single entry point pulls in every core module together, not just the one you named.
 
-Modules that don't touch those two built-ins — access control, input sanitization, auth/session state, logging, hardening reports, dependency scanning — bundle for the browser without any special configuration. If your app only needs those, you're unaffected.
+`CryptoManager`/`KDFAdapters` ([A02](/reference/a02-crypto-integrity)) and `CSRFTokenManager` ([A08](/reference/a08-data-integrity)) each have a top-level `import ... from "node:crypto"` (for `createCipheriv`, `pbkdf2Sync`, `randomBytes`, `timingSafeEqual`). The published `dist/index.js` is one esbuild bundle containing every category, so a production bundler (Rollup, webpack) targeting the browser fails to resolve those named imports the moment **anything** is imported from `@owasp-core/owl` or `@owasp-core/owl-react` — even an unrelated export like `SecretPolicy`, and even if your code never calls the crypto functions. The same applies to the React adapter's `useCryptoManager` and `useSecureHttpClient` (which wraps `CSRFTokenManager`), since importing from the adapter's package root re-exports those categories too.
 
-A browser-safe split (or dynamic-import guard) for the crypto/SSRF modules is tracked as follow-up work, not yet shipped.
+`SSRFGuard`/`SafeFetcher` ([A10](/reference/a10-ssrf-defense)) are the exception despite also referencing `node:dns/promises`: that import is a *dynamic* `import()` gated behind a `typeof process !== "undefined" && process.versions?.node` check, so it's never evaluated in a browser. It only produces a build-time warning, not a failure — `useSafeFetcher` works in a browser bundle today.
+
+**Workaround today:** import each class or hook from its individual source file instead of the package root (e.g. `@owasp-core/owl-react/a01-access-control/index.js` instead of `@owasp-core/owl-react`), which avoids ever evaluating `CryptoManager.js`/`KDFAdapters.js`/`CSRFTokenManager.js`. The [`owl-enabled-react-todo-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) does exactly this — see its README "Notes" section — and its `npm run build` succeeds as a result, unlike a build that imports from the package root.
+
+Node apps (see the [`owl-enabled-node-secrets-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app)) are unaffected — Node has `node:crypto` natively, so `CryptoManager` and `CSRFTokenManager` work as published.
+
+A proper fix (per-category `exports` conditions or a browser-safe subpath so bundlers can resolve just what's used) is tracked as follow-up work, not yet shipped.
 
 ## Why is the package called `@owasp-core/owl` and not `@owl/core`?
 

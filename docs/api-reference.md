@@ -464,6 +464,8 @@ export function PasswordPreview() {
 }
 ```
 
+> **Browser bundle note:** `useCryptoManager` and `useSecureHttpClient` wrap `CryptoManager`/`CSRFTokenManager`, both of which have a top-level Node `crypto` import — importing them (even via the package root, for an unrelated export) fails a production browser build. See the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for the current workaround if you're targeting a browser bundle rather than a Node/SSR context.
+
 ### A03 Injection Defense Adapter
 
 ```jsx

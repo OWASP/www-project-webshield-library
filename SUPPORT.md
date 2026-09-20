@@ -55,7 +55,7 @@ npm run check
 | [docs/framework.md](docs/framework.md) | Adoption patterns and bootstrap guide |
 | [docs/architecture.md](docs/architecture.md) | Module layout and design decisions |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Common issues and resolutions |
-| [examples/](examples/) | Runnable core and React adapter examples |
+| [examples/](examples/) | Runnable apps: a Node secrets vault and a React Todo app, each covering every OWASP category (A01–A10) |
 
 ---
 
