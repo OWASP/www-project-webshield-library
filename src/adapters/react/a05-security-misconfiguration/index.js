@@ -1,6 +1,6 @@
 import React from "react";
-import { HardeningReporter } from "../../../core/a05-security-misconfiguration/HardeningReporter.js";
-import { SecurityConfigManager } from "../../../core/a05-security-misconfiguration/SecurityConfigManager.js";
+import { HardeningReporter } from "@owasp-core/owl/core/a05-security-misconfiguration/HardeningReporter.js";
+import { SecurityConfigManager } from "@owasp-core/owl/core/a05-security-misconfiguration/SecurityConfigManager.js";
 
 /**
  * Hook that evaluates configuration and returns findings report.
