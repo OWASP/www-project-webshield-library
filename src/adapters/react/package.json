@@ -1,7 +1,8 @@
 {
   "name": "@owasp-core/owl-react",
   "version": "0.1.0",
-  "description": "React adapter for OWL (OWASP Web Shield Library)",
+  "description": "React adapter for OWL (OWASP Web Shield Library): category-aligned providers, hooks, and guard components for @owasp-core/owl",
+  "private": false,
   "type": "module",
   "main": "./index.js",
   "exports": {
@@ -11,6 +12,45 @@
     },
     "./package.json": "./package.json",
     "./*": "./*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWASP/www-project-webshield-library.git",
+    "directory": "src/adapters/react"
+  },
+  "homepage": "https://owasp.org/www-project-webshield-library/",
+  "bugs": {
+    "url": "https://github.com/OWASP/www-project-webshield-library/issues"
+  },
+  "author": "OWASP Webshield Library Project",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "owasp",
+    "owasp-top10",
+    "security",
+    "react",
+    "react-hooks",
+    "webshield",
+    "rbac",
+    "acl",
+    "csrf",
+    "ssrf",
+    "authentication",
+    "authorization",
+    "input-sanitization",
+    "secure-coding"
+  ],
+  "sideEffects": false,
+  "license": "Apache-2.0",
+  "funding": {
+    "type": "individual",
+    "url": "https://owasp.org/donate/"
   },
   "peerDependencies": {
     "react": ">=18",
