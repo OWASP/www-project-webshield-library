@@ -1,5 +1,5 @@
 import React from "react";
-import { DependencyRiskScanner } from "../../../core/a06-vulnerable-components/DependencyRiskScanner.js";
+import { DependencyRiskScanner } from "@owasp-core/owl/core/a06-vulnerable-components/DependencyRiskScanner.js";
 
 /**
  * Hook to run dependency risk scans in React components.

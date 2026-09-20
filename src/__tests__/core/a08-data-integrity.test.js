@@ -10,6 +10,19 @@ describe("A08 data integrity", () => {
     expect(csrf.validate(token)).toBe(true);
   });
 
+  test("validate throws on a non-matching token", () => {
+    const csrf = new CSRFTokenManager();
+    csrf.rotateToken();
+    expect(() => csrf.validate("not-the-real-token")).toThrow();
+  });
+
+  test("validate throws on a token of a different length (no timingSafeEqual crash)", () => {
+    const csrf = new CSRFTokenManager();
+    const token = csrf.rotateToken();
+    expect(() => csrf.validate(token.slice(0, -1))).toThrow();
+    expect(() => csrf.validate(`${token}x`)).toThrow();
+  });
+
   test("injects auth and csrf headers in request", async () => {
     const csrf = new CSRFTokenManager();
     csrf.rotateToken();

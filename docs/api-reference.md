@@ -464,7 +464,7 @@ export function PasswordPreview() {
 }
 ```
 
-> **Browser bundle note:** `useCryptoManager` and `useSecureHttpClient` wrap `CryptoManager`/`CSRFTokenManager`, both of which have a top-level Node `crypto` import — importing them (even via the package root, for an unrelated export) fails a production browser build. See the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for the current workaround if you're targeting a browser bundle rather than a Node/SSR context.
+> **Browser bundle note:** `useSecureHttpClient` wraps `CSRFTokenManager`, which now uses the Web Crypto API and works fine in a browser build. `useCryptoManager` wraps `CryptoManager`, which is still genuinely Node-only for real encryption (no synchronous browser-portable AES-GCM/PBKDF2 exists) — but both packages now ship a `"browser"`-conditioned build where it's a same-shaped stub instead of a build-breaking import, so `import { useCryptoManager } from "@owasp-core/owl-react"` builds fine in a browser bundle; only calling `.encrypt()`/`.decrypt()`/`.deriveKey()` there throws. See the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for the full explanation.
 
 ### A03 Injection Defense Adapter
 

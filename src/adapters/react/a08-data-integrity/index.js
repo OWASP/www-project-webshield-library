@@ -1,6 +1,6 @@
 import React from "react";
-import { CSRFTokenManager } from "../../../core/a08-data-integrity/CSRFTokenManager.js";
-import { HTTPClient } from "../../../core/a08-data-integrity/HTTPClient.js";
+import { CSRFTokenManager } from "@owasp-core/owl/core/a08-data-integrity/CSRFTokenManager.js";
+import { HTTPClient } from "@owasp-core/owl/core/a08-data-integrity/HTTPClient.js";
 
 /**
  * Hook that returns a configured HTTPClient with CSRF and auth token support.

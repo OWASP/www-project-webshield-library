@@ -23,13 +23,16 @@
   "module": "dist/index.js",
   "exports": {
     ".": {
+      "browser": "./dist/index.browser.js",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./core/*": "./src/core/*",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "src/core",
     "README.md",
     "CHANGELOG.md",
     "SECURITY.md",
@@ -40,9 +43,10 @@
     "provenance": true
   },
   "scripts": {
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:browser",
     "build:esm": "esbuild src/index.js --bundle --platform=node --format=esm --outfile=dist/index.js",
     "build:cjs": "esbuild src/index.js --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "build:browser": "esbuild src/index.browser.js --bundle --platform=browser --format=esm --outfile=dist/index.browser.js",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "lint": "eslint .",
     "check": "npm run lint && npm run test",

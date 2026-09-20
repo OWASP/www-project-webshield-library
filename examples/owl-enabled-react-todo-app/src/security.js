@@ -1,48 +1,28 @@
-// Imported by relative path into src/core, NOT via the "@owasp-core/owl" package
-// entry point. That entry resolves to the prebuilt dist/index.js, which bundles every
-// core module — including a02-crypto-integrity/CryptoManager.js and its KDFAdapters,
-// and a08-data-integrity/CSRFTokenManager.js — into one file with unconditional
-// top-level `import ... from "node:crypto"` statements. In a browser bundle those
-// imports resolve to a stub that throws on ANY property access the moment the module
-// is evaluated, so merely importing anything from the package root crashes on load,
-// regardless of which export is actually used. Importing each safe file directly (the
-// same technique the adapter's own source already uses internally) avoids evaluating
-// those Node-only files at all. See README "Notes" for the full explanation.
-import { RBACManager } from "../../../src/core/a01-access-control/RBACManager.js";
-import { ACLManager } from "../../../src/core/a01-access-control/ACLManager.js";
-import { SecretPolicy } from "../../../src/core/a02-crypto-integrity/SecretPolicy.js";
-import { InputValidator } from "../../../src/core/a03-injection-defense/InputValidator.js";
-import { DesignChecklist } from "../../../src/core/a04-insecure-design-guard/DesignChecklist.js";
-import { ComponentPolicy } from "../../../src/core/a06-vulnerable-components/ComponentPolicy.js";
-import { AuthManager } from "../../../src/core/a07-auth-session/AuthManager.js";
-import { TokenManager } from "../../../src/core/a07-auth-session/TokenManager.js";
-import { HTTPClient } from "../../../src/core/a08-data-integrity/HTTPClient.js";
-import { EventEmitter } from "../../../src/core/a09-logging-monitoring/EventEmitter.js";
-import { SecurityLogger } from "../../../src/core/a09-logging-monitoring/SecurityLogger.js";
-import { SSRFGuard } from "../../../src/core/a10-ssrf-defense/SSRFGuard.js";
-
-// A real `CSRFTokenManager` instance is avoided for the same reason (its file has a
-// top-level `node:crypto` import for `randomBytes`/`timingSafeEqual`). This mock keeps
-// the exact interface `HTTPClient` expects (`attach(headers)`) and seeds itself via the
-// browser-native Web Crypto API instead.
-function browserRandomToken(byteLength = 24) {
-  const bytes = new Uint8Array(byteLength);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function createCsrfManager() {
-  let token = browserRandomToken();
-  return {
-    rotate() {
-      token = browserRandomToken();
-      return token;
-    },
-    attach(headers = {}) {
-      return { ...headers, "X-CSRF-Token": token };
-    }
-  };
-}
+// Imported via the "./core/*" subpath, NOT the "@owasp-core/owl" package root. That
+// root entry resolves to the prebuilt dist/index.js, which bundles every core module —
+// including a02-crypto-integrity/CryptoManager.js and its KDFAdapters — into one file
+// with an unconditional top-level `import ... from "node:crypto"`. In a browser bundle
+// that import resolves to a stub that throws on ANY property access the moment the
+// module is evaluated, so merely importing anything from the package root crashes on
+// load, regardless of which export is actually used. The "./core/*" subpath (added to
+// package.json's `exports`/`files` specifically to fix this) resolves straight to the
+// individual source file instead, so importing e.g. `SecretPolicy` never evaluates
+// `CryptoManager.js` at all. `CryptoManager` itself is still genuinely Node-only — see
+// README "Notes" — but `CSRFTokenManager` no longer is: it's been rewritten to use the
+// Web Crypto API instead of `node:crypto`, so it's a real, working import here too.
+import { RBACManager } from "@owasp-core/owl/core/a01-access-control/RBACManager.js";
+import { ACLManager } from "@owasp-core/owl/core/a01-access-control/ACLManager.js";
+import { SecretPolicy } from "@owasp-core/owl/core/a02-crypto-integrity/SecretPolicy.js";
+import { InputValidator } from "@owasp-core/owl/core/a03-injection-defense/InputValidator.js";
+import { DesignChecklist } from "@owasp-core/owl/core/a04-insecure-design-guard/DesignChecklist.js";
+import { ComponentPolicy } from "@owasp-core/owl/core/a06-vulnerable-components/ComponentPolicy.js";
+import { AuthManager } from "@owasp-core/owl/core/a07-auth-session/AuthManager.js";
+import { TokenManager } from "@owasp-core/owl/core/a07-auth-session/TokenManager.js";
+import { CSRFTokenManager } from "@owasp-core/owl/core/a08-data-integrity/CSRFTokenManager.js";
+import { HTTPClient } from "@owasp-core/owl/core/a08-data-integrity/HTTPClient.js";
+import { EventEmitter } from "@owasp-core/owl/core/a09-logging-monitoring/EventEmitter.js";
+import { SecurityLogger } from "@owasp-core/owl/core/a09-logging-monitoring/SecurityLogger.js";
+import { SSRFGuard } from "@owasp-core/owl/core/a10-ssrf-defense/SSRFGuard.js";
 
 export const tokenManager = new TokenManager({ now: () => Date.now() });
 export const authManager = new AuthManager({ tokenManager });
@@ -69,7 +49,8 @@ export const logger = new SecurityLogger({
   sink: (entry) => console.log("[owl-todo]", entry)
 });
 
-export const csrfManager = createCsrfManager();
+export const csrfManager = new CSRFTokenManager();
+csrfManager.rotateToken();
 
 export const ssrfGuard = new SSRFGuard();
 
@@ -126,10 +107,10 @@ export function login(role) {
   const user = DEMO_USERS[role];
   if (!user) return;
   tokenManager.setTokens({
-    accessToken: `demo.${role}.${browserRandomToken(8)}`,
+    accessToken: `demo.${role}.${csrfManager.generateToken().slice(0, 12)}`,
     expiresAt: Date.now() + 30 * 60 * 1000
   });
-  csrfManager.rotate();
+  csrfManager.rotateToken();
   authManager.setSession(user);
   logger.info("auth.login", { userId: user.userId, role });
   emitActivity("login", user.userId);

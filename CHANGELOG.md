@@ -13,6 +13,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+> Note: `1.0.4` was tagged and published as a version-number-only bump (no code changes), so this file has no `[1.0.4]` entry. The changes below are new since then.
+
+### Fixed
+
+- **Browser bundling — package root now works, including `CryptoManager`.** Previously, importing *anything* from `@owasp-core/owl`'s or `@owasp-core/owl-react`'s package root — even an unrelated export like `SecretPolicy` — crashed a production browser build, because the bundled entry point evaluated `CryptoManager.js`/`KDFAdapters.js`/`CSRFTokenManager.js`, each of which had a top-level `node:crypto` import.
+  - **A08 `CSRFTokenManager`** is rewritten to use the Web Crypto API (`globalThis.crypto.getRandomValues`) and a hand-written constant-time comparison instead of `node:crypto`'s `randomBytes`/`timingSafeEqual`. It has no Node-specific import left and works identically in Node 20+, browsers, and any other Web Crypto runtime. Also applies the constant-time `validate()` fix from a previously-reviewed but unmerged PR (mismatched-length and non-matching tokens are now compared without a length-dependent short-circuit).
+  - **A02 `CryptoManager`/`KDFAdapters`** remain genuinely Node-only for real encryption (AES-256-GCM/PBKDF2 have no synchronous, browser-portable equivalent). Both packages now ship a `"browser"`-conditioned build (`package.json` `exports` `"browser"` condition, respected by Vite/webpack 5+/Rollup-with-node-resolve) where these are a same-shaped stub: construction works, but `.encrypt()`/`.decrypt()`/`.deriveKey()` throw a clear `SecurityError` instead of the whole bundle failing to build. `Argon2Adapter`/`generateSalt` (no `pbkdf2Sync` dependency) are fully real in the browser build.
+  - Added a `./core/*` subpath export (mapped to the unbundled `src/core/*` source) as an additional way to import individual files directly.
+  - **Also fixed as a prerequisite:** `@owasp-core/owl-react`'s `dependencies` declared `"@owasp-core/owl": "file:../../.."`, a monorepo-relative path that would resolve to nowhere useful once actually published and installed by a real consumer (caught before ever being published — verified via the npm registry). Changed to a real semver range (`^1.0.4`). All ten adapter category files' relative `../../../core/...` imports (which had the identical problem — they only ever resolved inside this monorepo) were changed to the new `@owasp-core/owl/core/...` subpath for the same reason.
+  - Verified against real published tarballs (not monorepo-relative paths) for both packages: installed fresh into a scratch project, built with a real `vite build`, and executed in a real headless browser.
+
+### Known limitation
+
+- `CryptoManager` cannot perform real, synchronous encryption/key-derivation in a browser build — that's a hard constraint of the underlying primitives (Web Crypto is async-only everywhere), not something this fix works around. A genuinely functional browser-side `CryptoManager` would need an async API and a major version bump.
+
 ## [1.0.3] - 2026-09-19
 
 ### Security

@@ -1,6 +1,6 @@
 import React from "react";
-import { SSRFGuard } from "../../../core/a10-ssrf-defense/SSRFGuard.js";
-import { SafeFetcher } from "../../../core/a10-ssrf-defense/SafeFetcher.js";
+import { SSRFGuard } from "@owasp-core/owl/core/a10-ssrf-defense/SSRFGuard.js";
+import { SafeFetcher } from "@owasp-core/owl/core/a10-ssrf-defense/SafeFetcher.js";
 
 /**
  * Hook that returns a SafeFetcher enforcing SSRF policy.
