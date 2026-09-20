@@ -175,6 +175,9 @@ export function ArticleWorkspace({ rawHtml }) {
 - `useSecureHttpClient()` creates a single `CSRFTokenManager` per hook instance and supports async token providers.
 - `useDependencyRiskScanner()` returns `{ loading, results, error, runScan, scanner }` and keeps `runScan` stable.
 - `useSecurityMonitoring()` is safe without a provider, but the provider is recommended so logging and events are available.
+- Rotate the CSRF token on auth boundary changes (login/logout), not just once at bootstrap.
+- Keep token storage in-memory unless persistence is explicitly required.
+- Avoid bypassing `PermissionGate` in route-level components — check permissions there, not deeper in the tree, so a missed check can't slip through.
 
 ## Runnable Example
 

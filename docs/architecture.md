@@ -2,7 +2,7 @@
 render_with_liquid: false
 ---
 
-# OWASP Web Shield Library — Architecture
+# OWASP Web Shield Library — Architecture & Adoption Guide
 
 ## What This Architecture Is Designed For
 
@@ -14,6 +14,8 @@ Primary architecture outcomes:
 - Minimal duplication between core and adapters
 - Deterministic policy behavior for runtime decisions
 - Extensible interfaces for crypto, transport, and component risk policies
+
+> Looking for runnable bootstrap code rather than concepts? See [core-js-usage.md](./core-js-usage.md) (framework-agnostic), [react-adapter-usage.md](./react-adapter-usage.md) (React), or [api-reference.md](./api-reference.md) for a copyable example per export.
 
 ## How The Architecture Works
 
@@ -103,9 +105,51 @@ Benefits:
 - In-memory token default reduces persistence exposure.
 - SSRF checks block loopback/private targets by default behavior.
 - Redaction in logs should remain mandatory in production sinks.
+- A05/A06 hardening and dependency checks should be included in deployment gating, not just run ad hoc.
+
+## Team-Oriented Adoption Plan
+
+| Team | Priority Modules | Immediate Value |
+|---|---|---|
+| Frontend | A07, A01, A03 | Safer UI guards and input handling |
+| Backend/API | A08, A10, A03 | Hardened request paths and outbound controls |
+| Platform | A05, A06, A09 | Better hardening and visibility |
+| Security | A01-A10 | Policy consistency across systems |
+
+## Implementation Maturity Stages
+
+### Stage 1 — Baseline Security
+
+- A07 + A01 + baseline tests
+
+### Stage 2 — Transport and Input Hardening
+
+- A08 + A10 + A03 integration
+
+### Stage 3 — Platform and Supply-Chain Security
+
+- A05 + A06 + A09 operationalized
+
+### Stage 4 — Governance and Scaling
+
+- Policy versioning, secure design reviews, and module extension process (see [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-new-owasp-module))
+
+## Common Anti-Patterns
+
+- Reimplementing policy logic in feature components instead of calling `PermissionChecker`/adapter hooks.
+- Skipping provider composition and using hooks outside their context (e.g. `usePermission` without `RBACProvider`/`ACLProvider`).
+- Logging secrets without redaction, or extending `redactKeys` after the fact instead of before shipping.
+- Disabling outbound URL policy checks (`SSRFGuard`) in production for convenience.
+
+## Use Cases By Audience
+
+- **Development teams** — add category-based security controls quickly and keep feature code focused on business logic instead of reimplementing checks.
+- **Security teams** — standardize controls across services and frontends, and track decisions via typed metadata and events instead of ad hoc logging.
+- **DevSecOps** — enforce quality gates with deterministic failures and integrate policy checks into pull-request pipelines (see [deployment-recipes.md](./deployment-recipes.md) and [github-actions-security-gate.md](./github-actions-security-gate.md)).
 
 ## Architecture Evolution Targets
 
 - Publishable per-category package model (@owasp-core/owl-a01-...)
 - Stronger DNS-backed SSRF validation mode
 - Additional adapter layers for Angular and Vue
+- Browser-safe entry points for A02/A08 so bundlers can resolve them without pulling in Node's `crypto` module (see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle))

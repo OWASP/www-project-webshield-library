@@ -177,10 +177,7 @@ npm run check    # lint + test (full quality gate)
 | Document | Purpose |
 |---|---|
 | [docs/api-reference.md](docs/api-reference.md) | Full API reference with copyable examples |
-| [docs/release-process.md](docs/release-process.md) | Step-by-step release runbook |
-| [docs/architecture.md](docs/architecture.md) | System architecture and module layout |
-| [docs/framework.md](docs/framework.md) | Framework guide and adoption patterns |
-| [docs/enhanced-documentation.md](docs/enhanced-documentation.md) | Enhanced capability overview |
+| [docs/architecture.md](docs/architecture.md) | Architecture, module layout, and adoption guide |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Common issues and fixes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
 | [SECURITY.md](SECURITY.md) | Vulnerability disclosure policy |

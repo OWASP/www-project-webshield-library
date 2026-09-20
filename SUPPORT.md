@@ -52,8 +52,7 @@ npm run check
 | Resource | Description |
 |---|---|
 | [docs/api-reference.md](docs/api-reference.md) | Full API reference with copyable examples |
-| [docs/framework.md](docs/framework.md) | Adoption patterns and bootstrap guide |
-| [docs/architecture.md](docs/architecture.md) | Module layout and design decisions |
+| [docs/architecture.md](docs/architecture.md) | Architecture, module layout, and adoption guide |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Common issues and resolutions |
 | [examples/](examples/) | Runnable apps: a Node secrets vault and a React Todo app, each covering every OWASP category (A01–A10) |
 

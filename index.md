@@ -29,8 +29,7 @@ This project now uses a tabbed layout to keep the homepage focused and make cont
 ### Project Links
 
 - [Repository README](README.md)
-- [Architecture Guide](docs/architecture.md)
-- [Framework Guide](docs/framework.md)
+- [Architecture & Adoption Guide](docs/architecture.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Examples](docs/README.md)
 

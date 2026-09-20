@@ -148,6 +148,5 @@ npm run build    # Build ESM + CJS outputs
 | Resource | Description |
 |---|---|
 | [docs/api-reference.md](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/api-reference.md) | Complete API with copyable examples |
-| [docs/framework.md](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/framework.md) | Adoption patterns and bootstrap guide |
-| [docs/architecture.md](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/architecture.md) | Module layout and design decisions |
+| [docs/architecture.md](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/architecture.md) | Architecture, module layout, and adoption guide |
 | [docs/troubleshooting.md](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/troubleshooting.md) | Common issues and resolutions |
