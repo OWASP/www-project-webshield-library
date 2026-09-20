@@ -2,10 +2,12 @@ import React from "react";
 import { HardeningReporter } from "../../../core/a05-security-misconfiguration/HardeningReporter.js";
 import { SecurityConfigManager } from "../../../core/a05-security-misconfiguration/SecurityConfigManager.js";
 
+const EMPTY_CONFIG = Object.freeze({});
+
 /**
  * Hook that evaluates configuration and returns findings report.
  */
-export function useHardeningReport(config = {}) {
+export function useHardeningReport(config = EMPTY_CONFIG) {
   return React.useMemo(() => {
     const manager = new SecurityConfigManager(config);
     return new HardeningReporter(manager).generate();

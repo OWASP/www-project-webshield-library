@@ -23,6 +23,13 @@ describe("React adapter A02-A10 hooks", () => {
     expect(derived.salt).toBeTruthy();
   });
 
+  test("A02 useCryptoManager retains stable instance across re-renders with default options", () => {
+    const { result, rerender } = renderHook(() => A02CryptoIntegrity.useCryptoManager());
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+
   test("A03 useInputSanitizer sanitizes malicious html", () => {
     const { result } = renderHook(() => A03InjectionDefense.useInputSanitizer("strict"));
     const cleaned = result.current.sanitizeHTML('<script>alert(1)</script><b>x</b>');
@@ -36,11 +43,25 @@ describe("React adapter A02-A10 hooks", () => {
     expect(result.current.validateTransition("draft", "approved").valid).toBe(true);
   });
 
+  test("A04 useThreatModelGuard retains stable instance across re-renders with default config", () => {
+    const { result, rerender } = renderHook(() => A04InsecureDesignGuard.useThreatModelGuard());
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+
   test("A05 useHardeningReport returns findings for unsafe config", () => {
     const { result } = renderHook(() =>
       A05SecurityMisconfiguration.useHardeningReport({ debug: true, cors: { origin: "*" } })
     );
     expect(result.current.length).toBeGreaterThan(0);
+  });
+
+  test("A05 useHardeningReport retains stable report across re-renders with default config", () => {
+    const { result, rerender } = renderHook(() => A05SecurityMisconfiguration.useHardeningReport());
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
   });
 
   test("A06 useDependencyRiskScanner runs scan", async () => {
