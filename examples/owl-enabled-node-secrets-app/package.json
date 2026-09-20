@@ -1,0 +1,13 @@
+{
+  "name": "owl-enabled-node-secrets-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@owasp-core/owl": "file:../.."
+  },
+  "scripts": {
+    "start": "node index.js",
+    "serve": "node server.js"
+  }
+}

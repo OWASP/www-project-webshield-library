@@ -166,4 +166,4 @@ export async function runSecurityChecks() {
 
 ## Runnable Example
 
-See [examples/core-node-demo/README.md](./core-node-demo/README.md) for a runnable version of this flow.
+See [examples/owl-enabled-node-secrets-app/README.md](../examples/owl-enabled-node-secrets-app/README.md) for a runnable version of this flow.

@@ -103,9 +103,10 @@ export function AppShell({ authManager, aclManager, rbacManager, children }) {
 
 ### Run the Examples
 
-**Core Node demo (no build required)**
+**Node secrets-vault app (every OWASP category, no build required)**
 ```bash
-node examples/core-node-demo/index.js
+cd examples/owl-enabled-node-secrets-app
+npm install && npm start
 ```
 
 **Full-featured React Todo app (every OWASP category, one product)**

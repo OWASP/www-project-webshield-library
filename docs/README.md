@@ -6,8 +6,8 @@ This folder contains practical integration examples and deployment recipes for O
 
 - [Core JS usage](./core-js-usage.md)
 - [React adapter usage](./react-adapter-usage.md)
-- [Core Node demo (runnable)](./core-node-demo/README.md)
-- [OWL Enabled React Todo App (runnable)](./owl-enabled-react-todo-app/README.md)
+- [OWL Enabled Node Secrets App (runnable)](../examples/owl-enabled-node-secrets-app/README.md)
+- [OWL Enabled React Todo App (runnable)](../examples/owl-enabled-react-todo-app/README.md)
 - [React app integration](./react-app-integration.md)
 - [Node API integration (Express-style)](./node-api-integration.md)
 - [Deployment recipes](./deployment-recipes.md)

@@ -155,13 +155,13 @@ export function App({ authManager, aclManager, rbacManager }) {
 
 | Example | Description |
 |---|---|
-| [Core JS usage](examples/core-js-usage.md) | Full composition guide for `@owasp-core/owl` |
-| [React adapter usage](examples/react-adapter-usage.md) | Provider + hook composition for `@owasp-core/owl-react` |
-| [Core Node demo ▶](examples/core-node-demo/README.md) | Runnable Node script — `node index.js` |
+| [Core JS usage](docs/core-js-usage.md) | Full composition guide for `@owasp-core/owl` |
+| [React adapter usage](docs/react-adapter-usage.md) | Provider + hook composition for `@owasp-core/owl-react` |
+| [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-core/owl` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
 | [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
-| [Node API integration](examples/node-api-integration.md) | Express-style middleware patterns |
-| [Deployment recipes](examples/deployment-recipes.md) | Production and CI deployment patterns |
-| [GitHub Actions gate](examples/github-actions-security-gate.md) | Security quality gate for CI/CD |
+| [Node API integration](docs/node-api-integration.md) | Express-style middleware patterns |
+| [Deployment recipes](docs/deployment-recipes.md) | Production and CI deployment patterns |
+| [GitHub Actions gate](docs/github-actions-security-gate.md) | Security quality gate for CI/CD |
 
 ## Scripts
 

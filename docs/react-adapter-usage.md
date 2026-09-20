@@ -178,4 +178,4 @@ export function ArticleWorkspace({ rawHtml }) {
 
 ## Runnable Example
 
-See [examples/owl-enabled-react-todo-app/README.md](./owl-enabled-react-todo-app/README.md) for a runnable version of this flow.
+See [examples/owl-enabled-react-todo-app/README.md](../examples/owl-enabled-react-todo-app/README.md) for a runnable version of this flow.

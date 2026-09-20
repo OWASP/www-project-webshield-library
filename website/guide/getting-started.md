@@ -76,5 +76,5 @@ The repository ships several runnable examples you can clone and run directly:
 
 | Example | Description |
 |---|---|
-| [Core Node demo](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/core-node-demo) | Plain Node script — `node index.js`, no build step |
+| [OWL Enabled Node Secrets App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app) | Team credential vault on plain `@owasp-core/owl`, covering every OWASP category (A01–A10) |
 | [OWL Enabled React Todo App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) | Full-featured Todo app on the React adapter, covering every OWASP category (A01–A10) in one product |
