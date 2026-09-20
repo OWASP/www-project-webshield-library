@@ -21,13 +21,18 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "browser": "./dist/index.browser.js",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./core/*": "./src/core/*",
+    "./core/*": {
+      "types": "./dist/core/*",
+      "default": "./src/core/*"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -43,13 +48,15 @@
     "provenance": true
   },
   "scripts": {
-    "build": "npm run build:esm && npm run build:cjs && npm run build:browser",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:types",
     "build:esm": "esbuild src/index.js --bundle --platform=node --format=esm --outfile=dist/index.js",
     "build:cjs": "esbuild src/index.js --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
     "build:browser": "esbuild src/index.browser.js --bundle --platform=browser --format=esm --outfile=dist/index.browser.js",
+    "build:types": "node scripts/build-types.mjs",
+    "typecheck": "tsc --project tsconfig.types.json --noEmit && tsc --project tsconfig.react.types.json --noEmit",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "lint": "eslint .",
-    "check": "npm run lint && npm run test",
+    "check": "npm run lint && npm run test && npm run typecheck",
     "prepublishOnly": "npm run check && npm run build && npm pack --dry-run"
   },
   "keywords": [
@@ -85,6 +92,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "typescript": "^5.9.3"
   }
 }
