@@ -1,5 +1,5 @@
 import React from "react";
-import { CryptoManager } from "@owasp-core/owl/core/a02-crypto-integrity/CryptoManager.browser.js";
+import { CryptoManager } from "@owasp-js/owl/core/a02-crypto-integrity/CryptoManager.browser.js";
 
 /**
  * Browser build of the A02 crypto adapter (see package.json's "browser" export

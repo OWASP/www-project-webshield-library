@@ -1,5 +1,5 @@
 import React from "react";
-import { CryptoManager } from "@owasp-core/owl/core/a02-crypto-integrity/CryptoManager.js";
+import { CryptoManager } from "@owasp-js/owl/core/a02-crypto-integrity/CryptoManager.js";
 
 /**
  * React hook wrapper around core CryptoManager.

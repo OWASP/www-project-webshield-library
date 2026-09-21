@@ -33,7 +33,7 @@ export class PBKDF2Adapter {
     throw new SecurityError(
       SecurityErrorCode.CRYPTO_ERROR,
       "PBKDF2Adapter requires Node's crypto module (pbkdf2Sync has no synchronous, " +
-        "browser-portable equivalent). Use @owasp-core/owl in a Node/SSR context, or " +
+        "browser-portable equivalent). Use @owasp-js/owl in a Node/SSR context, or " +
         "provide an Argon2Adapter with your own Web Crypto-based deriveFn instead."
     );
   }

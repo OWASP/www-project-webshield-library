@@ -13,7 +13,7 @@ import {
   SecurityConfigManager,
   HardeningReporter,
   SecurityLogger
-} from "@owasp-core/owl";
+} from "@owasp-js/owl";
 
 const validator = new InputValidator();
 const sanitizer = new InputSanitizer("strict");

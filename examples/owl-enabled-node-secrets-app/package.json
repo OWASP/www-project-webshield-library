@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@owasp-core/owl": "file:../.."
+    "@owasp-js/owl": "file:../.."
   },
   "scripts": {
     "start": "node index.js",

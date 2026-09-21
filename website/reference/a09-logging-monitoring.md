@@ -2,10 +2,10 @@
 
 `SecurityLogger` redacts sensitive fields (and JWT-shaped values, by pattern) before anything reaches a sink; `EventEmitter` is a small typed pub/sub used to wire security events across a codebase.
 
-## Core API (`@owasp-core/owl`)
+## Core API (`@owasp-js/owl`)
 
 ```js
-import { EventEmitter, SecurityLogger } from "@owasp-core/owl";
+import { EventEmitter, SecurityLogger } from "@owasp-js/owl";
 
 const events = new EventEmitter();
 const logger = new SecurityLogger({
@@ -33,7 +33,7 @@ unsubscribe();
 `redact()` detects cycles and enforces a maximum recursion depth, so logging an object with a circular reference can't cause a stack-overflow denial of service. See [CHANGELOG](/changelog) for the 1.0.3 fix.
 :::
 
-## React Adapter (`@owasp-core/owl-react`)
+## React Adapter (`@owasp-js/owl-react`)
 
 ```jsx
 import React from "react";
@@ -42,7 +42,7 @@ import {
   SecurityContext,
   SecurityProvider,
   useSecurityMonitoring
-} from "@owasp-core/owl-react";
+} from "@owasp-js/owl-react";
 
 function SecurityStatus() {
   const { logger, events } = useSecurityMonitoring();

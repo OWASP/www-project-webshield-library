@@ -4,23 +4,23 @@ OWL ships as two packages:
 
 | Package | Purpose |
 |---|---|
-| [`@owasp-core/owl`](https://www.npmjs.com/package/@owasp-core/owl) | Framework-agnostic core — every A01–A10 module, usable from plain Node.js or any framework. |
-| [`@owasp-core/owl-react`](https://www.npmjs.com/package/@owasp-core/owl-react) | React adapter — providers, hooks, and guard components built on top of the core. |
+| [`@owasp-js/owl`](https://www.npmjs.com/package/@owasp-js/owl) | Framework-agnostic core — every A01–A10 module, usable from plain Node.js or any framework. |
+| [`@owasp-js/owl-react`](https://www.npmjs.com/package/@owasp-js/owl-react) | React adapter — providers, hooks, and guard components built on top of the core. |
 
 ## Installation
 
 ::: code-group
 
 ```bash [npm]
-npm install @owasp-core/owl
+npm install @owasp-js/owl
 ```
 
 ```bash [pnpm]
-pnpm add @owasp-core/owl
+pnpm add @owasp-js/owl
 ```
 
 ```bash [yarn]
-yarn add @owasp-core/owl
+yarn add @owasp-js/owl
 ```
 
 :::
@@ -28,11 +28,11 @@ yarn add @owasp-core/owl
 If you're building a React app, also install the adapter:
 
 ```bash
-npm install @owasp-core/owl-react
+npm install @owasp-js/owl-react
 ```
 
 ::: warning Browser bundling
-`@owasp-core/owl`'s crypto and SSRF modules (`CryptoManager`, `SSRFGuard`, `SafeFetcher`) use Node's built-in `node:crypto` and `node:dns/promises`. Bundling them into a browser app with Vite/webpack requires polyfilling those built-ins, or avoiding those specific modules client-side. See the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle) for details.
+`@owasp-js/owl`'s crypto and SSRF modules (`CryptoManager`, `SSRFGuard`, `SafeFetcher`) use Node's built-in `node:crypto` and `node:dns/promises`. Bundling them into a browser app with Vite/webpack requires polyfilling those built-ins, or avoiding those specific modules client-side. See the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle) for details.
 :::
 
 ## Quick Start
@@ -46,7 +46,7 @@ import {
   RBACManager,
   ACLManager,
   PermissionChecker
-} from "@owasp-core/owl";
+} from "@owasp-js/owl";
 
 const tokenManager = new TokenManager();
 tokenManager.setTokens({ accessToken: "jwt", expiresAt: Date.now() + 3600000 });
@@ -76,5 +76,5 @@ The repository ships several runnable examples you can clone and run directly:
 
 | Example | Description |
 |---|---|
-| [OWL Enabled Node Secrets App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app) | Team credential vault on plain `@owasp-core/owl`, covering every OWASP category (A01–A10) |
+| [OWL Enabled Node Secrets App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app) | Team credential vault on plain `@owasp-js/owl`, covering every OWASP category (A01–A10) |
 | [OWL Enabled React Todo App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) | Full-featured Todo app on the React adapter, covering every OWASP category (A01–A10) in one product |

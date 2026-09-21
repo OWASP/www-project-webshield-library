@@ -2,10 +2,10 @@
 
 `ThreatModelGuard` enforces valid state transitions and abuse-case rules; `DesignChecklist` tracks whether required security controls have been acknowledged for a feature.
 
-## Core API (`@owasp-core/owl`)
+## Core API (`@owasp-js/owl`)
 
 ```js
-import { DesignChecklist, ThreatModelGuard } from "@owasp-core/owl";
+import { DesignChecklist, ThreatModelGuard } from "@owasp-js/owl";
 
 const guard = new ThreatModelGuard({
   transitions: { draft: ["review"], review: ["approved"] },
@@ -22,11 +22,11 @@ const checklist = new DesignChecklist(["2fa", "audit-log", "csrf"]);
 checklist.validate(["2fa", "audit-log"]);
 ```
 
-## React Adapter (`@owasp-core/owl-react`)
+## React Adapter (`@owasp-js/owl-react`)
 
 ```jsx
 import React from "react";
-import { useThreatModelGuard } from "@owasp-core/owl-react";
+import { useThreatModelGuard } from "@owasp-js/owl-react";
 
 export function WorkflowActions() {
   const guard = useThreatModelGuard({ transitions: { draft: ["review"], review: ["approved"] } });

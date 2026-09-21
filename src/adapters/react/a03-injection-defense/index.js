@@ -1,5 +1,5 @@
 import React from "react";
-import { InputSanitizer } from "@owasp-core/owl/core/a03-injection-defense/InputSanitizer.js";
+import { InputSanitizer } from "@owasp-js/owl/core/a03-injection-defense/InputSanitizer.js";
 
 /**
  * React hook wrapper around core InputSanitizer.

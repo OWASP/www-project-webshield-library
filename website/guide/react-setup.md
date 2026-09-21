@@ -3,10 +3,10 @@
 Install the adapter alongside the core package:
 
 ```bash
-npm install @owasp-core/owl @owasp-core/owl-react
+npm install @owasp-js/owl @owasp-js/owl-react
 ```
 
-The adapter mirrors the core module structure one-for-one: every OWASP category that has a manager or class in `@owasp-core/owl` has a matching provider and hook set in `@owasp-core/owl-react`.
+The adapter mirrors the core module structure one-for-one: every OWASP category that has a manager or class in `@owasp-js/owl` has a matching provider and hook set in `@owasp-js/owl-react`.
 
 ## Full provider composition
 
@@ -14,7 +14,7 @@ Most apps wire up several providers at once — `SecurityProvider` for logging/m
 
 ```jsx
 import React from "react";
-import { createOwlClient } from "@owasp-core/owl";
+import { createOwlClient } from "@owasp-js/owl";
 import {
   AuthGate,
   OwlProvider,
@@ -22,7 +22,7 @@ import {
   SecurityAlert,
   useSafeFetcher,
   useSecureHttpClient
-} from "@owasp-core/owl-react";
+} from "@owasp-js/owl-react";
 
 const owl = createOwlClient({
   roles: { editor: { permissions: ["read:articles", "update:articles"] } },

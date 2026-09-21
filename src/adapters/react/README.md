@@ -1,20 +1,20 @@
-# @owasp-core/owl-react
+# @owasp-js/owl-react
 
-React adapter for [OWL (OWASP Web Shield Library)](https://owasp.org/www-project-webshield-library/) — category-aligned providers, hooks, and guard components for [`@owasp-core/owl`](https://www.npmjs.com/package/@owasp-core/owl), covering every OWASP Top 10 category (A01–A10).
+React adapter for [OWL (OWASP Web Shield Library)](https://owasp.org/www-project-webshield-library/) — category-aligned providers, hooks, and guard components for [`@owasp-js/owl`](https://www.npmjs.com/package/@owasp-js/owl), covering every OWASP Top 10 category (A01–A10).
 
 ## Installation
 
 ```bash
-npm install @owasp-core/owl @owasp-core/owl-react
+npm install @owasp-js/owl @owasp-js/owl-react
 ```
 
-`@owasp-core/owl` is a peer dependency in spirit (declared as a regular dependency here so a bare `npm install @owasp-core/owl-react` works), and `react`/`react-dom` `>=18` are required peer dependencies.
+`@owasp-js/owl` is a peer dependency in spirit (declared as a regular dependency here so a bare `npm install @owasp-js/owl-react` works), and `react`/`react-dom` `>=18` are required peer dependencies.
 
 ## Quick start
 
 ```jsx
-import { createOwlClient } from "@owasp-core/owl";
-import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
+import { createOwlClient } from "@owasp-js/owl";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-js/owl-react";
 
 const owl = createOwlClient({
   roles: { viewer: { permissions: ["read:reports"] } }
@@ -50,9 +50,9 @@ export function App() {
 | A08 Data Integrity | `useSecureHttpClient`, `withSecurityHeaders` |
 | A09 Logging Monitoring | `SecurityProvider`, `useSecurityMonitoring`, `SecurityAlert` |
 | A10 SSRF Defense | `useSafeFetcher` |
-| *(cross-cutting)* | `OwlProvider` — composes the A01/A07/A09 providers above into one component; pair with `createOwlClient()` from `@owasp-core/owl` |
+| *(cross-cutting)* | `OwlProvider` — composes the A01/A07/A09 providers above into one component; pair with `createOwlClient()` from `@owasp-js/owl` |
 
-Each category is also available as a deep import (e.g. `@owasp-core/owl-react/a01-access-control/index.js`) if you only need one.
+Each category is also available as a deep import (e.g. `@owasp-js/owl-react/a01-access-control/index.js`) if you only need one.
 
 ## Documentation
 

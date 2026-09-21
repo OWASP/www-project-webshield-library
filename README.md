@@ -66,7 +66,7 @@ npm install
 ## Quick Start
 
 ```js
-import { createOwlClient, PermissionChecker } from "@owasp-core/owl";
+import { createOwlClient, PermissionChecker } from "@owasp-js/owl";
 
 const owl = createOwlClient({
   roles: { admin: { permissions: ["read:invoice", "update:invoice"] } },
@@ -102,7 +102,7 @@ console.log(permissions.check({ role: "admin", action: "read", resource: "invoic
 ## Core Usage
 
 ```js
-import { InputSanitizer, InputValidator } from "@owasp-core/owl";
+import { InputSanitizer, InputValidator } from "@owasp-js/owl";
 
 const sanitizer = new InputSanitizer("strict");
 const clean = sanitizer.sanitizeHTML('<img src=x onerror=alert(1)>safe');
@@ -117,8 +117,8 @@ const result = validator.validateSchema(
 ## React Adapter Usage
 
 ```js
-import { createOwlClient } from "@owasp-core/owl";
-import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
+import { createOwlClient } from "@owasp-js/owl";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-js/owl-react";
 
 const owl = createOwlClient({
   roles: { viewer: { permissions: ["read:reports"] } }
@@ -144,9 +144,9 @@ export function App() {
 
 | Example | Description |
 |---|---|
-| [Core JS usage](docs/core-js-usage.md) | Full composition guide for `@owasp-core/owl` |
-| [React adapter usage](docs/react-adapter-usage.md) | Provider + hook composition for `@owasp-core/owl-react` |
-| [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-core/owl` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
+| [Core JS usage](docs/core-js-usage.md) | Full composition guide for `@owasp-js/owl` |
+| [React adapter usage](docs/react-adapter-usage.md) | Provider + hook composition for `@owasp-js/owl-react` |
+| [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-js/owl` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
 | [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
 | [Node API integration](docs/node-api-integration.md) | Express-style middleware patterns |
 | [Deployment recipes](docs/deployment-recipes.md) | Production and CI deployment patterns |

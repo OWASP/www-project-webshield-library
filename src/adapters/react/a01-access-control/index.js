@@ -1,5 +1,5 @@
 import React from "react";
-import { PermissionChecker } from "@owasp-core/owl/core/a01-access-control/PermissionChecker.js";
+import { PermissionChecker } from "@owasp-js/owl/core/a01-access-control/PermissionChecker.js";
 import { useAuth } from "../a07-auth-session/index.js";
 
 export const ACLContext = React.createContext(null);

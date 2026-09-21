@@ -4,7 +4,7 @@
 
 Yes, including the package root now — with one deliberate, clearly-signposted exception (`CryptoManager`'s actual encryption/derivation methods).
 
-**Background:** `@owasp-core/owl`'s single entry point (`dist/index.js`) is one esbuild bundle containing every core module. Importing *anything* from it used to pull all of them in together, so a production browser bundler (Rollup, webpack) failed on **any** import from the package root — even an unrelated export like `SecretPolicy` — because two files had a top-level `import ... from "node:crypto"`: `CryptoManager`/`KDFAdapters` ([A02](/reference/a02-crypto-integrity)) and `CSRFTokenManager` ([A08](/reference/a08-data-integrity)). The same applied to `@owasp-core/owl-react`'s root, since it re-exports those categories too.
+**Background:** `@owasp-js/owl`'s single entry point (`dist/index.js`) is one esbuild bundle containing every core module. Importing *anything* from it used to pull all of them in together, so a production browser bundler (Rollup, webpack) failed on **any** import from the package root — even an unrelated export like `SecretPolicy` — because two files had a top-level `import ... from "node:crypto"`: `CryptoManager`/`KDFAdapters` ([A02](/reference/a02-crypto-integrity)) and `CSRFTokenManager` ([A08](/reference/a08-data-integrity)). The same applied to `@owasp-js/owl-react`'s root, since it re-exports those categories too.
 
 **`CSRFTokenManager` (A08) is fully fixed, everywhere** — rewritten to use the Web Crypto API (`globalThis.crypto.getRandomValues`) and a hand-written constant-time comparison instead of `node:crypto`'s `randomBytes`/`timingSafeEqual`. It has no Node-specific import left and works identically in Node 20+, every modern browser, and any other Web Crypto runtime. `useSecureHttpClient` benefits from this too — no swap needed for it at all.
 
@@ -12,15 +12,15 @@ Yes, including the package root now — with one deliberate, clearly-signposted 
 
 ```js
 // This now works in a browser build, package root included:
-import { SecretPolicy, CSRFTokenManager, CryptoManager } from "@owasp-core/owl";
+import { SecretPolicy, CSRFTokenManager, CryptoManager } from "@owasp-js/owl";
 
 new CryptoManager().encrypt(...); // throws a clear SecurityError in a browser build,
                                    // works for real in Node — same code, either environment
 ```
 
-If you'd rather avoid even constructing the stub, or want the smallest possible bundle, `@owasp-core/owl`'s `./core/*` subpath still lets you import individual source files directly (e.g. `@owasp-core/owl/core/a02-crypto-integrity/SecretPolicy.js`) without touching A02 at all.
+If you'd rather avoid even constructing the stub, or want the smallest possible bundle, `@owasp-js/owl`'s `./core/*` subpath still lets you import individual source files directly (e.g. `@owasp-js/owl/core/a02-crypto-integrity/SecretPolicy.js`) without touching A02 at all.
 
-This is verified against real published tarballs (not monorepo-relative paths) for **both** `@owasp-core/owl` and `@owasp-core/owl-react` — installed fresh, built with a real `vite build`, and executed in a real headless browser. See the [`owl-enabled-react-todo-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app).
+This is verified against real published tarballs (not monorepo-relative paths) for **both** `@owasp-js/owl` and `@owasp-js/owl-react` — installed fresh, built with a real `vite build`, and executed in a real headless browser. See the [`owl-enabled-react-todo-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app).
 
 `SSRFGuard`/`SafeFetcher` ([A10](/reference/a10-ssrf-defense)) were never actually affected despite also referencing `node:dns/promises`: that import is a *dynamic* `import()` gated behind a `typeof process !== "undefined" && process.versions?.node` check, so it's never evaluated in a browser — only a build-time warning, not a failure.
 
@@ -28,13 +28,13 @@ Node apps (see the [`owl-enabled-node-secrets-app` example](https://github.com/O
 
 A browser-safe `.` entry point (so the package root itself works without the `./core/*` subpath) is tracked as follow-up work — it would need either a breaking async `CryptoManager` API or a separate throwing-stub browser build.
 
-## Why is the package called `@owasp-core/owl` and not `@owl/core`?
+## Why is the package called `@owasp-js/owl` and not `@owl/core`?
 
-The library's own acronym has always been **OWL** (OWASP Web Shield Library) — that hasn't changed. The npm *scope* changed twice for availability reasons, not naming preference: `@owl/*` → `@owsl/*` → `@owl/*` → `@owasp-core/*`. The `owl` npm organization name was unavailable at publish time, so the package settled on `@owasp-core/owl` (core) and `@owasp-core/owl-react` (React adapter). See [CHANGELOG](/changelog) for the full history.
+The library's own acronym has always been **OWL** (OWASP Web Shield Library) — that hasn't changed. The npm *scope* changed twice for availability reasons, not naming preference: `@owl/*` → `@owsl/*` → `@owl/*` → `@owasp-core/*`. The `owl` npm organization name was unavailable at publish time, so the package settled on `@owasp-js/owl` (core) and `@owasp-js/owl-react` (React adapter). See [CHANGELOG](/changelog) for the full history.
 
 ## Does OWL require React?
 
-No. `@owasp-core/owl` is framework-agnostic and has zero required dependencies. `@owasp-core/owl-react` is a separate, optional package — install it only if you're building a React app. See [Getting Started](/guide/getting-started).
+No. `@owasp-js/owl` is framework-agnostic and has zero required dependencies. `@owasp-js/owl-react` is a separate, optional package — install it only if you're building a React app. See [Getting Started](/guide/getting-started).
 
 ## What Node.js version does OWL require?
 

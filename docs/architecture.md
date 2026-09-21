@@ -150,7 +150,7 @@ Benefits:
 
 ## Architecture Evolution Targets
 
-- Publishable per-category package model (@owasp-core/owl-a01-...)
+- Publishable per-category package model (@owasp-js/owl-a01-...)
 - Stronger DNS-backed SSRF validation mode
 - Additional adapter layers for Angular and Vue
-- ~~A browser-safe package root~~ — done: `CSRFTokenManager` (A08) is Web Crypto-based now, and both `@owasp-core/owl` and `@owasp-core/owl-react` ship a `"browser"`-conditioned build where `CryptoManager`/`KDFAdapters` (A02) are a same-shaped throwing stub instead of a build-breaking `node:crypto` import. A `./core/*` subpath also lets bundlers resolve individual files directly. Remaining follow-up: a genuinely async, Web-Crypto-backed `CryptoManager` for real browser-side encryption would need a breaking API change and a major version bump (see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle))
+- ~~A browser-safe package root~~ — done: `CSRFTokenManager` (A08) is Web Crypto-based now, and both `@owasp-js/owl` and `@owasp-js/owl-react` ship a `"browser"`-conditioned build where `CryptoManager`/`KDFAdapters` (A02) are a same-shaped throwing stub instead of a build-breaking `node:crypto` import. A `./core/*` subpath also lets bundlers resolve individual files directly. Remaining follow-up: a genuinely async, Web-Crypto-backed `CryptoManager` for real browser-side encryption would need a breaking API change and a major version bump (see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle))

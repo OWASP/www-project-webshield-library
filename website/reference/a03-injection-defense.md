@@ -2,14 +2,14 @@
 
 Allowlist-based HTML sanitization (`InputSanitizer`) plus schema, email, URL, and length validation (`InputValidator`).
 
-## Core API (`@owasp-core/owl`)
+## Core API (`@owasp-js/owl`)
 
 ```js
 import {
   INJECTION_DEFENSE_TYPES,
   InputSanitizer,
   InputValidator
-} from "@owasp-core/owl";
+} from "@owasp-js/owl";
 
 const sanitizer = new InputSanitizer("moderate");
 const cleanHtml = sanitizer.sanitizeHTML('<a href="javascript:alert(1)" onclick="alert(1)">safe</a>');
@@ -33,11 +33,11 @@ console.log(cleanHtml, validation.valid, INJECTION_DEFENSE_TYPES);
 `InputSanitizer` is tokenizer-based, not regex-based — it closes bypasses via unclosed `<script>` tags, `/`-separated event handlers (e.g. `<svg/onload=...>`), and obfuscated `javascript:` URLs. The `moderate` profile allows a fixed set of formatting tags; `strict` strips all markup.
 :::
 
-## React Adapter (`@owasp-core/owl-react`)
+## React Adapter (`@owasp-js/owl-react`)
 
 ```jsx
 import React from "react";
-import { SanitizedText, useInputSanitizer } from "@owasp-core/owl-react";
+import { SanitizedText, useInputSanitizer } from "@owasp-js/owl-react";
 
 export function CommentPreview({ rawHtml }) {
   const sanitizer = useInputSanitizer("moderate");

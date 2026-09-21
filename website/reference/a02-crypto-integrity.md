@@ -6,7 +6,7 @@ Key derivation, authenticated encryption, and secret-strength policy in one modu
 This module imports Node's built-in `node:crypto`. It runs fine in Node.js and in the React adapter's hooks when your app is server-rendered or Node-bundled, but bundling it directly into a browser build requires polyfilling `node:crypto` — see the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle).
 :::
 
-## Core API (`@owasp-core/owl`)
+## Core API (`@owasp-js/owl`)
 
 ```js
 import {
@@ -15,7 +15,7 @@ import {
   PBKDF2Adapter,
   SecretPolicy,
   generateSalt
-} from "@owasp-core/owl";
+} from "@owasp-js/owl";
 
 const salt = generateSalt();
 const crypto = new CryptoManager({
@@ -38,11 +38,11 @@ SecretPolicy.isRotationWindowExceeded(Date.now() - 86_500_000, 86_400_000);
 - `Argon2Adapter` takes a `deriveFn` you supply — OWL does not bundle an Argon2 implementation itself, keeping the core dependency-free.
 - `SecretPolicy.minimumEntropyBits()` / `isEntropySufficient()` estimate entropy from distinct-character count × bits-per-symbol implied by the character classes present, not raw length — see [CHANGELOG](/changelog) for the 1.0.3 fix to this estimate.
 
-## React Adapter (`@owasp-core/owl-react`)
+## React Adapter (`@owasp-js/owl-react`)
 
 ```jsx
 import React from "react";
-import { useCryptoManager } from "@owasp-core/owl-react";
+import { useCryptoManager } from "@owasp-js/owl-react";
 
 export function PasswordPreview() {
   const crypto = useCryptoManager();

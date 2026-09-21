@@ -1,5 +1,5 @@
 import React from "react";
-import { SecurityAlert, useDependencyRiskScanner, useHardeningReport, useSecurityMonitoring } from "@owasp-core/owl-react";
+import { SecurityAlert, useDependencyRiskScanner, useHardeningReport, useSecurityMonitoring } from "@owasp-js/owl-react";
 import { security, SecretPolicy } from "./security";
 
 const HARDENING_CONFIG = {
