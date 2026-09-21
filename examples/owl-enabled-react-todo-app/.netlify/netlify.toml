@@ -1,0 +1,28 @@
+plugins = []
+headers = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "G:\\Opensource Workspace\\www-project-webshield-library\\examples\\owl-enabled-react-todo-app\\dist"
+publishOrigin = "config"
+commandOrigin = "config"
+base = "G:\\Opensource Workspace\\www-project-webshield-library\\examples\\owl-enabled-react-todo-app"
+command = "cd ../.. && npm ci && npm run build && cd examples/owl-enabled-react-todo-app && npm run build"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
