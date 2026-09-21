@@ -14,25 +14,27 @@ Neither package has ever been published under this identity — this will be the
 
 ### npm — `@owasp-webshield/core` (core)
 
-Automated via [`.github/workflows/release.yml`](../.github/workflows/release.yml): push a `v*.*.*` tag matching the root `package.json` version, and the workflow validates the tag, runs `npm run check`, builds, and publishes with `--access public --provenance`.
+Automated via [`.github/workflows/release.yml`](../.github/workflows/release.yml): push a `core-v*.*.*` tag matching the root `package.json` version, and the workflow validates the tag, runs `npm run check`, builds, and publishes with `--access public --provenance`.
 
 ```bash
-npm version patch   # or minor/major — bumps package.json, commits, tags
+npm version patch --tag-version-prefix=core-v   # or minor/major — bumps package.json, commits, tags "core-vX.Y.Z"
 git push --follow-tags
 ```
 
-The workflow's own "Validate tag matches package version" step will hard-fail the release if the tag and `package.json` version ever drift — this has bitten the project before: an orphaned `v2.0.0` tag exists in the repo today (`git tag` lists it) whose commit's `package.json` never actually said `2.0.0`, so that push almost certainly failed this exact check and was never published (under the package's previous identity). Don't work around this gate; fix the version mismatch instead.
+`npm version` tags annotated by default (it passes `-m`), which is what lets `--follow-tags` pick it up automatically — no need to push the tag separately.
 
-For the very first release, `package.json` is already at `1.0.0`, so just tag and push:
+The workflow's own "Validate tag matches package version" step will hard-fail the release if the tag and `package.json` version ever drift — this has bitten the project before: an orphaned `v2.0.0` tag exists in the repo's history whose commit's `package.json` never actually said `2.0.0`, so that push almost certainly failed this exact check and was never published (under the package's previous identity — that and every other pre-rename tag have since been deleted to clear the tag namespace for this identity). Don't work around this gate; fix the version mismatch instead.
+
+For the very first release, `package.json` is already at `1.0.0`, so skip `npm version` and tag directly — use `-a` (annotated) so `--follow-tags` actually pushes it, since a plain `git tag <name>` makes a lightweight tag that `--follow-tags` silently ignores:
 
 ```bash
-git tag v1.0.0
+git tag -a core-v1.0.0 -m "core-v1.0.0"
 git push --follow-tags
 ```
 
 ### npm — `@owasp-webshield/react` (adapter)
 
-Same pattern, separate workflow ([`.github/workflows/release-react-adapter.yml`](../.github/workflows/release-react-adapter.yml)) and its own tag prefix, since the adapter versions independently from core. **Use `--no-git-tag-version`** — plain `npm version patch` would auto-tag with the default `v*.*.*` prefix, colliding with the root package's own tag namespace in the same repo:
+Same pattern, separate workflow ([`.github/workflows/release-react-adapter.yml`](../.github/workflows/release-react-adapter.yml)) and its own tag prefix, since the adapter versions independently from core. **Use `--no-git-tag-version`** — plain `npm version patch` here would tag with the `core-v*.*.*` prefix (set via `.npmrc`/CLI for the root package), not `react-v*.*.*`, so the adapter always tags manually:
 
 ```bash
 cd src/adapters/react
@@ -40,14 +42,14 @@ npm version patch --no-git-tag-version
 cd ../../..
 git add src/adapters/react/package.json
 git commit -m "Bump @owasp-webshield/react to $(node -p "require('./src/adapters/react/package.json').version")"
-git tag "owl-react-v$(node -p "require('./src/adapters/react/package.json').version")"
+git tag -a "react-v$(node -p "require('./src/adapters/react/package.json').version")" -m "react-v$(node -p "require('./src/adapters/react/package.json').version")"
 git push --follow-tags
 ```
 
-For the very first release, `src/adapters/react/package.json` is already at `1.0.0`, so skip the `npm version` step and just tag and push:
+For the very first release, `src/adapters/react/package.json` is already at `1.0.0`, so skip the `npm version` step and just tag and push (annotated, same reason as above):
 
 ```bash
-git tag owl-react-v1.0.0
+git tag -a react-v1.0.0 -m "react-v1.0.0"
 git push --follow-tags
 ```
 

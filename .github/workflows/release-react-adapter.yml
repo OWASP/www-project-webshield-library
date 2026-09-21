@@ -3,7 +3,7 @@ name: owl-react-release
 on:
   push:
     tags:
-      - "owl-react-v*.*.*"
+      - "react-v*.*.*"
 
 permissions:
   contents: write
@@ -31,10 +31,10 @@ jobs:
       - name: Validate tag matches package version
         shell: bash
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#owl-react-v}"
+          TAG_VERSION="${GITHUB_REF_NAME#react-v}"
           PKG_VERSION="$(node -p "require('./src/adapters/react/package.json').version")"
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "Tag version owl-react-v$TAG_VERSION does not match src/adapters/react/package.json version $PKG_VERSION"
+            echo "Tag version react-v$TAG_VERSION does not match src/adapters/react/package.json version $PKG_VERSION"
             exit 1
           fi
 

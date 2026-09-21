@@ -4,7 +4,7 @@ A single timeline of what's queued for the next release and what shipped histori
 cross-referencing `CHANGELOG.md` (the authoritative record of *what* changed) against
 git tags (*when* it was actually released).
 
-## Upcoming: v1.0.0 — first release as `@owasp-webshield/core` / `@owasp-webshield/react`
+## Upcoming: 1.0.0 — first release as `@owasp-webshield/core` / `@owasp-webshield/react`
 
 Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 
@@ -19,8 +19,8 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 
 **Ready to ship, pending the actual tag pushes:**
 
-- **Core:** `git tag v1.0.0 && git push --follow-tags` (root `package.json` is already at `1.0.0`).
-- **React adapter:** `git tag owl-react-v1.0.0 && git push --follow-tags` (first-ever publish for this package — infra ready: `.github/workflows/release-react-adapter.yml`, `publishConfig`/`license`/`repository` metadata, its own README). See `docs/deployment-recipes.md` → "Publishing OWL itself" for the full command sequence for each.
+- **Core:** `git tag -a core-v1.0.0 -m "core-v1.0.0" && git push --follow-tags` (root `package.json` is already at `1.0.0`).
+- **React adapter:** `git tag -a react-v1.0.0 -m "react-v1.0.0" && git push --follow-tags` (first-ever publish for this package — infra ready: `.github/workflows/release-react-adapter.yml`, `publishConfig`/`license`/`repository` metadata, its own README). Publish core first — the adapter's dependency range only resolves once core is live on the registry. See `docs/deployment-recipes.md` → "Publishing OWL itself" for the full command sequence for each, including the one-time `@owasp-webshield` npm org setup.
 
 ### Also ready, needs a manual one-time step
 

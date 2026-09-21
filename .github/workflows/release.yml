@@ -3,7 +3,7 @@ name: owl-release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "core-v*.*.*"
 
 permissions:
   contents: write
@@ -31,10 +31,10 @@ jobs:
       - name: Validate tag matches package version
         shell: bash
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${GITHUB_REF_NAME#core-v}"
           PKG_VERSION="$(node -p "require('./package.json').version")"
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "Tag version v$TAG_VERSION does not match package.json version $PKG_VERSION"
+            echo "Tag version core-v$TAG_VERSION does not match package.json version $PKG_VERSION"
             exit 1
           fi
 
