@@ -66,29 +66,21 @@ npm install
 ## Quick Start
 
 ```js
-import {
-  TokenManager,
-  AuthManager,
-  RBACManager,
-  ACLManager,
-  PermissionChecker
-} from "@owasp-core/owl";
+import { createOwlClient, PermissionChecker } from "@owasp-core/owl";
 
-const tokenManager = new TokenManager();
-tokenManager.setTokens({ accessToken: "jwt", expiresAt: Date.now() + 3600000 });
+const owl = createOwlClient({
+  roles: { admin: { permissions: ["read:invoice", "update:invoice"] } },
+  acl: [{ resource: "invoice", action: "delete", effect: "deny" }]
+});
 
-const authManager = new AuthManager({ tokenManager });
-authManager.setSession({ userId: "u1", roles: ["admin"] });
+owl.tokenManager.setTokens({ accessToken: "jwt", expiresAt: Date.now() + 3600000 });
+owl.authManager.setSession({ userId: "u1", roles: ["admin"] });
 
-const rbac = new RBACManager();
-rbac.defineRole("admin", ["read:invoice", "update:invoice"]);
-
-const acl = new ACLManager();
-acl.setPolicy("invoice", "delete", "deny");
-
-const permissions = new PermissionChecker({ rbacManager: rbac, aclManager: acl });
+const permissions = new PermissionChecker({ rbacManager: owl.rbacManager, aclManager: owl.aclManager });
 console.log(permissions.check({ role: "admin", action: "read", resource: "invoice" }));
 ```
+
+`createOwlClient` wires `TokenManager`, `AuthManager`, `RBACManager`, and `ACLManager` (plus a logger and event emitter) from one config object — construct them individually instead if you need finer control (see [docs/api-reference.md](docs/api-reference.md)).
 
 ## Module Map by OWASP Number
 
@@ -125,31 +117,28 @@ const result = validator.validateSchema(
 ## React Adapter Usage
 
 ```js
-import React from "react";
-import {
-  AuthProvider,
-  ACLProvider,
-  RBACProvider,
-  AuthGate,
-  PermissionGate
-} from "@owasp-core/owl-react";
+import { createOwlClient } from "@owasp-core/owl";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
 
-export function App({ authManager, aclManager, rbacManager }) {
+const owl = createOwlClient({
+  roles: { viewer: { permissions: ["read:reports"] } }
+});
+owl.authManager.setSession({ userId: "u1", roles: ["viewer"] });
+
+export function App() {
   return (
-    <AuthProvider authManager={authManager}>
-      <ACLProvider aclManager={aclManager}>
-        <RBACProvider rbacManager={rbacManager}>
-          <AuthGate fallback={<div>Please sign in</div>}>
-            <PermissionGate action="read" resource="reports" fallback={<div>Forbidden</div>}>
-              <div>Secure Content</div>
-            </PermissionGate>
-          </AuthGate>
-        </RBACProvider>
-      </ACLProvider>
-    </AuthProvider>
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Please sign in</div>}>
+        <PermissionGate action="read" resource="reports" fallback={<div>Forbidden</div>}>
+          <div>Secure Content</div>
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
   );
 }
 ```
+
+`OwlProvider` composes `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` for you — see [docs/react-adapter-usage.md](docs/react-adapter-usage.md) if you need to wire those managers individually instead.
 
 ## Integration Examples
 

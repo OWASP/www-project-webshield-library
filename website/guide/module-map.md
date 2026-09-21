@@ -19,4 +19,8 @@ Every OWL module maps directly to an OWASP Top 10 (2021) category, so the API yo
 `HTTPClient` (A08) natively accepts an `outboundRequestPolicy` from `SSRFGuard` (A10), composing transport hardening and SSRF defense in a single client. See the [A08 reference](/reference/a08-data-integrity) for the full example.
 :::
 
+::: tip Simplified setup for A01/A07/A09
+`createOwlClient()` builds the A01 (`RBACManager`/`ACLManager`), A07 (`TokenManager`/`AuthManager`), and A09 (`EventEmitter`/`SecurityLogger`) managers from one config object, and React's `OwlProvider` composes their four providers into one component. See [React Adapter Setup](/guide/react-setup) or the [A07 reference](/reference/a07-auth-session).
+:::
+
 Every class and typed constant also has a matching React hook or provider in `@owasp-core/owl-react`, documented alongside the core API on each category's reference page.

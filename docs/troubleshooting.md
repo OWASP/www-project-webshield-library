@@ -41,7 +41,7 @@ For authorization and policy logic, inspect reason metadata and error codes befo
 | A07 | isAuthenticated false after login | Missing/expired token | Set valid expiresAt and session |
 | A07 | refresh not triggered | Missing onRefresh or refreshToken | Configure refresh hook and token payload |
 | A01 | PermissionGate denies expected route | ACL deny overrides RBAC allow | Review ACL policy and PermissionChecker reason |
-| A01 | useACL/usePermission throws | Missing providers in tree | Ensure AuthProvider + ACLProvider + RBACProvider wrapping order |
+| A01 | useACL/usePermission throws | Missing providers in tree | Ensure AuthProvider + ACLProvider + RBACProvider are all mounted (or use `<OwlProvider>`, which mounts all four for you and can't be assembled incompletely) |
 | A08/A10 | HTTP request blocked | Outbound URL rejected by policy | Validate host/protocol against SSRFGuard settings |
 | A08 | CSRF validation errors | Rotated token mismatch | Re-attach latest CSRF header before retry |
 | A03 | Sanitizer strips too much | strict profile behavior | Use moderate profile for controlled rich text |

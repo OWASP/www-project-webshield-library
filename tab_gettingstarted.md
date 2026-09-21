@@ -78,26 +78,26 @@ console.log(checker.check({ role: "admin", action: "read", resource: "invoice" }
 ### React Adapter — Provider Composition
 
 ```jsx
-import { AuthProvider, ACLProvider, RBACProvider, AuthGate, PermissionGate }
-  from "@owasp-core/owl-react";
+import { createOwlClient } from "@owasp-core/owl";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
 
-export function AppShell({ authManager, aclManager, rbacManager, children }) {
+const owl = createOwlClient({ roles: { viewer: { permissions: ["read:reports"] } } });
+
+export function AppShell({ children }) {
   return (
-    <AuthProvider authManager={authManager}>
-      <ACLProvider aclManager={aclManager}>
-        <RBACProvider rbacManager={rbacManager}>
-          <AuthGate fallback={<div>Sign in required</div>}>
-            <PermissionGate action="read" resource="reports"
-              fallback={<div>Access denied</div>}>
-              {children}
-            </PermissionGate>
-          </AuthGate>
-        </RBACProvider>
-      </ACLProvider>
-    </AuthProvider>
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Sign in required</div>}>
+        <PermissionGate action="read" resource="reports"
+          fallback={<div>Access denied</div>}>
+          {children}
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
   );
 }
 ```
+
+`OwlProvider` composes `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` for you; wire them individually if you need managers built up separately.
 
 ---
 

@@ -13,31 +13,28 @@ npm install @owasp-core/owl @owasp-core/owl-react
 ## Quick start
 
 ```jsx
-import React from "react";
-import {
-  AuthProvider,
-  ACLProvider,
-  RBACProvider,
-  AuthGate,
-  PermissionGate
-} from "@owasp-core/owl-react";
+import { createOwlClient } from "@owasp-core/owl";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
 
-export function App({ authManager, aclManager, rbacManager }) {
+const owl = createOwlClient({
+  roles: { viewer: { permissions: ["read:reports"] } }
+});
+owl.authManager.setSession({ userId: "u1", roles: ["viewer"] });
+
+export function App() {
   return (
-    <AuthProvider authManager={authManager}>
-      <ACLProvider aclManager={aclManager}>
-        <RBACProvider rbacManager={rbacManager}>
-          <AuthGate fallback={<div>Please sign in</div>}>
-            <PermissionGate action="read" resource="reports" fallback={<div>Forbidden</div>}>
-              <div>Secure Content</div>
-            </PermissionGate>
-          </AuthGate>
-        </RBACProvider>
-      </ACLProvider>
-    </AuthProvider>
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Please sign in</div>}>
+        <PermissionGate action="read" resource="reports" fallback={<div>Forbidden</div>}>
+          <div>Secure Content</div>
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
   );
 }
 ```
+
+`OwlProvider` composes `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` into one component; wire them individually (each is exported too) if you need managers built up in different places.
 
 ## Module map
 
@@ -53,6 +50,7 @@ export function App({ authManager, aclManager, rbacManager }) {
 | A08 Data Integrity | `useSecureHttpClient`, `withSecurityHeaders` |
 | A09 Logging Monitoring | `SecurityProvider`, `useSecurityMonitoring`, `SecurityAlert` |
 | A10 SSRF Defense | `useSafeFetcher` |
+| *(cross-cutting)* | `OwlProvider` — composes the A01/A07/A09 providers above into one component; pair with `createOwlClient()` from `@owasp-core/owl` |
 
 Each category is also available as a deep import (e.g. `@owasp-core/owl-react/a01-access-control/index.js`) if you only need one.
 

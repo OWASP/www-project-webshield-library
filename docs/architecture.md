@@ -60,6 +60,7 @@ Examples:
 | A08 | CSRFTokenManager, HTTPClient | useSecureHttpClient, withSecurityHeaders |
 | A09 | EventEmitter, SecurityLogger | SecurityProvider, useSecurityMonitoring, SecurityAlert |
 | A10 | SSRFGuard, SafeFetcher | useSafeFetcher |
+| *(cross-cutting)* | `createOwlClient()` builds the A01/A07/A09 managers above from one config | `OwlProvider` composes the A01/A07/A09 providers above from that client |
 
 ## Request Lifecycle Example
 

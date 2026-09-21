@@ -10,48 +10,37 @@ The adapter mirrors the core module structure one-for-one: every OWASP category 
 
 ## Full provider composition
 
-Most apps wire up several providers at once — `SecurityProvider` for logging/monitoring, `AuthProvider` for session state, and `ACLProvider` / `RBACProvider` for access control — then gate content with `AuthGate` and `PermissionGate`:
+Most apps wire up several providers at once — `SecurityProvider` for logging/monitoring, `AuthProvider` for session state, and `ACLProvider` / `RBACProvider` for access control — then gate content with `AuthGate` and `PermissionGate`. `createOwlClient()` (core) builds and wires the managers from one config object, and `OwlProvider` (adapter) composes the four providers into one component:
 
 ```jsx
 import React from "react";
+import { createOwlClient } from "@owasp-core/owl";
 import {
-  TokenManager,
-  AuthManager,
-  ACLManager,
-  RBACManager
-} from "@owasp-core/owl";
-import {
-  ACLProvider,
   AuthGate,
-  AuthProvider,
+  OwlProvider,
   PermissionGate,
-  RBACProvider,
   SecurityAlert,
-  SecurityProvider,
   useSafeFetcher,
   useSecureHttpClient
 } from "@owasp-core/owl-react";
 
-const tokenManager = new TokenManager({
-  onRefresh: async (refreshToken) => ({
-    accessToken: `rotated-${refreshToken}`,
-    refreshToken,
-    expiresAt: Date.now() + 60_000
-  })
+const owl = createOwlClient({
+  roles: { editor: { permissions: ["read:articles", "update:articles"] } },
+  acl: [{ resource: "articles", action: "delete", effect: "deny" }],
+  token: {
+    onRefresh: async (refreshToken) => ({
+      accessToken: `rotated-${refreshToken}`,
+      refreshToken,
+      expiresAt: Date.now() + 60_000
+    })
+  }
 });
-
-const authManager = new AuthManager({ tokenManager });
-authManager.setSession({ userId: "u1", roles: ["editor"] });
-
-const aclManager = new ACLManager();
-const rbacManager = new RBACManager();
-rbacManager.defineRole("editor", ["read:articles", "update:articles"]);
-aclManager.setPolicy("articles", "delete", "deny");
+owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
 
 function SecureArticleList() {
   const client = useSecureHttpClient({
     baseUrl: "https://api.example.com",
-    tokenProvider: () => tokenManager.getAccessToken()
+    tokenProvider: () => owl.tokenManager.getAccessToken()
   });
   const safeFetcher = useSafeFetcher({ allowProtocols: ["https:"] });
 
@@ -66,29 +55,23 @@ function SecureArticleList() {
 
 export function App() {
   return (
-    <SecurityProvider logger={logger} events={events}>
-      <AuthProvider authManager={authManager}>
-        <ACLProvider aclManager={aclManager}>
-          <RBACProvider rbacManager={rbacManager}>
-            <AuthGate fallback={<SecurityAlert level="warn" message="Please sign in" />}>
-              <PermissionGate
-                action="read"
-                resource="articles"
-                fallback={<SecurityAlert level="error" message="Access denied" />}
-              >
-                <SecureArticleList />
-              </PermissionGate>
-            </AuthGate>
-          </RBACProvider>
-        </ACLProvider>
-      </AuthProvider>
-    </SecurityProvider>
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<SecurityAlert level="warn" message="Please sign in" />}>
+        <PermissionGate
+          action="read"
+          resource="articles"
+          fallback={<SecurityAlert level="error" message="Access denied" />}
+        >
+          <SecureArticleList />
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
   );
 }
 ```
 
 ::: tip
-Every provider is independent — you only need to mount the ones for the categories you're actually using. A component tree that only needs input sanitization, for example, needs no providers at all: `useInputSanitizer()` works standalone.
+Every provider is independent — you only need to mount the ones for the categories you're actually using. A component tree that only needs input sanitization, for example, needs no providers at all: `useInputSanitizer()` works standalone. If you'd rather wire `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` individually — useful if their managers come from different places — see [docs/react-adapter-usage.md](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/react-adapter-usage.md) for the manual version `OwlProvider` composes.
 :::
 
 ## Where to go next

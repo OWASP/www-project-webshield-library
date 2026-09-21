@@ -71,6 +71,7 @@ Other routes: `GET /secrets`, `POST /secrets/:name/rotate` (`{"newValue": "..."}
 
 ## Notes
 
+- The RBAC/ACL roles and the token/session managers are built with `createOwlClient()` (one config object) instead of constructing `RBACManager`/`ACLManager`/`TokenManager`/`AuthManager` separately — see `vault.js`. `EventEmitter`/`SecurityLogger` are still constructed directly since this vault wires the logger's sink into its own audit-trail event channel, which is more specific than `createOwlClient`'s config covers.
 - Vault state (secrets, roles, audit log) is in-memory only — restarting either entry point resets everything.
 - `SSRFGuard.assertResolvedSafe()` does a real DNS lookup for non-literal hostnames in Node (unlike the browser build, which skips DNS entirely). The demo's outbound webhook target, `hooks.example.com`, doesn't have a real DNS record, so `vault.js` injects a fixed `resolveHost` returning a deterministic, non-private address for it — keeping the whole example runnable offline instead of depending on real network access.
 - `npm audit --json` is run against the repo root (`../..`), since this example's own `package.json` has no dependencies to meaningfully audit. Point `NpmAuditProvider`'s `cwd` option at any project with a `package-lock.json` to scan it instead.

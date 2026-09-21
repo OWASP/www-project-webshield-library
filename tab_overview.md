@@ -76,6 +76,8 @@ OWL maps reusable security controls directly to OWASP categories so teams speak 
  └── A10  useSafeFetcher
 ```
 
+`OwlProvider` composes the A01/A07/A09 providers above into one component; pair it with `createOwlClient()` from `@owasp-core/owl` to build the managers it needs from one config object instead of wiring each by hand.
+
 ---
 
 ## Project Links

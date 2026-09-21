@@ -1,9 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  ACLManager,
-  AuthManager,
   ComponentPolicy,
+  createOwlClient,
   CryptoManager,
   CSRFTokenManager,
   DependencyRiskScanner,
@@ -14,15 +13,13 @@ import {
   InputSanitizer,
   InputValidator,
   PermissionChecker,
-  RBACManager,
   SafeFetcher,
   SecretPolicy,
   SecurityConfigManager,
   SecurityError,
   SecurityErrorCode,
   SecurityLogger,
-  SSRFGuard,
-  TokenManager
+  SSRFGuard
 } from "@owasp-core/owl";
 import { NpmAuditProvider } from "./npm-audit-provider.js";
 
@@ -33,21 +30,25 @@ const MASTER_PASSPHRASE = process.env.VAULT_MASTER_PASSPHRASE || "correct-horse-
 
 export class SecretsVault {
   constructor() {
-    // A01 — role -> permission set. Wildcard resources ("reveal:*") mean an
+    // A01/A07 — RBAC/ACL role wiring and the token/session managers, built from
+    // one config instead of constructing RBACManager/ACLManager/TokenManager/
+    // AuthManager separately. Wildcard resources ("reveal:*") mean a later
     // ACL entry scoped to one specific secret ("secret:AWS_KEY") can still
     // override the grant for just that secret, without needing a distinct
     // RBAC permission per secret name.
-    this.rbacManager = new RBACManager();
-    this.rbacManager.defineRole("viewer", ["read:*"]);
-    this.rbacManager.defineRole("contributor", ["write:*"], ["viewer"]);
-    this.rbacManager.defineRole("admin", ["reveal:*", "rotate:*", "delete:*", "manage:*"], ["contributor"]);
-
-    this.aclManager = new ACLManager();
+    const owl = createOwlClient({
+      roles: {
+        viewer: { permissions: ["read:*"] },
+        contributor: { permissions: ["write:*"], inherits: ["viewer"] },
+        admin: { permissions: ["reveal:*", "rotate:*", "delete:*", "manage:*"], inherits: ["contributor"] }
+      },
+      token: { now: () => Date.now() }
+    });
+    this.rbacManager = owl.rbacManager;
+    this.aclManager = owl.aclManager;
+    this.tokenManager = owl.tokenManager;
+    this.authManager = owl.authManager;
     this.permissionChecker = new PermissionChecker({ rbacManager: this.rbacManager, aclManager: this.aclManager });
-
-    // A07 — session/token lifecycle.
-    this.tokenManager = new TokenManager({ now: () => Date.now() });
-    this.authManager = new AuthManager({ tokenManager: this.tokenManager });
 
     // A02 — one master key for the vault, derived once from a passphrase.
     this.cryptoManager = new CryptoManager();

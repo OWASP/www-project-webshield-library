@@ -30,6 +30,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `CryptoManager` cannot perform real, synchronous encryption/key-derivation in a browser build — that's a hard constraint of the underlying primitives (Web Crypto is async-only everywhere), not something this fix works around. A genuinely functional browser-side `CryptoManager` would need an async API and a major version bump.
 
+### Added
+
+- **`createOwlClient(config)`** (`@owasp-core/owl`) — builds and wires `TokenManager`, `AuthManager`, `RBACManager`, `ACLManager`, `EventEmitter`, and `SecurityLogger` from one declarative config object (`{ roles, acl, token, auth, logger }`), instead of constructing and threading each manager by hand.
+- **`<OwlProvider>`** (`@owasp-core/owl-react`) — composes `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` into one component. Accepts a `client` prop (typically a `createOwlClient()` result) with individual manager props as overrides.
+- Both are additive, non-breaking convenience wrappers around the existing managers/providers. Validated against `owl-enabled-react-todo-app` (4 nested providers collapsed to 1; manual manager wiring collapsed to one `createOwlClient()` call, re-verified end to end in a real browser) and `owl-enabled-node-secrets-app` (RBAC/ACL/token/session wiring collapsed the same way in a Node app, proving `createOwlClient` isn't React-specific).
+
 ## [1.0.3] - 2026-09-19
 
 ### Security

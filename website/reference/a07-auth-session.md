@@ -85,6 +85,28 @@ export function AuthTree({ authManager, aclManager, rbacManager, logger, events 
 }
 ```
 
+Or use `OwlProvider` to compose those four providers in one component, paired with `createOwlClient()` to build the managers:
+
+```jsx
+import { createOwlClient } from "@owasp-core/owl";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
+
+const owl = createOwlClient({ roles: { editor: { permissions: ["read:reports"] } } });
+owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
+
+export function AuthTree({ children }) {
+  return (
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Please sign in</div>}>
+        <PermissionGate action="read" resource="reports" fallback={<div>Denied</div>}>
+          {children}
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
+  );
+}
+```
+
 - `useAuthToken()` updates when the underlying `TokenManager` emits `token:changed`, `token:cleared`, or `token:rotated`.
 - `AuthProvider` also schedules an auth-state recheck at `expiresAt`, so `AuthGate` falls back automatically once the token expires.
 
