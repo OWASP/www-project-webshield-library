@@ -50,7 +50,7 @@ import {
   PermissionChecker,
   RBACManager,
   TokenManager
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 // 1. Set up auth and token management
 const tokenManager = new TokenManager();
@@ -78,8 +78,8 @@ console.log(checker.check({ role: "admin", action: "read", resource: "invoice" }
 ### React Adapter — Provider Composition
 
 ```jsx
-import { createOwlClient } from "@owasp-js/owl";
-import { AuthGate, OwlProvider, PermissionGate } from "@owasp-js/owl-react";
+import { createOwlClient } from "@owasp-webshield/core";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-webshield/react";
 
 const owl = createOwlClient({ roles: { viewer: { permissions: ["read:reports"] } } });
 

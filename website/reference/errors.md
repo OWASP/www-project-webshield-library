@@ -3,7 +3,7 @@
 Every module throws the same typed error surface: `SecurityError`, carrying a stable `SecurityErrorCode`.
 
 ```js
-import { SecurityError, SecurityErrorCode } from "@owasp-js/owl";
+import { SecurityError, SecurityErrorCode } from "@owasp-webshield/core";
 
 throw new SecurityError(SecurityErrorCode.ACCESS_DENIED, "Report access denied", {
   action: "read",
@@ -14,7 +14,7 @@ throw new SecurityError(SecurityErrorCode.ACCESS_DENIED, "Report access denied",
 Catching by code lets you handle specific failure modes without string-matching messages:
 
 ```js
-import { SecurityError, SecurityErrorCode } from "@owasp-js/owl";
+import { SecurityError, SecurityErrorCode } from "@owasp-webshield/core";
 
 try {
   client.request("/profile", { method: "GET" });

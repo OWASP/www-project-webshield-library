@@ -1,5 +1,5 @@
-// Plain root-package imports — safe now that both @owasp-js/owl and
-// @owasp-js/owl-react ship a "browser" build where CryptoManager (the one
+// Plain root-package imports — safe now that both @owasp-webshield/core and
+// @owasp-webshield/react ship a "browser" build where CryptoManager (the one
 // piece with no browser equivalent) is a same-shaped throwing stub instead of
 // a build-breaking import. See the FAQ: "Can I use OWL in a browser bundle?"
 import {
@@ -11,7 +11,7 @@ import {
   InputValidator,
   SecretPolicy,
   SSRFGuard
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 const owl = createOwlClient({
   roles: {

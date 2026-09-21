@@ -1,6 +1,6 @@
 # OWL Enabled Node Secrets App
 
-A small team credential vault — built directly on `@owasp-js/owl`, no framework —
+A small team credential vault — built directly on `@owasp-webshield/core`, no framework —
 showing every OWASP Top 10 category (A01–A10) doing real work. This example replaces
 `core-node-demo`.
 

@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@owasp-js/owl": "file:../..",
-    "@owasp-js/owl-react": "file:../../src/adapters/react",
+    "@owasp-webshield/core": "file:../..",
+    "@owasp-webshield/react": "file:../../src/adapters/react",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

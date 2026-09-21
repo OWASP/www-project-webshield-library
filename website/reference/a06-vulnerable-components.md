@@ -2,10 +2,10 @@
 
 `DependencyRiskScanner` runs an async `scan()` you supply (e.g. wrapping `npm audit` or a vulnerability feed) and gates on severity; `ComponentPolicy` enforces allow/deny lists and minimum versions.
 
-## Core API (`@owasp-js/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
-import { ComponentPolicy, DependencyRiskScanner } from "@owasp-js/owl";
+import { ComponentPolicy, DependencyRiskScanner } from "@owasp-webshield/core";
 
 const scanner = new DependencyRiskScanner({
   scan: async () => [
@@ -26,11 +26,11 @@ policy.evaluate({ name: "react", version: "18.3.1" });
 console.log(results, gate.pass);
 ```
 
-## React Adapter (`@owasp-js/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 ```jsx
 import React from "react";
-import { useDependencyRiskScanner } from "@owasp-js/owl-react";
+import { useDependencyRiskScanner } from "@owasp-webshield/react";
 
 export function DependencyPanel({ provider }) {
   const { loading, results, error, runScan } = useDependencyRiskScanner(provider);

@@ -7,7 +7,7 @@ import { SecurityLogger } from "./a09-logging-monitoring/SecurityLogger.js";
 
 /**
  * Builds and wires the manager set that `<OwlProvider>` (from
- * `@owasp-js/owl-react`) needs — `TokenManager`, `AuthManager`,
+ * `@owasp-webshield/react`) needs — `TokenManager`, `AuthManager`,
  * `RBACManager`, `ACLManager`, `EventEmitter`, and `SecurityLogger` — from one
  * declarative config object, instead of constructing and threading each one
  * by hand. Every returned manager is the same real class you'd get by

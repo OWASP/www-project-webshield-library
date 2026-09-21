@@ -1,6 +1,6 @@
 # OWL Enabled React Todo App
 
-A single, full-featured Todo product built on `@owasp-js/owl-react`, showing every
+A single, full-featured Todo product built on `@owasp-webshield/react`, showing every
 OWASP Top 10 category (A01–A10) doing real work inside one realistic app instead of
 across ten disconnected tutorial pages. This example replaces the previous
 `react-adapter-demo` and `owl-enabled-app` examples.
@@ -24,7 +24,7 @@ alongside the docs site (`netlify.toml` at the repo root), pointed at the same G
 
 1. Go to [netlify.com](https://www.netlify.com) → **Add new site → Import an existing project** → choose this repo (`OWASP/www-project-webshield-library`).
 2. Set **Base directory** to `examples/owl-enabled-react-todo-app`. Netlify will then read *this* folder's `netlify.toml` instead of the repo root's — build command and publish directory are already set (`npm run build`, `dist`), no manual entry needed.
-3. Click **Deploy site**. The build also compiles the root `@owasp-js/owl`/`@owasp-js/owl-react` packages first (see the `command` in `netlify.toml`), since this app depends on their `dist/` output, which isn't committed to git.
+3. Click **Deploy site**. The build also compiles the root `@owasp-webshield/core`/`@owasp-webshield/react` packages first (see the `command` in `netlify.toml`), since this app depends on their `dist/` output, which isn't committed to git.
 4. Once live, add a "Try it live" badge to the main repo README pointing at the deploy URL.
 
 No environment variables are required — every provider (HTTP, dependency scan) is mocked deterministically. See `docs/docs-site-deployment.md` for the equivalent walkthrough for the docs site, including the same base-directory gotcha (`publish` resolves relative to `base`, not the repo root).
@@ -49,7 +49,7 @@ The **Security Dashboard** tab is gated by `PermissionGate action="manage" resou
 ## Notes
 
 - **Uses `createOwlClient()` + `<OwlProvider>`** for the RBAC/ACL/Auth/logging setup (`security.js` and `App.jsx`) instead of constructing `TokenManager`/`AuthManager`/`RBACManager`/`ACLManager`/`EventEmitter`/`SecurityLogger` by hand and nesting four separate providers. `CSRFTokenManager`/`HTTPClient`/`SSRFGuard` are still constructed directly (their config is too app-specific to generalize). See `docs/react-adapter-usage.md`'s "Quick start" section.
-- **All imports use the package root** (`@owasp-js/owl`, `@owasp-js/owl-react`) — see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for why that's now safe in a browser build.
+- **All imports use the package root** (`@owasp-webshield/core`, `@owasp-webshield/react`) — see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for why that's now safe in a browser build.
 - **`CSRFTokenManager` (A08) is the real class here, not a mock** — it's been rewritten upstream to use the Web Crypto API (`globalThis.crypto.getRandomValues`) and a constant-time comparison instead of `node:crypto`, so it has no Node-specific dependency left and works identically in this browser app.
 - `CryptoManager` (A02) isn't used by this app: AES-GCM/PBKDF2 have no synchronous browser-portable equivalent, so it remains genuinely Node-only for real encryption — the package's browser build provides a same-shaped stub that throws clearly if called, rather than crashing the build.
 - `npm run build` (production) works here — verified with a real `vite build`.

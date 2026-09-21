@@ -6,10 +6,10 @@
 This module imports `node:dns/promises` to resolve hostnames for DNS-rebinding protection. Bundling it directly into a browser build requires polyfilling Node built-ins — see the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle).
 :::
 
-## Core API (`@owasp-js/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
-import { SSRFGuard, SafeFetcher } from "@owasp-js/owl";
+import { SSRFGuard, SafeFetcher } from "@owasp-webshield/core";
 
 const guard = new SSRFGuard({ allowProtocols: ["https:"], maxRedirectHops: 2 });
 guard.validateUrl("https://api.example.com/users");
@@ -26,11 +26,11 @@ await safeFetcher.fetch("https://api.example.com/users", { method: "GET" });
 - `SafeFetcher` follows redirects manually and re-validates every hop, including IPv4-mapped/expanded IPv6 loopback and `0.0.0.0` literals.
 - Hostnames are resolved and every returned address is validated via `assertResolvedSafe()` (configurable through the `resolveHost` option), closing DNS-rebinding gaps. See [CHANGELOG](/changelog) for the 1.0.3 fix.
 
-## React Adapter (`@owasp-js/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 ```jsx
 import React from "react";
-import { useSafeFetcher } from "@owasp-js/owl-react";
+import { useSafeFetcher } from "@owasp-webshield/react";
 
 export function RemoteConfigLoader() {
   const safeFetcher = useSafeFetcher({ allowProtocols: ["https:"] }, fetch);

@@ -1,5 +1,5 @@
 import React from "react";
-import { AuthGate, OwlProvider, PermissionGate, useAuth } from "@owasp-js/owl-react";
+import { AuthGate, OwlProvider, PermissionGate, useAuth } from "@owasp-webshield/react";
 import { security } from "./security";
 import LoginPanel from "./LoginPanel";
 import TodoWorkspace from "./TodoWorkspace";

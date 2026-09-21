@@ -63,7 +63,7 @@ OWL maps reusable security controls directly to OWASP categories so teams speak 
 ## React Adapter Highlights
 
 ```
-@owasp-js/owl-react
+@owasp-webshield/react
  ├── A01  ACLProvider, RBACProvider, useACL, usePermission, PermissionGate
  ├── A02  useCryptoManager
  ├── A03  useInputSanitizer, SanitizedText
@@ -76,7 +76,7 @@ OWL maps reusable security controls directly to OWASP categories so teams speak 
  └── A10  useSafeFetcher
 ```
 
-`OwlProvider` composes the A01/A07/A09 providers above into one component; pair it with `createOwlClient()` from `@owasp-js/owl` to build the managers it needs from one config object instead of wiring each by hand.
+`OwlProvider` composes the A01/A07/A09 providers above into one component; pair it with `createOwlClient()` from `@owasp-webshield/core` to build the managers it needs from one config object instead of wiring each by hand.
 
 ---
 

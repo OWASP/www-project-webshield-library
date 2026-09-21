@@ -4,7 +4,7 @@ render_with_liquid: false
 
 # OWASP Web Shield Library API Reference
 
-This page documents the public runtime API exported by `@owasp-js/owl` and `@owasp-js/owl-react`.
+This page documents the public runtime API exported by `@owasp-webshield/core` and `@owasp-webshield/react`.
 
 ## End-to-End Composition
 
@@ -18,7 +18,7 @@ import {
   RBACManager,
   SSRFGuard,
   TokenManager
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 import {
   ACLProvider,
   AuthGate,
@@ -29,7 +29,7 @@ import {
   SecurityProvider,
   useSafeFetcher,
   useSecureHttpClient
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 
 const tokenManager = new TokenManager({
   onRefresh: async (refreshToken) => ({
@@ -96,7 +96,7 @@ import {
   ACCESS_CONTROL_TYPES,
   PermissionChecker,
   RBACManager
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 const rbac = new RBACManager();
 rbac.defineRole("viewer", ["read:reports"]);
@@ -128,7 +128,7 @@ import {
   PBKDF2Adapter,
   SecretPolicy,
   generateSalt
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 const salt = generateSalt();
 const crypto = new CryptoManager({
@@ -155,7 +155,7 @@ import {
   INJECTION_DEFENSE_TYPES,
   InputSanitizer,
   InputValidator
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 const sanitizer = new InputSanitizer("moderate");
 const cleanHtml = sanitizer.sanitizeHTML('<a href="javascript:alert(1)" onclick="alert(1)">safe</a>');
@@ -178,7 +178,7 @@ console.log(cleanHtml, validation.valid, INJECTION_DEFENSE_TYPES);
 ### A04 Insecure Design Guard
 
 ```js
-import { DesignChecklist, ThreatModelGuard } from "@owasp-js/owl";
+import { DesignChecklist, ThreatModelGuard } from "@owasp-webshield/core";
 
 const guard = new ThreatModelGuard({
   transitions: { draft: ["review"], review: ["approved"] },
@@ -198,7 +198,7 @@ checklist.validate(["2fa", "audit-log"]);
 ### A05 Security Misconfiguration
 
 ```js
-import { HardeningReporter, SecurityConfigManager } from "@owasp-js/owl";
+import { HardeningReporter, SecurityConfigManager } from "@owasp-webshield/core";
 
 const configManager = new SecurityConfigManager({
   debug: true,
@@ -216,7 +216,7 @@ console.log(findings, report);
 ### A06 Vulnerable Components
 
 ```js
-import { ComponentPolicy, DependencyRiskScanner } from "@owasp-js/owl";
+import { ComponentPolicy, DependencyRiskScanner } from "@owasp-webshield/core";
 
 const scanner = new DependencyRiskScanner({
   scan: async () => [
@@ -240,7 +240,7 @@ console.log(results, gate.pass);
 ### A07 Auth Session
 
 ```js
-import { AuthManager, AUTH_TYPES, TokenManager } from "@owasp-js/owl";
+import { AuthManager, AUTH_TYPES, TokenManager } from "@owasp-webshield/core";
 
 const tokenManager = new TokenManager({
   onRefresh: async (refreshToken, currentAccess) => ({
@@ -269,7 +269,7 @@ console.log(AUTH_TYPES);
 ### A08 Data Integrity
 
 ```js
-import { CSRFTokenManager, DATA_INTEGRITY_TYPES, HTTPClient, SSRFGuard } from "@owasp-js/owl";
+import { CSRFTokenManager, DATA_INTEGRITY_TYPES, HTTPClient, SSRFGuard } from "@owasp-webshield/core";
 
 const csrf = new CSRFTokenManager();
 csrf.rotateToken();
@@ -297,7 +297,7 @@ console.log(response.ok, response.data, DATA_INTEGRITY_TYPES);
 ### A09 Logging Monitoring
 
 ```js
-import { EventEmitter, SecurityLogger } from "@owasp-js/owl";
+import { EventEmitter, SecurityLogger } from "@owasp-webshield/core";
 
 const events = new EventEmitter();
 const logger = new SecurityLogger({
@@ -324,7 +324,7 @@ unsubscribe();
 ### A10 SSRF Defense
 
 ```js
-import { SSRFGuard, SafeFetcher } from "@owasp-js/owl";
+import { SSRFGuard, SafeFetcher } from "@owasp-webshield/core";
 
 const guard = new SSRFGuard({ allowProtocols: ["https:"], maxRedirectHops: 2 });
 guard.validateUrl("https://api.example.com/users");
@@ -343,7 +343,7 @@ await safeFetcher.fetch("https://api.example.com/users", { method: "GET" });
 Builds and wires `TokenManager`, `AuthManager`, `RBACManager`, `ACLManager`, `EventEmitter`, and `SecurityLogger` from one declarative config, instead of constructing and threading each manager by hand. Pairs with `OwlProvider` in the React adapter.
 
 ```js
-import { createOwlClient } from "@owasp-js/owl";
+import { createOwlClient } from "@owasp-webshield/core";
 
 const owl = createOwlClient({
   roles: {
@@ -364,7 +364,7 @@ Every returned manager is the same real class you'd get by constructing it direc
 ### Typed Errors
 
 ```js
-import { SecurityError, SecurityErrorCode } from "@owasp-js/owl";
+import { SecurityError, SecurityErrorCode } from "@owasp-webshield/core";
 
 throw new SecurityError(SecurityErrorCode.ACCESS_DENIED, "Report access denied", {
   action: "read",
@@ -388,7 +388,7 @@ import {
   SecurityProvider,
   useAuth,
   useAuthToken
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 
 function SessionSummary() {
   const { session, isAuthenticated } = useAuth();
@@ -434,7 +434,7 @@ export function AuthTree({ authManager, aclManager, rbacManager, logger, events 
 `OwlProvider` composes the four providers above into one component — equivalent to the nested tree in `AuthTree` above, just less of it:
 
 ```jsx
-import { AuthGate, OwlProvider, PermissionGate } from "@owasp-js/owl-react";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-webshield/react";
 import { owl } from "./security.js"; // owl = createOwlClient({ ... })
 
 export function AuthTree({ children }) {
@@ -464,7 +464,7 @@ import {
   RBACProvider,
   useACL,
   usePermission
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 
 function DeleteButton() {
   const aclManager = useACL();
@@ -496,7 +496,7 @@ export function AccessControlExample({ aclManager, rbacManager }) {
 
 ```jsx
 import React from "react";
-import { useCryptoManager } from "@owasp-js/owl-react";
+import { useCryptoManager } from "@owasp-webshield/react";
 
 export function PasswordPreview() {
   const crypto = useCryptoManager();
@@ -510,13 +510,13 @@ export function PasswordPreview() {
 }
 ```
 
-> **Browser bundle note:** `useSecureHttpClient` wraps `CSRFTokenManager`, which now uses the Web Crypto API and works fine in a browser build. `useCryptoManager` wraps `CryptoManager`, which is still genuinely Node-only for real encryption (no synchronous browser-portable AES-GCM/PBKDF2 exists) — but both packages now ship a `"browser"`-conditioned build where it's a same-shaped stub instead of a build-breaking import, so `import { useCryptoManager } from "@owasp-js/owl-react"` builds fine in a browser bundle; only calling `.encrypt()`/`.decrypt()`/`.deriveKey()` there throws. See the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for the full explanation.
+> **Browser bundle note:** `useSecureHttpClient` wraps `CSRFTokenManager`, which now uses the Web Crypto API and works fine in a browser build. `useCryptoManager` wraps `CryptoManager`, which is still genuinely Node-only for real encryption (no synchronous browser-portable AES-GCM/PBKDF2 exists) — but both packages now ship a `"browser"`-conditioned build where it's a same-shaped stub instead of a build-breaking import, so `import { useCryptoManager } from "@owasp-webshield/react"` builds fine in a browser bundle; only calling `.encrypt()`/`.decrypt()`/`.deriveKey()` there throws. See the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for the full explanation.
 
 ### A03 Injection Defense Adapter
 
 ```jsx
 import React from "react";
-import { SanitizedText, useInputSanitizer } from "@owasp-js/owl-react";
+import { SanitizedText, useInputSanitizer } from "@owasp-webshield/react";
 
 export function CommentPreview({ rawHtml }) {
   const sanitizer = useInputSanitizer("moderate");
@@ -535,7 +535,7 @@ export function CommentPreview({ rawHtml }) {
 
 ```jsx
 import React from "react";
-import { useThreatModelGuard } from "@owasp-js/owl-react";
+import { useThreatModelGuard } from "@owasp-webshield/react";
 
 export function WorkflowActions() {
   const guard = useThreatModelGuard({ transitions: { draft: ["review"], review: ["approved"] } });
@@ -549,7 +549,7 @@ export function WorkflowActions() {
 
 ```jsx
 import React from "react";
-import { useHardeningReport } from "@owasp-js/owl-react";
+import { useHardeningReport } from "@owasp-webshield/react";
 
 export function ConfigDashboard({ config }) {
   const findings = useHardeningReport(config);
@@ -568,7 +568,7 @@ export function ConfigDashboard({ config }) {
 
 ```jsx
 import React from "react";
-import { useDependencyRiskScanner } from "@owasp-js/owl-react";
+import { useDependencyRiskScanner } from "@owasp-webshield/react";
 
 export function DependencyPanel({ provider }) {
   const { loading, results, error, runScan } = useDependencyRiskScanner(provider);
@@ -590,7 +590,7 @@ export function DependencyPanel({ provider }) {
 
 ```jsx
 import React from "react";
-import { useSecureHttpClient, withSecurityHeaders } from "@owasp-js/owl-react";
+import { useSecureHttpClient, withSecurityHeaders } from "@owasp-webshield/react";
 
 export function ProfileLoader({ tokenManager }) {
   const client = useSecureHttpClient({
@@ -626,7 +626,7 @@ import {
   SecurityContext,
   SecurityProvider,
   useSecurityMonitoring
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 
 function SecurityStatus() {
   const { logger, events } = useSecurityMonitoring();
@@ -660,7 +660,7 @@ export function MonitoringExample({ logger, events }) {
 
 ```jsx
 import React from "react";
-import { useSafeFetcher } from "@owasp-js/owl-react";
+import { useSafeFetcher } from "@owasp-webshield/react";
 
 export function RemoteConfigLoader() {
   const safeFetcher = useSafeFetcher({ allowProtocols: ["https:"] }, fetch);

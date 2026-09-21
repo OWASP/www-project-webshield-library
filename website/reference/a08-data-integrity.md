@@ -2,10 +2,10 @@
 
 `CSRFTokenManager` issues and validates anti-CSRF tokens; `HTTPClient` wraps `fetch` with CSRF attachment, an async `tokenProvider`, interceptors, and origin-aware credential handling.
 
-## Core API (`@owasp-js/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
-import { CSRFTokenManager, DATA_INTEGRITY_TYPES, HTTPClient, SSRFGuard } from "@owasp-js/owl";
+import { CSRFTokenManager, DATA_INTEGRITY_TYPES, HTTPClient, SSRFGuard } from "@owasp-webshield/core";
 
 const csrf = new CSRFTokenManager();
 csrf.rotateToken();
@@ -32,11 +32,11 @@ console.log(response.ok, response.data, DATA_INTEGRITY_TYPES);
 - `Authorization` / `X-CSRF-Token` headers are only attached to requests whose target matches `baseUrl`'s origin, or an origin explicitly listed in `allowedOrigins` — otherwise a `CREDENTIAL_LEAK_BLOCKED` `SecurityError` is thrown. This closes a cross-origin credential leak; see [CHANGELOG](/changelog) for the 1.0.3 fix.
 - Passing an `outboundRequestPolicy` (typically a [`SSRFGuard`](/reference/a10-ssrf-defense)) composes transport hardening with SSRF defense in one client.
 
-## React Adapter (`@owasp-js/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 ```jsx
 import React from "react";
-import { useSecureHttpClient, withSecurityHeaders } from "@owasp-js/owl-react";
+import { useSecureHttpClient, withSecurityHeaders } from "@owasp-webshield/react";
 
 export function ProfileLoader({ tokenManager }) {
   const client = useSecureHttpClient({

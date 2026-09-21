@@ -2,7 +2,7 @@
 
 ## Goal
 
-Show how to wire `@owasp-js/owl-react` providers, hooks, and guard components around real `@owasp-js/owl` managers.
+Show how to wire `@owasp-webshield/react` providers, hooks, and guard components around real `@owasp-webshield/core` managers.
 
 ## Quick start: `createOwlClient` + `OwlProvider`
 
@@ -10,7 +10,7 @@ For the common case — one `AuthManager`/`RBACManager`/`ACLManager`/logger/even
 
 ```js
 // security.js
-import { createOwlClient } from "@owasp-js/owl";
+import { createOwlClient } from "@owasp-webshield/core";
 
 export const owl = createOwlClient({
   roles: {
@@ -25,7 +25,7 @@ owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
 
 ```jsx
 import React from "react";
-import { AuthGate, OwlProvider, PermissionGate, SecurityAlert } from "@owasp-js/owl-react";
+import { AuthGate, OwlProvider, PermissionGate, SecurityAlert } from "@owasp-webshield/react";
 import { owl } from "./security.js";
 
 export function AppProviders({ children }) {
@@ -62,7 +62,7 @@ import {
   RBACManager,
   SecurityLogger,
   TokenManager
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 export const tokenManager = new TokenManager({
   onRefresh: async (refreshToken) => ({
@@ -103,7 +103,7 @@ import {
   RBACProvider,
   SecurityAlert,
   SecurityProvider
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 import {
   aclManager,
   authManager,
@@ -152,7 +152,7 @@ import {
   useSecurityMonitoring,
   useThreatModelGuard,
   withSecurityHeaders
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 import { tokenManager } from "./security-bootstrap.js";
 
 export function ArticleWorkspace({ rawHtml }) {

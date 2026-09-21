@@ -2,10 +2,10 @@
 
 `TokenManager` handles token storage, expiry scheduling, and refresh; `AuthManager` layers session state (user, roles, metadata) on top of it.
 
-## Core API (`@owasp-js/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
-import { AuthManager, AUTH_TYPES, TokenManager } from "@owasp-js/owl";
+import { AuthManager, AUTH_TYPES, TokenManager } from "@owasp-webshield/core";
 
 const tokenManager = new TokenManager({
   onRefresh: async (refreshToken, currentAccess) => ({
@@ -31,7 +31,7 @@ authManager.clearSession();
 console.log(AUTH_TYPES);
 ```
 
-## React Adapter (`@owasp-js/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 This is usually the first provider tree an app wires up, since most other guards (`PermissionGate`, `SecurityAlert`) render relative to auth state:
 
@@ -47,7 +47,7 @@ import {
   SecurityProvider,
   useAuth,
   useAuthToken
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 
 function SessionSummary() {
   const { session, isAuthenticated } = useAuth();
@@ -88,8 +88,8 @@ export function AuthTree({ authManager, aclManager, rbacManager, logger, events 
 Or use `OwlProvider` to compose those four providers in one component, paired with `createOwlClient()` to build the managers:
 
 ```jsx
-import { createOwlClient } from "@owasp-js/owl";
-import { AuthGate, OwlProvider, PermissionGate } from "@owasp-js/owl-react";
+import { createOwlClient } from "@owasp-webshield/core";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-webshield/react";
 
 const owl = createOwlClient({ roles: { editor: { permissions: ["read:reports"] } } });
 owl.authManager.setSession({ userId: "u1", roles: ["editor"] });

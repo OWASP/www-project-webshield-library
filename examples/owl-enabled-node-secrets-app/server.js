@@ -1,5 +1,5 @@
 import http from "node:http";
-import { SecurityError, SecurityErrorCode } from "@owasp-js/owl";
+import { SecurityError, SecurityErrorCode } from "@owasp-webshield/core";
 import { SecretsVault } from "./vault.js";
 
 // Single global session, same simplification the CLI walkthrough (index.js)

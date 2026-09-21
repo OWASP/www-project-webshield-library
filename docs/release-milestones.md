@@ -4,9 +4,9 @@ A single timeline of what's queued for the next release and what shipped histori
 cross-referencing `CHANGELOG.md` (the authoritative record of *what* changed) against
 git tags (*when* it was actually released).
 
-## Upcoming: v0.1.0 — first release as `@owasp-js/owl` / `@owasp-js/owl-react`
+## Upcoming: v1.0.0 — first release as `@owasp-webshield/core` / `@owasp-webshield/react`
 
-Full contents are in `CHANGELOG.md`'s `[0.1.0]` entry; in short:
+Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 
 - Full A01–A10 core API, including all the security-hardening work accumulated under
   the old name (SSRF fail-open/DNS-rebinding fixes, tokenizer-based sanitizer,
@@ -19,8 +19,8 @@ Full contents are in `CHANGELOG.md`'s `[0.1.0]` entry; in short:
 
 **Ready to ship, pending the actual tag pushes:**
 
-- **Core:** `git tag v0.1.0 && git push --follow-tags` (root `package.json` is already at `0.1.0`).
-- **React adapter:** `git tag owl-react-v0.1.0 && git push --follow-tags` (first-ever publish for this package — infra ready: `.github/workflows/release-react-adapter.yml`, `publishConfig`/`license`/`repository` metadata, its own README). See `docs/deployment-recipes.md` → "Publishing OWL itself" for the full command sequence for each.
+- **Core:** `git tag v1.0.0 && git push --follow-tags` (root `package.json` is already at `1.0.0`).
+- **React adapter:** `git tag owl-react-v1.0.0 && git push --follow-tags` (first-ever publish for this package — infra ready: `.github/workflows/release-react-adapter.yml`, `publishConfig`/`license`/`repository` metadata, its own README). See `docs/deployment-recipes.md` → "Publishing OWL itself" for the full command sequence for each.
 
 ### Also ready, needs a manual one-time step
 
@@ -29,7 +29,7 @@ Full contents are in `CHANGELOG.md`'s `[0.1.0]` entry; in short:
 ### Not yet started
 
 - **TypeScript declaration files** — no `.d.ts` ships today despite `"typescript"` in `package.json` keywords.
-- **Vue and Angular adapters** — named as goals in the original project roadmap; only the React adapter exists. Would become `@owasp-js/owl-vue`/`@owasp-js/owl-angular` under the current naming scheme.
+- **Vue and Angular adapters** — named as goals in the original project roadmap; only the React adapter exists. Would become `@owasp-webshield/vue`/`@owasp-webshield/angular` under the current naming scheme.
 - **A browser-safe package `.` root for real encryption** — today `CryptoManager` is a throwing stub in the browser build
 
 - **A real, shipped CI security-gate GitHub Action** — `docs/github-actions-security-gate.md` currently documents a pattern, not a reusable action; `owl-enabled-node-secrets-app`'s `NpmAuditProvider` (a real `npm audit`-backed `DependencyRiskScanner` provider) is a candidate to upstream into the core package, since today `DependencyRiskScanner` ships with no built-in provider at all.

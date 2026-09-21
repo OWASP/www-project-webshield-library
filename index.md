@@ -21,7 +21,7 @@ This project now uses a tabbed layout to keep the homepage focused and make cont
 
 ### Quick Project Facts
 
-- Maturity: `v0.1.0` foundation release
+- Maturity: `v1.0.0` release
 - Coverage: A01-A10 modules
 - Stack: Framework-agnostic core + React adapter
 - Quality: ESLint, Jest, CI workflows, and security gates

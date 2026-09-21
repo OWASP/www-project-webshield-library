@@ -12,7 +12,7 @@ import {
   useSecurityMonitoring,
   useThreatModelGuard,
   withSecurityHeaders
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 import { security, SecretPolicy } from "./security";
 
 const WORKFLOW_CONFIG = {

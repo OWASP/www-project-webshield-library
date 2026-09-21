@@ -2,7 +2,7 @@
 
 Deterministic, deny-overrides access control combining role-based (`RBACManager`) and resource-level (`ACLManager`) policies through a single `PermissionChecker`.
 
-## Core API (`@owasp-js/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
 import {
@@ -10,7 +10,7 @@ import {
   ACCESS_CONTROL_TYPES,
   PermissionChecker,
   RBACManager
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 
 const rbac = new RBACManager();
 rbac.defineRole("viewer", ["read:reports"]);
@@ -33,7 +33,7 @@ console.log(ACCESS_CONTROL_TYPES);
 - `PermissionChecker` combines RBAC and ACL and returns `{ allowed, reason, metadata }`.
 - `ACCESS_CONTROL_TYPES` is a reserved runtime placeholder for category-local type exports.
 
-## React Adapter (`@owasp-js/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 ```jsx
 import React from "react";
@@ -45,7 +45,7 @@ import {
   RBACProvider,
   useACL,
   usePermission
-} from "@owasp-js/owl-react";
+} from "@owasp-webshield/react";
 
 function DeleteButton() {
   const aclManager = useACL();

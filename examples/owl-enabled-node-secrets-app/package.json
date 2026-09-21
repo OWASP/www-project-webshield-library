@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@owasp-js/owl": "file:../.."
+    "@owasp-webshield/core": "file:../.."
   },
   "scripts": {
     "start": "node index.js",

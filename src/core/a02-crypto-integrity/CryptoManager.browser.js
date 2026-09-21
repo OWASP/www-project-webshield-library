@@ -3,7 +3,7 @@ import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 const UNAVAILABLE_MESSAGE =
   "CryptoManager requires Node's crypto module (AES-256-GCM/PBKDF2 have no synchronous, " +
   "browser-portable equivalent — Web Crypto's subtle.encrypt/deriveBits are async-only). " +
-  "Use @owasp-js/owl in a Node/SSR context for real encryption, or provide your own " +
+  "Use @owasp-webshield/core in a Node/SSR context for real encryption, or provide your own " +
   "Web Crypto-based implementation. See the FAQ: " +
   "https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle";
 

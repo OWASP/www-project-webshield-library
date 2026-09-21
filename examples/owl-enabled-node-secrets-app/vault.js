@@ -20,7 +20,7 @@ import {
   SecurityErrorCode,
   SecurityLogger,
   SSRFGuard
-} from "@owasp-js/owl";
+} from "@owasp-webshield/core";
 import { NpmAuditProvider } from "./npm-audit-provider.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

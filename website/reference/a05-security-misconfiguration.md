@@ -2,10 +2,10 @@
 
 `SecurityConfigManager` validates a config object against unsafe defaults (debug mode, permissive CORS, insecure cookies); `HardeningReporter` turns the findings into actionable recommendations.
 
-## Core API (`@owasp-js/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
-import { HardeningReporter, SecurityConfigManager } from "@owasp-js/owl";
+import { HardeningReporter, SecurityConfigManager } from "@owasp-webshield/core";
 
 const configManager = new SecurityConfigManager({
   debug: true,
@@ -20,11 +20,11 @@ const report = new HardeningReporter(configManager).generate();
 console.log(findings, report);
 ```
 
-## React Adapter (`@owasp-js/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 ```jsx
 import React from "react";
-import { useHardeningReport } from "@owasp-js/owl-react";
+import { useHardeningReport } from "@owasp-webshield/react";
 
 export function ConfigDashboard({ config }) {
   const findings = useHardeningReport(config);
