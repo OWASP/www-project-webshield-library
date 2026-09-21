@@ -4,6 +4,55 @@
 
 Show how to wire `@owasp-core/owl-react` providers, hooks, and guard components around real `@owasp-core/owl` managers.
 
+## Quick start: `createOwlClient` + `OwlProvider`
+
+For the common case — one `AuthManager`/`RBACManager`/`ACLManager`/logger/event-emitter set for the whole app — `createOwlClient()` (core) builds and wires them from one config object, and `OwlProvider` (React adapter) composes the four providers `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` into one component:
+
+```js
+// security.js
+import { createOwlClient } from "@owasp-core/owl";
+
+export const owl = createOwlClient({
+  roles: {
+    viewer: { permissions: ["read:articles"] },
+    editor: { permissions: ["update:articles"], inherits: ["viewer"] }
+  },
+  acl: [{ resource: "articles", action: "delete", effect: "deny" }]
+});
+
+owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
+```
+
+```jsx
+import React from "react";
+import { AuthGate, OwlProvider, PermissionGate, SecurityAlert } from "@owasp-core/owl-react";
+import { owl } from "./security.js";
+
+export function AppProviders({ children }) {
+  return (
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<SecurityAlert level="warn" message="Please sign in" />}>
+        <PermissionGate
+          action="read"
+          resource="articles"
+          fallback={<SecurityAlert level="error" message="Article access denied" />}
+        >
+          {children}
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
+  );
+}
+```
+
+`OwlProvider` also accepts individual manager props (`authManager`, `aclManager`, `rbacManager`, `logger`, `events`) that override the same-named property on `client` — useful if you build most of the client with `createOwlClient()` but need to swap one manager in by hand (a custom `TokenManager` storage adapter, for instance).
+
+See the [`owl-enabled-react-todo-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) for this pattern in a full app.
+
+## Manual setup (full control)
+
+If you need managers that `createOwlClient()` doesn't cover in one call (a `CSRFTokenManager`/`HTTPClient`/`SSRFGuard` pipeline, custom token refresh hooks, etc.), or you just want to see what `createOwlClient`/`OwlProvider` do under the hood, here's the same setup wired by hand:
+
 ## Bootstrap managers once
 
 ```js

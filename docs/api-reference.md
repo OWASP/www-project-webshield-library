@@ -338,6 +338,29 @@ const safeFetcher = new SafeFetcher({
 await safeFetcher.fetch("https://api.example.com/users", { method: "GET" });
 ```
 
+### createOwlClient (convenience bootstrap)
+
+Builds and wires `TokenManager`, `AuthManager`, `RBACManager`, `ACLManager`, `EventEmitter`, and `SecurityLogger` from one declarative config, instead of constructing and threading each manager by hand. Pairs with `OwlProvider` in the React adapter.
+
+```js
+import { createOwlClient } from "@owasp-core/owl";
+
+const owl = createOwlClient({
+  roles: {
+    viewer: { permissions: ["read:articles"] },
+    editor: { permissions: ["update:articles"], inherits: ["viewer"] }
+  },
+  acl: [{ resource: "articles", action: "delete", effect: "deny" }],
+  token: { onRefresh: async (refreshToken) => ({ accessToken: `rotated-${refreshToken}`, refreshToken, expiresAt: Date.now() + 60_000 }) },
+  logger: { sink: (entry) => console.log(entry) }
+});
+// owl = { tokenManager, authManager, rbacManager, aclManager, events, logger }
+
+owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
+```
+
+Every returned manager is the same real class you'd get by constructing it directly — anything not covered by this config shape (interceptors, a custom `TokenManager` storage adapter, etc.) can still be set via its normal API on the returned instance. `createOwlClient` only covers A01/A07/A09; `CSRFTokenManager`/`HTTPClient`/`SSRFGuard` and the rest are still constructed directly since their config (base URLs, fetch implementations) is too app-specific to generalize.
+
 ### Typed Errors
 
 ```js
@@ -405,6 +428,29 @@ export function AuthTree({ authManager, aclManager, rbacManager, logger, events 
 
 - `useAuthToken()` updates when the underlying `TokenManager` emits `token:changed`, `token:cleared`, or `token:rotated`.
 - `AuthProvider` also schedules an auth-state recheck at `expiresAt`, so `AuthGate` falls back automatically once the token expires.
+
+### OwlProvider (simplified provider composition)
+
+`OwlProvider` composes the four providers above into one component — equivalent to the nested tree in `AuthTree` above, just less of it:
+
+```jsx
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-core/owl-react";
+import { owl } from "./security.js"; // owl = createOwlClient({ ... })
+
+export function AuthTree({ children }) {
+  return (
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Please sign in</div>}>
+        <PermissionGate action="read" resource="reports" fallback={<div>Denied</div>}>
+          {children}
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
+  );
+}
+```
+
+`client` accepts anything with `authManager`/`aclManager`/`rbacManager`/`logger`/`events` properties (typically the return value of `createOwlClient()`, but a plain object works too). Individual `authManager`/`aclManager`/`rbacManager`/`logger`/`events` props override the same-named property on `client`.
 
 ### A01 Access Control Adapter
 

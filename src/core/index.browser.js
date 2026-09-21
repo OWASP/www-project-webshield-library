@@ -13,3 +13,4 @@ export * from "./a08-data-integrity/index.js";
 export * from "./a09-logging-monitoring/index.js";
 export * from "./a10-ssrf-defense/index.js";
 export * from "./error/index.js";
+export * from "./createOwlClient.js";

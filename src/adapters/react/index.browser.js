@@ -41,6 +41,8 @@ export {
 
 export { useSafeFetcher } from "./a10-ssrf-defense/index.js";
 
+export { OwlProvider } from "./OwlProvider.js";
+
 export * as A01AccessControl from "./a01-access-control/index.js";
 export * as A02CryptoIntegrity from "./a02-crypto-integrity/index.browser.js";
 export * as A03InjectionDefense from "./a03-injection-defense/index.js";

@@ -1,27 +1,19 @@
 import React from "react";
-// Deep, per-category imports — see App.jsx and security.js for why the
-// "@owasp-core/owl-react" package root isn't used here.
-import { PermissionGate, useACL, usePermission } from "@owasp-core/owl-react/a01-access-control/index.js";
-import { SanitizedText, useInputSanitizer } from "@owasp-core/owl-react/a03-injection-defense/index.js";
-import { useThreatModelGuard } from "@owasp-core/owl-react/a04-insecure-design-guard/index.js";
-import { useAuth, useAuthToken } from "@owasp-core/owl-react/a07-auth-session/index.js";
-import { SecurityAlert, useSecurityMonitoring } from "@owasp-core/owl-react/a09-logging-monitoring/index.js";
-import { useSafeFetcher } from "@owasp-core/owl-react/a10-ssrf-defense/index.js";
+import {
+  PermissionGate,
+  SanitizedText,
+  SecurityAlert,
+  useACL,
+  useAuth,
+  useAuthToken,
+  useInputSanitizer,
+  usePermission,
+  useSafeFetcher,
+  useSecurityMonitoring,
+  useThreatModelGuard,
+  withSecurityHeaders
+} from "@owasp-core/owl-react";
 import { security, SecretPolicy } from "./security";
-
-// Re-implemented locally rather than imported from the adapter's a08-data-integrity
-// module, which also exports a real `CSRFTokenManager`-backed hook and therefore has
-// the same Node-crypto-on-import problem described in security.js.
-function withSecurityHeaders(init = {}) {
-  return {
-    ...init,
-    headers: {
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      ...(init.headers || {})
-    }
-  };
-}
 
 const WORKFLOW_CONFIG = {
   transitions: {

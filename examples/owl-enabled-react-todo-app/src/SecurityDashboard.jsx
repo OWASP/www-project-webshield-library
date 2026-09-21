@@ -1,9 +1,5 @@
 import React from "react";
-// Deep, per-category imports — see App.jsx and security.js for why the
-// "@owasp-core/owl-react" package root isn't used here.
-import { useHardeningReport } from "@owasp-core/owl-react/a05-security-misconfiguration/index.js";
-import { useDependencyRiskScanner } from "@owasp-core/owl-react/a06-vulnerable-components/index.js";
-import { SecurityAlert, useSecurityMonitoring } from "@owasp-core/owl-react/a09-logging-monitoring/index.js";
+import { SecurityAlert, useDependencyRiskScanner, useHardeningReport, useSecurityMonitoring } from "@owasp-core/owl-react";
 import { security, SecretPolicy } from "./security";
 
 const HARDENING_CONFIG = {

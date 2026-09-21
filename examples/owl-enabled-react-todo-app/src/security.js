@@ -1,53 +1,38 @@
-// Imported via the "./core/*" subpath, NOT the "@owasp-core/owl" package root. That
-// root entry resolves to the prebuilt dist/index.js, which bundles every core module —
-// including a02-crypto-integrity/CryptoManager.js and its KDFAdapters — into one file
-// with an unconditional top-level `import ... from "node:crypto"`. In a browser bundle
-// that import resolves to a stub that throws on ANY property access the moment the
-// module is evaluated, so merely importing anything from the package root crashes on
-// load, regardless of which export is actually used. The "./core/*" subpath (added to
-// package.json's `exports`/`files` specifically to fix this) resolves straight to the
-// individual source file instead, so importing e.g. `SecretPolicy` never evaluates
-// `CryptoManager.js` at all. `CryptoManager` itself is still genuinely Node-only — see
-// README "Notes" — but `CSRFTokenManager` no longer is: it's been rewritten to use the
-// Web Crypto API instead of `node:crypto`, so it's a real, working import here too.
-import { RBACManager } from "@owasp-core/owl/core/a01-access-control/RBACManager.js";
-import { ACLManager } from "@owasp-core/owl/core/a01-access-control/ACLManager.js";
-import { SecretPolicy } from "@owasp-core/owl/core/a02-crypto-integrity/SecretPolicy.js";
-import { InputValidator } from "@owasp-core/owl/core/a03-injection-defense/InputValidator.js";
-import { DesignChecklist } from "@owasp-core/owl/core/a04-insecure-design-guard/DesignChecklist.js";
-import { ComponentPolicy } from "@owasp-core/owl/core/a06-vulnerable-components/ComponentPolicy.js";
-import { AuthManager } from "@owasp-core/owl/core/a07-auth-session/AuthManager.js";
-import { TokenManager } from "@owasp-core/owl/core/a07-auth-session/TokenManager.js";
-import { CSRFTokenManager } from "@owasp-core/owl/core/a08-data-integrity/CSRFTokenManager.js";
-import { HTTPClient } from "@owasp-core/owl/core/a08-data-integrity/HTTPClient.js";
-import { EventEmitter } from "@owasp-core/owl/core/a09-logging-monitoring/EventEmitter.js";
-import { SecurityLogger } from "@owasp-core/owl/core/a09-logging-monitoring/SecurityLogger.js";
-import { SSRFGuard } from "@owasp-core/owl/core/a10-ssrf-defense/SSRFGuard.js";
+// Plain root-package imports — safe now that both @owasp-core/owl and
+// @owasp-core/owl-react ship a "browser" build where CryptoManager (the one
+// piece with no browser equivalent) is a same-shaped throwing stub instead of
+// a build-breaking import. See the FAQ: "Can I use OWL in a browser bundle?"
+import {
+  ComponentPolicy,
+  createOwlClient,
+  CSRFTokenManager,
+  DesignChecklist,
+  HTTPClient,
+  InputValidator,
+  SecretPolicy,
+  SSRFGuard
+} from "@owasp-core/owl";
 
-export const tokenManager = new TokenManager({ now: () => Date.now() });
-export const authManager = new AuthManager({ tokenManager });
-
-export const rbacManager = new RBACManager();
-rbacManager.defineRole("member", ["read:todos", "write:todos", "read:security"]);
-rbacManager.defineRole(
-  "admin",
-  ["read:todos", "write:todos", "delete:todos", "read:security", "manage:security"],
-  ["member"]
-);
-
-export const aclManager = new ACLManager();
-aclManager.setPolicy("todos", "read", "allow");
-aclManager.setPolicy("todos", "write", "allow");
-// Deny-override demo: RBAC grants "delete:todos" to admins, but this ACL policy
-// still blocks it. PermissionChecker's deny-overrides resolution means the ACL
-// "deny" wins regardless of role — nobody can delete tasks in this demo.
-aclManager.setPolicy("todos", "delete", "deny");
-aclManager.setPolicy("security", "manage", "allow");
-
-export const events = new EventEmitter();
-export const logger = new SecurityLogger({
-  sink: (entry) => console.log("[owl-todo]", entry)
+const owl = createOwlClient({
+  roles: {
+    member: { permissions: ["read:todos", "write:todos", "read:security"] },
+    admin: {
+      permissions: ["read:todos", "write:todos", "delete:todos", "read:security", "manage:security"],
+      inherits: ["member"]
+    }
+  },
+  acl: [
+    { resource: "todos", action: "read", effect: "allow" },
+    { resource: "todos", action: "write", effect: "allow" },
+    // Deny-override demo: RBAC grants "delete:todos" to admins, but this ACL
+    // policy still blocks it — nobody can delete tasks in this demo.
+    { resource: "todos", action: "delete", effect: "deny" },
+    { resource: "security", action: "manage", effect: "allow" }
+  ],
+  token: { now: () => Date.now() },
+  logger: { sink: (entry) => console.log("[owl-todo]", entry) }
 });
+const { tokenManager, authManager, rbacManager, aclManager, events, logger } = owl;
 
 export const csrfManager = new CSRFTokenManager();
 csrfManager.rotateToken();

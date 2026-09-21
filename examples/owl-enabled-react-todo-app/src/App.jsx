@@ -1,12 +1,5 @@
 import React from "react";
-// Deep, per-category imports — NOT the "@owasp-core/owl-react" package root. That
-// root re-exports every category, including a02 (useCryptoManager) and a08
-// (useSecureHttpClient), both of which pull in files with a top-level `node:crypto`
-// import that crashes on evaluation in a browser. See security.js's header comment
-// and this app's README "Notes" for the full explanation.
-import { ACLProvider, PermissionGate, RBACProvider } from "@owasp-core/owl-react/a01-access-control/index.js";
-import { AuthGate, AuthProvider, useAuth } from "@owasp-core/owl-react/a07-auth-session/index.js";
-import { SecurityProvider } from "@owasp-core/owl-react/a09-logging-monitoring/index.js";
+import { AuthGate, OwlProvider, PermissionGate, useAuth } from "@owasp-core/owl-react";
 import { security } from "./security";
 import LoginPanel from "./LoginPanel";
 import TodoWorkspace from "./TodoWorkspace";
@@ -111,16 +104,10 @@ function LoginScreen() {
 
 export default function App() {
   return (
-    <SecurityProvider logger={security.logger} events={security.events}>
-      <AuthProvider authManager={security.authManager}>
-        <ACLProvider aclManager={security.aclManager}>
-          <RBACProvider rbacManager={security.rbacManager}>
-            <AuthGate fallback={<LoginScreen />}>
-              <AppShell />
-            </AuthGate>
-          </RBACProvider>
-        </ACLProvider>
-      </AuthProvider>
-    </SecurityProvider>
+    <OwlProvider client={security}>
+      <AuthGate fallback={<LoginScreen />}>
+        <AppShell />
+      </AuthGate>
+    </OwlProvider>
   );
 }

@@ -36,7 +36,8 @@ The **Security Dashboard** tab is gated by `PermissionGate action="manage" resou
 
 ## Notes
 
-- **This app imports core classes via `@owasp-core/owl/core/<category>/<File>.js` rather than the package root** (`import { X } from "@owasp-core/owl"` now also works for a browser build — see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) — but the subpath is smaller and doesn't need to construct anything for the classes this app doesn't use, like `CryptoManager`).
+- **Uses `createOwlClient()` + `<OwlProvider>`** for the RBAC/ACL/Auth/logging setup (`security.js` and `App.jsx`) instead of constructing `TokenManager`/`AuthManager`/`RBACManager`/`ACLManager`/`EventEmitter`/`SecurityLogger` by hand and nesting four separate providers. `CSRFTokenManager`/`HTTPClient`/`SSRFGuard` are still constructed directly (their config is too app-specific to generalize). See `docs/react-adapter-usage.md`'s "Quick start" section.
+- **All imports use the package root** (`@owasp-core/owl`, `@owasp-core/owl-react`) — see the [FAQ](https://owasp.org/www-project-webshield-library/faq#can-i-use-owl-in-a-browser-bundle) for why that's now safe in a browser build.
 - **`CSRFTokenManager` (A08) is the real class here, not a mock** — it's been rewritten upstream to use the Web Crypto API (`globalThis.crypto.getRandomValues`) and a constant-time comparison instead of `node:crypto`, so it has no Node-specific dependency left and works identically in this browser app.
 - `CryptoManager` (A02) isn't used by this app: AES-GCM/PBKDF2 have no synchronous browser-portable equivalent, so it remains genuinely Node-only for real encryption — the package's browser build provides a same-shaped stub that throws clearly if called, rather than crashing the build.
 - `npm run build` (production) works here — verified with a real `vite build`.
