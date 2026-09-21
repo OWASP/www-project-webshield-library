@@ -22,9 +22,7 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 - **Core:** [`@owasp-webshield/core@1.0.0`](https://www.npmjs.com/package/@owasp-webshield/core) — tag `core-v1.0.0`, published via `.github/workflows/release.yml`.
 - **React adapter:** [`@owasp-webshield/react@1.0.0`](https://www.npmjs.com/package/@owasp-webshield/react) — tag `react-v1.0.0`, published via `.github/workflows/release-react-adapter.yml`, first-ever publish for this package.
 
-### Still needs a manual one-time step
-
-- **Live demo deployment (Netlify)** — `examples/owl-enabled-react-todo-app/netlify.toml` is ready and build-verified; needs a Netlify site created (see `docs/todo-app-deployment.md` for the full walkthrough, including a CLI path and a GitHub Actions-driven alternative via `.github/workflows/release-owl-todo-app.yml`). Add a "Try it live" badge to the root README once it's up.
+- **Live demo deployment (Netlify)** — live via `.github/workflows/release-owl-todo-app.yml`, an anonymous `netlify-cli deploy --allow-anonymous` on every push to `main` (no Netlify account/secrets needed). Caveat: the URL changes on every deploy since no site is linked (see `docs/todo-app-deployment.md`) — a permanent "Try it live" README badge isn't viable until that's switched to an authenticated, pinned-site deploy.
 
 ### Not yet started
 
