@@ -1,0 +1,53 @@
+name: owl-react-release
+
+on:
+  push:
+    tags:
+      - "owl-react-v*.*.*"
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Publish React Adapter Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate tag matches package version
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#owl-react-v}"
+          PKG_VERSION="$(node -p "require('./src/adapters/react/package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version owl-react-v$TAG_VERSION does not match src/adapters/react/package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Lint and test
+        run: npm run check
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: src/adapters/react
+        run: npm publish --access public --provenance
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

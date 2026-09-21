@@ -1,0 +1,6 @@
+[build]
+  # This app depends on @owasp-core/owl / @owasp-core/owl-react via monorepo-relative
+  # "file:" paths, resolving to the root package's dist/ output — which is gitignored,
+  # so a fresh checkout (like Netlify's) doesn't have it. Build the root package first.
+  command = "cd ../.. && npm ci && npm run build && cd examples/owl-enabled-react-todo-app && npm run build"
+  publish = "dist"

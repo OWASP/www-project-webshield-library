@@ -17,6 +17,18 @@ npm run dev
 Open the Vite URL shown in the terminal, then sign in as either demo identity from the
 login screen.
 
+## Deploying a live demo (Netlify)
+
+This folder has its own `netlify.toml`, so it can be deployed as a second Netlify site
+alongside the docs site (`netlify.toml` at the repo root), pointed at the same GitHub repo:
+
+1. Go to [netlify.com](https://www.netlify.com) → **Add new site → Import an existing project** → choose this repo (`OWASP/www-project-webshield-library`).
+2. Set **Base directory** to `examples/owl-enabled-react-todo-app`. Netlify will then read *this* folder's `netlify.toml` instead of the repo root's — build command and publish directory are already set (`npm run build`, `dist`), no manual entry needed.
+3. Click **Deploy site**. The build also compiles the root `@owasp-core/owl`/`@owasp-core/owl-react` packages first (see the `command` in `netlify.toml`), since this app depends on their `dist/` output, which isn't committed to git.
+4. Once live, add a "Try it live" badge to the main repo README pointing at the deploy URL.
+
+No environment variables are required — every provider (HTTP, dependency scan) is mocked deterministically. See `docs/docs-site-deployment.md` for the equivalent walkthrough for the docs site, including the same base-directory gotcha (`publish` resolves relative to `base`, not the repo root).
+
 ## What it demonstrates
 
 | Category | Where |
