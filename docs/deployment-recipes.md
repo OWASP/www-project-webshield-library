@@ -23,7 +23,6 @@ git push --follow-tags
 
 `npm version` tags annotated by default (it passes `-m`), which is what lets `--follow-tags` pick it up automatically — no need to push the tag separately.
 
-The workflow's own "Validate tag matches package version" step will hard-fail the release if the tag and `package.json` version ever drift — this has bitten the project before: an orphaned `v2.0.0` tag exists in the repo's history whose commit's `package.json` never actually said `2.0.0`, so that push almost certainly failed this exact check and was never published (under the package's previous identity — that and every other pre-rename tag have since been deleted to clear the tag namespace for this identity). Don't work around this gate; fix the version mismatch instead.
 
 For the very first release, `package.json` is already at `1.0.0`, so skip `npm version` and tag directly — use `-a` (annotated) so `--follow-tags` actually pushes it, since a plain `git tag <name>` makes a lightweight tag that `--follow-tags` silently ignores:
 
@@ -66,7 +65,7 @@ Both sites point at this same GitHub repo, distinguished entirely by each site's
 | Docs | *(repo root)* | `netlify.toml` | VitePress site (`website/`) |
 | Todo app demo | `examples/owl-enabled-react-todo-app` | `examples/owl-enabled-react-todo-app/netlify.toml` | `owl-enabled-react-todo-app`'s `dist/` |
 
-Full one-time setup steps for each: `docs/docs-site-deployment.md` (docs site) and `examples/owl-enabled-react-todo-app/README.md` → "Deploying a live demo" (Todo app). Both auto-deploy on every push to `main` once connected; no manual redeploy step.
+Full one-time setup steps for each: `docs/docs-site-deployment.md` (docs site) and `docs/todo-app-deployment.md` (Todo app). Both auto-deploy on every push to `main` once connected; no manual redeploy step.
 
 ### Release checklist (this repo)
 

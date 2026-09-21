@@ -45,4 +45,4 @@ npm run preview   # serve the production build locally
 
 ## A second Netlify site: the live Todo app demo
 
-The same repo also deploys `examples/owl-enabled-react-todo-app` as an **independent second Netlify site** — same "one repo, base-directory-scoped `netlify.toml`" pattern as above, just with a different base directory (`examples/owl-enabled-react-todo-app` instead of `website`) and its own `netlify.toml` living in that folder instead of the repo root. See that example's own README ("Deploying a live demo") for the exact setup steps.
+The same repo also deploys `examples/owl-enabled-react-todo-app` as an **independent second Netlify site** — same "one repo, base-directory-scoped `netlify.toml`" pattern as above, just with a different base directory (`examples/owl-enabled-react-todo-app` instead of `website`) and its own `netlify.toml` living in that folder instead of the repo root. See `docs/todo-app-deployment.md` for the full setup walkthrough.

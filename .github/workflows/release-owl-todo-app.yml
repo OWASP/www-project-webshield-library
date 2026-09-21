@@ -1,0 +1,53 @@
+name: owl-deploy-todo-app
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "examples/owl-enabled-react-todo-app/**"
+      - "src/core/**"
+      - "src/index.js"
+      - "src/index.browser.js"
+      - "src/adapters/react/**"
+      - "package.json"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy to Netlify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install root workspace
+        run: npm ci
+
+      - name: Build core package
+        run: npm run build
+
+      - name: Install todo app
+        working-directory: examples/owl-enabled-react-todo-app
+        run: npm install
+
+      - name: Build todo app
+        working-directory: examples/owl-enabled-react-todo-app
+        run: npm run build
+
+      - name: Deploy to Netlify
+        working-directory: examples/owl-enabled-react-todo-app
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_TODO_APP_SITE_ID }}
+        run: npx netlify-cli deploy --prod --dir=dist

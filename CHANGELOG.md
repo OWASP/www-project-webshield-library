@@ -13,15 +13,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [1.0.0] — Unreleased (first release as `@owasp-webshield/core` / `@owasp-webshield/react`)
+## [1.0.0] — 2026-09-21 (first release as `@owasp-webshield/core` / `@owasp-webshield/react`)
 
 This is the first published version under the current package names. The project was
 previously developed and published as `@owasp-core/owl`/`@owasp-core/owl-react`
-(versions `0.1.0`–`1.0.4`); that history is preserved unchanged below under
-"Pre-rename history" rather than folded into this entry, since it describes a
-different package identity. Starting at `1.0.0` rather than `0.1.0` reflects that the
-code itself is already mature (full A01–A10 coverage, real security fixes, 87 tests) —
-this is a fresh package identity, not an immature first cut.
+(versions `0.1.0`–`1.0.4`) under a different package identity. Starting at `1.0.0` rather
+than `0.1.0` reflects that the code itself is already mature (full A01–A10 coverage, real
+security fixes, 87 tests) — this is a fresh package identity, not an immature first cut.
 
 
 ### What this release includes

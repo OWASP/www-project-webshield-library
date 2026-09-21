@@ -4,7 +4,7 @@ A single timeline of what's queued for the next release and what shipped histori
 cross-referencing `CHANGELOG.md` (the authoritative record of *what* changed) against
 git tags (*when* it was actually released).
 
-## Upcoming: 1.0.0 — first release as `@owasp-webshield/core` / `@owasp-webshield/react`
+## Shipped: 1.0.0 — first release as `@owasp-webshield/core` / `@owasp-webshield/react`
 
 Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 
@@ -17,14 +17,14 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 - Package-root browser bundling fixed for every export, including a same-shaped
   throwing stub for the genuinely-Node-only `CryptoManager`.
 
-**Ready to ship, pending the actual tag pushes:**
+**Live on npm:**
 
-- **Core:** `git tag -a core-v1.0.0 -m "core-v1.0.0" && git push --follow-tags` (root `package.json` is already at `1.0.0`).
-- **React adapter:** `git tag -a react-v1.0.0 -m "react-v1.0.0" && git push --follow-tags` (first-ever publish for this package — infra ready: `.github/workflows/release-react-adapter.yml`, `publishConfig`/`license`/`repository` metadata, its own README). Publish core first — the adapter's dependency range only resolves once core is live on the registry. See `docs/deployment-recipes.md` → "Publishing OWL itself" for the full command sequence for each, including the one-time `@owasp-webshield` npm org setup.
+- **Core:** [`@owasp-webshield/core@1.0.0`](https://www.npmjs.com/package/@owasp-webshield/core) — tag `core-v1.0.0`, published via `.github/workflows/release.yml`.
+- **React adapter:** [`@owasp-webshield/react@1.0.0`](https://www.npmjs.com/package/@owasp-webshield/react) — tag `react-v1.0.0`, published via `.github/workflows/release-react-adapter.yml`, first-ever publish for this package.
 
-### Also ready, needs a manual one-time step
+### Still needs a manual one-time step
 
-- **Live demo deployment (Netlify)** — `examples/owl-enabled-react-todo-app/netlify.toml` is ready and build-verified; needs a Netlify site created with **Base directory** = `examples/owl-enabled-react-todo-app` (see that example's README → "Deploying a live demo"). Add a "Try it live" badge to the root README once it's up.
+- **Live demo deployment (Netlify)** — `examples/owl-enabled-react-todo-app/netlify.toml` is ready and build-verified; needs a Netlify site created (see `docs/todo-app-deployment.md` for the full walkthrough, including a CLI path and a GitHub Actions-driven alternative via `.github/workflows/release-owl-todo-app.yml`). Add a "Try it live" badge to the root README once it's up.
 
 ### Not yet started
 
