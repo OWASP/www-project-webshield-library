@@ -19,6 +19,7 @@
 
 <p align="center">
   <a href="https://shimmering-parfait-3d0863.netlify.app/"><img src="https://img.shields.io/badge/docs-shimmering--parfait--3d0863.netlify.app-3c8772" alt="Documentation" /></a>
+  <a href="https://owl-todo-demo.netlify.app/"><img src="https://img.shields.io/badge/demo-owl--todo--demo.netlify.app-orange" alt="Todo App Live Demo" /></a>
 </p>
 
 ---
@@ -26,6 +27,8 @@
 > **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package and a full React adapter — making security primitives as easy to use as any other NPM library.
 
 📖 **Full documentation and usage guide: [shimmering-parfait-3d0863.netlify.app](https://shimmering-parfait-3d0863.netlify.app/)**
+
+🚀 **Try the live Todo app demo: [owl-todo-demo.netlify.app](https://owl-todo-demo.netlify.app/)**
 
 ## Contents
 
@@ -147,7 +150,7 @@ export function App() {
 | [Core JS usage](docs/core-js-usage.md) | Full composition guide for `@owasp-webshield/core` |
 | [React adapter usage](docs/react-adapter-usage.md) | Provider + hook composition for `@owasp-webshield/react` |
 | [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-webshield/core` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
-| [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
+| [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) ([live demo](https://owl-todo-demo.netlify.app/)) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
 | [Node API integration](docs/node-api-integration.md) | Express-style middleware patterns |
 | [Deployment recipes](docs/deployment-recipes.md) | Production and CI deployment patterns |
 | [GitHub Actions gate](docs/github-actions-security-gate.md) | Security quality gate for CI/CD |
