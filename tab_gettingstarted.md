@@ -115,8 +115,6 @@ cd examples/owl-enabled-react-todo-app
 npm install && npm run dev
 ```
 
-Live demo: [guileless-basbousa-a2bd63.netlify.app](http://guileless-basbousa-a2bd63.netlify.app)
-
 ---
 
 ### Available Scripts
