@@ -7,6 +7,8 @@ import { CryptoManager } from "@owasp-webshield/core/modules/a02-crypto-integrit
  * package's browser build — see the FAQ for why AES-256-GCM/PBKDF2 have no
  * browser-portable equivalent.
  */
-export function useCryptoManager(options = {}) {
+const EMPTY_OPTIONS = Object.freeze({});
+
+export function useCryptoManager(options = EMPTY_OPTIONS) {
   return React.useMemo(() => new CryptoManager(options), [options]);
 }
