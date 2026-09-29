@@ -21,6 +21,19 @@ describe("A06 vulnerable components", () => {
     expect(policy.blocked).toEqual([]);
   });
 
+  test("fails closed on unrecognized or malformed severity values", async () => {
+    const scanner = new DependencyRiskScanner({
+      scan: async () => [
+        { name: "cased", severity: "Critical", currentVersion: "1.0.0" },
+        { name: "vocab", severity: "moderate", currentVersion: "1.0.0" }
+      ]
+    });
+
+    const policy = await scanner.passesPolicy("high");
+    expect(policy.pass).toBe(false);
+    expect(policy.blocked.map((finding) => finding.package)).toEqual(["cased", "vocab"]);
+  });
+
   test("component policy enforces denylist and minimum version", () => {
     const policy = new ComponentPolicy({ denylist: ["bad-lib"], minVersions: { safe: "1.2.0" } });
     expect(policy.evaluate({ name: "bad-lib", version: "1.0.0" }).allowed).toBe(false);

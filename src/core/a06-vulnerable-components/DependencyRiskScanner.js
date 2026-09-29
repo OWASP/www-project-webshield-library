@@ -20,7 +20,11 @@ export class DependencyRiskScanner {
     const severities = ["low", "medium", "high", "critical"];
     const thresholdIdx = severities.indexOf(threshold);
     const results = await this.scan();
-    const blocked = results.filter((r) => severities.indexOf(r.severity) >= thresholdIdx);
+    const blocked = results.filter((r) => {
+      const idx = severities.indexOf(r.severity);
+      // Unknown vocabulary/casing (e.g. "Critical", "moderate") is fail-closed.
+      return idx === -1 || idx >= thresholdIdx;
+    });
     return { pass: blocked.length === 0, blocked, results };
   }
 }
