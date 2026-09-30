@@ -30,7 +30,7 @@ console.log(response.ok, response.data, DATA_INTEGRITY_TYPES);
 
 - `HTTPClient` accepts a `tokenProvider` function that may return a string, `null`, or a promise for either value. The client always awaits it before sending the request.
 - `Authorization` / `X-CSRF-Token` headers are only attached to requests whose target matches `baseUrl`'s origin, or an origin explicitly listed in `allowedOrigins` — otherwise a `CREDENTIAL_LEAK_BLOCKED` `SecurityError` is thrown. This closes a cross-origin credential leak; see [CHANGELOG](/changelog) for the 1.0.3 fix.
-- Passing an `outboundRequestPolicy` (typically a [`SSRFGuard`](/reference/a10-ssrf-defense)) composes transport hardening with SSRF defense in one client.
+- Passing an `outboundRequestPolicy` (typically a [`SSRFGuard`](/reference/a10-ssrf-defense)) composes transport hardening with SSRF defense in one client: the target is DNS-validated, redirects are followed manually with every hop re-validated, and `Authorization`/`X-CSRF-Token`/`Cookie` are stripped when a redirect leaves the original origin.
 
 ## React Adapter (`@owasp-webshield/react`)
 
@@ -61,4 +61,4 @@ export function ProfileLoader({ tokenManager }) {
 ```
 
 - `useSecureHttpClient()` creates one `CSRFTokenManager` per hook instance and rotates a token during initialization.
-- `withSecurityHeaders()` adds OWL defaults and preserves caller-supplied headers.
+- `withSecurityHeaders()` applies request-side defaults (`credentials: "same-origin"`, `referrerPolicy: "strict-origin-when-cross-origin"`) and preserves caller-supplied options and headers. Response headers such as `X-Frame-Options` must be set by your server.

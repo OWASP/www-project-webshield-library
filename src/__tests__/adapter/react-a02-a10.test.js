@@ -115,11 +115,13 @@ describe("React adapter A02-A10 hooks", () => {
     expect(response.data.headers["X-CSRF-Token"]).toBeTruthy();
   });
 
-  test("A08 withSecurityHeaders applies defaults without removing caller headers", () => {
+  test("A08 withSecurityHeaders applies request-side defaults without removing caller headers", () => {
     const headers = withSecurityHeaders({ headers: { "X-Request-Id": "req-1" } });
-    expect(headers.headers["X-Content-Type-Options"]).toBe("nosniff");
-    expect(headers.headers["X-Frame-Options"]).toBe("DENY");
+    expect(headers.credentials).toBe("same-origin");
+    expect(headers.referrerPolicy).toBe("strict-origin-when-cross-origin");
+    expect(headers.headers["X-Frame-Options"]).toBeUndefined();
     expect(headers.headers["X-Request-Id"]).toBe("req-1");
+    expect(withSecurityHeaders({ credentials: "include" }).credentials).toBe("include");
   });
 
   test("A09 useSecurityMonitoring reads provider context", () => {

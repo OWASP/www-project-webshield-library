@@ -1,6 +1,11 @@
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+const CREDENTIAL_HEADERS = new Set(["authorization", "x-csrf-token", "cookie"]);
+
+function stripCredentialHeaders(headers = {}) {
+  return Object.fromEntries(Object.entries(headers).filter(([name]) => !CREDENTIAL_HEADERS.has(name.toLowerCase())));
+}
 
 export class HTTPClient {
   /**
@@ -10,7 +15,7 @@ export class HTTPClient {
     this.baseUrl = options.baseUrl || "";
     this.csrfManager = options.csrfManager || null;
     this.tokenProvider = options.tokenProvider || null;
-    this.fetchImpl = options.fetchImpl || fetch;
+    this.fetchImpl = options.fetchImpl || ((...args) => fetch(...args));
     this.outboundRequestPolicy = options.outboundRequestPolicy || null;
     this.allowedOrigins = new Set(options.allowedOrigins || []);
     this.requestInterceptors = [];
@@ -53,11 +58,7 @@ export class HTTPClient {
   async request(url, options = {}) {
     let config = {
       ...options,
-      headers: {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        ...(options.headers || {})
-      }
+      headers: { ...(options.headers || {}) }
     };
 
     const requestUrl = ABSOLUTE_URL_PATTERN.test(url) ? url : `${this.baseUrl}${url}`;
@@ -87,11 +88,9 @@ export class HTTPClient {
       config = (await interceptor(config)) || config;
     }
 
-    if (this.outboundRequestPolicy) {
-      this.outboundRequestPolicy.validateUrl(requestUrl);
-    }
-
-    const response = await this.fetchImpl(requestUrl, config);
+    const response = this.outboundRequestPolicy
+      ? await this._fetchWithPolicy(requestUrl, config)
+      : await this.fetchImpl(requestUrl, config);
     const normalized = {
       ok: response.ok,
       status: response.status,
@@ -119,5 +118,40 @@ export class HTTPClient {
     }
 
     return normalized;
+  }
+
+  // Follows redirects manually so every hop passes the outbound policy, and
+  // drops credentials when a redirect leaves the original origin.
+  async _fetchWithPolicy(requestUrl, config) {
+    const policy = this.outboundRequestPolicy;
+    const maxHops = Number.isInteger(policy.maxRedirectHops) ? policy.maxRedirectHops : 3;
+    let target = requestUrl;
+    let init = { ...config, redirect: "manual" };
+
+    for (let hop = 0; hop <= maxHops; hop++) {
+      if (typeof policy.assertResolvedSafe === "function") {
+        await policy.assertResolvedSafe(target);
+      } else {
+        policy.validateUrl(target);
+      }
+
+      const response = await this.fetchImpl(target, init);
+      const isRedirect = response.status >= 300 && response.status < 400;
+      const location = isRedirect ? response.headers?.get?.("location") : null;
+      if (!location) return response;
+
+      const next = new URL(location, target);
+      if (next.origin !== new URL(target).origin) {
+        init = { ...init, headers: stripCredentialHeaders(init.headers) };
+      }
+      const method = String(init.method || "GET").toUpperCase();
+      if (response.status === 303 || ((response.status === 301 || response.status === 302) && method === "POST")) {
+        init = { ...init, method: "GET" };
+        delete init.body;
+      }
+      target = next.toString();
+    }
+
+    throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Redirect hop limit exceeded", { max: maxHops });
   }
 }

@@ -24,13 +24,12 @@ export function useSecureHttpClient({ baseUrl = "", tokenProvider = null, fetchI
   );
 }
 
+// Request-side hardening only: X-Frame-Options/nosniff are response headers and must be set by the server.
 export function withSecurityHeaders(init = {}) {
   return {
+    credentials: "same-origin",
+    referrerPolicy: "strict-origin-when-cross-origin",
     ...init,
-    headers: {
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      ...(init.headers || {})
-    }
+    headers: { ...(init.headers || {}) }
   };
 }

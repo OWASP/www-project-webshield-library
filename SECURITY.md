@@ -93,7 +93,7 @@ All contributions must satisfy these security requirements:
 | A01 | ACL deny overrides RBAC allow deterministically |
 | A02 | PBKDF2 with 210,000 iterations and 32-byte keys |
 | A07 | In-memory token storage; expired tokens return `null` |
-| A08 | `X-Content-Type-Options` and `X-Frame-Options` on every request |
+| A08 | Credentials never attached cross-origin; with an SSRF policy, every redirect hop is re-validated and credentials are stripped on cross-origin redirects |
 | A09 | `password`, `token`, `secret`, `authorization`, `cookie` redacted by default |
 | A10 | Loopback, RFC-1918, and `.local` hosts blocked; protocol allowlist enforced |
 

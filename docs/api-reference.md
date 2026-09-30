@@ -336,6 +336,12 @@ const safeFetcher = new SafeFetcher({
 });
 
 await safeFetcher.fetch("https://api.example.com/users", { method: "GET" });
+// Node: pin the connection to the validated address (closes the DNS-rebinding race).
+import { Agent } from "undici";
+const pinned = new SafeFetcher({
+  guard,
+  dispatcher: new Agent({ connect: { lookup: guard.createSafeLookup() } })
+});
 ```
 
 ### createOwlClient (convenience bootstrap)
@@ -615,7 +621,7 @@ export function ProfileLoader({ tokenManager }) {
 ```
 
 - `useSecureHttpClient()` creates one `CSRFTokenManager` per hook instance and rotates a token during initialization.
-- `withSecurityHeaders()` adds OWL defaults and preserves caller-supplied headers.
+- `withSecurityHeaders()` applies request-side defaults (`credentials: "same-origin"`, `referrerPolicy: "strict-origin-when-cross-origin"`) and preserves caller-supplied options and headers. Response headers such as `X-Frame-Options` must be set by your server.
 
 ### A09 Logging Monitoring Adapter
 

@@ -177,6 +177,47 @@ export class SSRFGuard {
     return url;
   }
 
+  /**
+   * Returns a `dns.lookup`-compatible function that rejects private/reserved
+   * addresses at socket-connect time. Because the socket connects to exactly the
+   * address validated here, this closes the resolve-then-connect (TOCTOU) window
+   * that `assertResolvedSafe()` alone cannot. Use it with an undici dispatcher:
+   * `new Agent({ connect: { lookup: guard.createSafeLookup() } })`.
+   */
+  createSafeLookup() {
+    return (hostname, options, callback) => {
+      if (typeof options === "function") {
+        callback = options;
+        options = {};
+      }
+      const opts = typeof options === "number" ? { family: options } : options || {};
+
+      const resolved = Promise.resolve()
+        .then(() => this.resolveHost(hostname))
+        .then((addresses) => {
+          const records = addresses
+            .map((address) => ({ address, family: address.includes(":") ? 6 : 4 }))
+            .filter((record) => !opts.family || record.family === opts.family);
+          if (records.length === 0) {
+            throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Host could not be resolved", { host: hostname });
+          }
+          const blocked = records.find((record) => isBlockedIPLiteral(record.address) !== false);
+          if (blocked) {
+            throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Resolved address is private, loopback, or reserved", {
+              host: hostname,
+              address: blocked.address
+            });
+          }
+          return records;
+        });
+
+      resolved.then(
+        (records) => (opts.all ? callback(null, records) : callback(null, records[0].address, records[0].family)),
+        (error) => callback(error)
+      );
+    };
+  }
+
   validateRedirectChain(chain) {
     if (chain.length > this.maxRedirectHops) {
       throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Redirect hop limit exceeded", {

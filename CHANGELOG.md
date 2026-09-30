@@ -13,6 +13,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Security
+
+- A10: `SSRFGuard.createSafeLookup()` validates resolved addresses at socket-connect time, and `SafeFetcher` accepts a `dispatcher` to pin connections to them. This closes the DNS-rebinding race between `assertResolvedSafe()` and `fetch`'s own lookup.
+- A08: `HTTPClient` with an `outboundRequestPolicy` no longer lets `fetch` auto-follow redirects. Every hop is DNS-validated, the policy's hop limit applies, and `Authorization`/`X-CSRF-Token`/`Cookie` are stripped on cross-origin redirects.
+
+### Fixed
+
+- A08: `HTTPClient` and `withSecurityHeaders()` no longer send `X-Frame-Options`/`X-Content-Type-Options` as *request* headers (they only apply to responses). `withSecurityHeaders()` now sets `credentials: "same-origin"` and `referrerPolicy: "strict-origin-when-cross-origin"`.
+- A08/A10: the default `fetch` is now called unbound, avoiding "Illegal invocation" errors in browsers.
+- Docs: removed links to non-existent deployment, CI-gate, and docs-site pages.
+
 ## [1.0.0] — 2026-09-21 (first release as `@owasp-webshield/core` / `@owasp-webshield/react`)
 
 This is the first published version under the current package names. The project was

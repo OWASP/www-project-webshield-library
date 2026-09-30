@@ -154,4 +154,86 @@ describe("A08 data integrity", () => {
 
     await expect(client.request("https://trusted-partner.example.com/api")).resolves.toMatchObject({ ok: true });
   });
+
+  test("does not send response-only security headers on requests", async () => {
+    let sent = null;
+    const client = new HTTPClient({
+      fetchImpl: async (_url, cfg) => {
+        sent = cfg.headers;
+        return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+      }
+    });
+    await client.request("/x");
+    expect(sent["X-Frame-Options"]).toBeUndefined();
+    expect(sent["X-Content-Type-Options"]).toBeUndefined();
+  });
+
+  const redirectResponse = (location, status = 302) => ({
+    ok: false,
+    status,
+    headers: { get: (key) => (key === "location" ? location : null) }
+  });
+  const okResponse = () => ({
+    ok: true,
+    status: 200,
+    headers: new Headers(),
+    clone: () => ({ json: async () => ({}) }),
+    text: async () => ""
+  });
+
+  test("re-validates redirect targets against the SSRF policy instead of auto-following", async () => {
+    const calls = [];
+    const client = new HTTPClient({
+      outboundRequestPolicy: new SSRFGuard({ resolveHost: async () => ["93.184.216.34"] }),
+      fetchImpl: async (url, cfg) => {
+        calls.push({ url, redirect: cfg.redirect });
+        return redirectResponse("http://169.254.169.254/latest/meta-data/");
+      }
+    });
+    await expect(client.request("https://api.example.com/start")).rejects.toMatchObject({ code: "SSRF_BLOCKED" });
+    expect(calls).toEqual([{ url: "https://api.example.com/start", redirect: "manual" }]);
+  });
+
+  test("uses DNS-resolved validation when the policy supports it", async () => {
+    const client = new HTTPClient({
+      outboundRequestPolicy: new SSRFGuard({ resolveHost: async () => ["10.0.0.8"] }),
+      fetchImpl: async () => {
+        throw new Error("fetch should not be called");
+      }
+    });
+    await expect(client.request("https://internal-alias.example.com/")).rejects.toMatchObject({ code: "SSRF_BLOCKED" });
+  });
+
+  test("strips credentials when a redirect leaves the original origin and downgrades POST on 303", async () => {
+    const csrf = new CSRFTokenManager();
+    csrf.rotateToken();
+    const calls = [];
+    const responses = [redirectResponse("https://cdn.example.net/file", 303), okResponse()];
+    const client = new HTTPClient({
+      baseUrl: "https://api.example.com",
+      csrfManager: csrf,
+      tokenProvider: () => "SECRET",
+      outboundRequestPolicy: new SSRFGuard({ resolveHost: async () => ["93.184.216.34"] }),
+      fetchImpl: async (url, cfg) => {
+        calls.push({ url, cfg });
+        return responses.shift();
+      }
+    });
+    const res = await client.request("/upload", { method: "POST", body: "data" });
+    expect(res.ok).toBe(true);
+    expect(calls[0].cfg.headers.Authorization).toBe("Bearer SECRET");
+    expect(calls[1].url).toBe("https://cdn.example.net/file");
+    expect(calls[1].cfg.headers.Authorization).toBeUndefined();
+    expect(calls[1].cfg.headers["X-CSRF-Token"]).toBeUndefined();
+    expect(calls[1].cfg.method).toBe("GET");
+    expect(calls[1].cfg.body).toBeUndefined();
+  });
+
+  test("enforces the policy's redirect hop limit", async () => {
+    const client = new HTTPClient({
+      outboundRequestPolicy: new SSRFGuard({ maxRedirectHops: 1, resolveHost: async () => ["93.184.216.34"] }),
+      fetchImpl: async () => redirectResponse("https://api.example.com/loop")
+    });
+    await expect(client.request("https://api.example.com/loop")).rejects.toThrow("Redirect hop limit exceeded");
+  });
 });
