@@ -171,4 +171,14 @@ describe("A10 ssrf defense", () => {
     expect(guard.validateUrl("http://[2002:5db8:d822::]/")).toBeInstanceOf(URL); // 6to4 for 93.184.216.34
     expect(guard.validateUrl("https://example.com/")).toBeInstanceOf(URL);
   });
+
+  test("trailing-dot handling runs in linear time on long runs of dots (no ReDoS)", () => {
+    const guard = new SSRFGuard();
+    expect(guard.isPrivateHost("localhost...")).toBe(true);
+    expect(guard.isPrivateHost("example.com.")).toBe(false);
+    const start = performance.now();
+    guard.isPrivateHost("a" + ".".repeat(200000) + "b");
+    expect(() => guard.validateUrl("http://a" + ".".repeat(200000) + "b/")).not.toThrow();
+    expect(performance.now() - start).toBeLessThan(500);
+  });
 });

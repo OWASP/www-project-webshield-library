@@ -28,8 +28,16 @@ export class InputValidator {
     return { valid: errors.length === 0, errors };
   }
 
+  // Same acceptance as /^[^\s@]+@[^\s@]+\.[^\s@]+$/ (one "@", non-empty local part,
+  // a dot inside the domain, no whitespace), checked in linear time: that regex
+  // backtracks quadratically on domains with many dots ("a@a.a.a.a...@").
   validateEmail(value) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ""));
+    const input = String(value || "");
+    if (/\s/.test(input)) return false;
+    const at = input.indexOf("@");
+    if (at <= 0 || input.indexOf("@", at + 1) !== -1) return false;
+    const domain = input.slice(at + 1);
+    return domain.slice(1, -1).includes(".");
   }
 
   validateUrl(value) {
