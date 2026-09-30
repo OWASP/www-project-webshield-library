@@ -74,18 +74,25 @@ function isBlockedIPv6(hostname) {
 
   const isZero = (list) => list.every((g) => g === 0);
 
-  if (isZero(groups)) return true; // "::" unspecified
-  if (isZero(groups.slice(0, 7)) && groups[7] === 1) return true; // "::1" loopback
+  const embeddedIPv4 = (high, low) => [high >>> 8, high & 0xff, low >>> 8, low & 0xff].join(".");
+
+  // ::/96 covers "::" (unspecified), "::1" (loopback) and deprecated IPv4-compatible "::a.b.c.d".
+  if (isZero(groups.slice(0, 6))) return true;
   if ((groups[0] & 0xfe00) === 0xfc00) return true; // fc00::/7 unique local
   if ((groups[0] & 0xffc0) === 0xfe80) return true; // fe80::/10 link-local
+  if ((groups[0] & 0xffc0) === 0xfec0) return true; // fec0::/10 site-local (deprecated)
+  if ((groups[0] & 0xff00) === 0xff00) return true; // ff00::/8 multicast
+  if (groups[0] === 0x0064 && groups[1] === 0xff9b && groups[2] === 0x0001) return true; // 64:ff9b:1::/48 local-use NAT64
 
   // IPv4-mapped (::ffff:0:0/96) and NAT64 (64:ff9b::/96) embed an IPv4 target.
   const isMapped = isZero(groups.slice(0, 5)) && groups[5] === 0xffff;
   const isNat64 = groups[0] === 0x0064 && groups[1] === 0xff9b && isZero(groups.slice(2, 6));
   if (isMapped || isNat64) {
-    const embedded = ((groups[6] << 16) | groups[7]) >>> 0;
-    const embeddedIp = [24, 16, 8, 0].map((shift) => (embedded >>> shift) & 0xff).join(".");
-    return isBlockedIPv4(embeddedIp);
+    return isBlockedIPv4(embeddedIPv4(groups[6], groups[7]));
+  }
+  // 6to4 (2002::/16) carries its IPv4 address in the next 32 bits.
+  if (groups[0] === 0x2002) {
+    return isBlockedIPv4(embeddedIPv4(groups[1], groups[2]));
   }
 
   return false;
@@ -119,8 +126,10 @@ export class SSRFGuard {
   }
 
   isPrivateHost(hostname) {
-    const bare = stripBrackets(hostname).toLowerCase();
-    if (["localhost", "::1"].includes(bare) || bare.endsWith(".local")) {
+    // A trailing dot ("localhost.") is the same fully-qualified name to a resolver.
+    const bare = stripBrackets(hostname).toLowerCase().replace(/\.+$/, "");
+    // RFC 6761: "localhost" and every "*.localhost" name are loopback.
+    if (bare === "localhost" || bare.endsWith(".localhost") || bare.endsWith(".local")) {
       return true;
     }
     const literalResult = isBlockedIPLiteral(bare);
@@ -165,6 +174,15 @@ export class SSRFGuard {
         });
       }
 
+      // Only the built-in resolver may answer "no DNS API here" (null, in browsers);
+      // an empty answer from any resolver means the host is unverified, so fail closed.
+      if (addresses === null && this.resolveHost === defaultResolveHost) {
+        return url;
+      }
+      if (!Array.isArray(addresses) || addresses.length === 0) {
+        throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Host could not be resolved", { host: bareHost });
+      }
+
       const blockedAddress = addresses.find((address) => isBlockedIPLiteral(address) !== false);
       if (blockedAddress) {
         throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Resolved address is private, loopback, or reserved", {
@@ -195,7 +213,7 @@ export class SSRFGuard {
       const resolved = Promise.resolve()
         .then(() => this.resolveHost(hostname))
         .then((addresses) => {
-          const records = addresses
+          const records = (Array.isArray(addresses) ? addresses : [])
             .map((address) => ({ address, family: address.includes(":") ? 6 : 4 }))
             .filter((record) => !opts.family || record.family === opts.family);
           if (records.length === 0) {
@@ -231,21 +249,20 @@ export class SSRFGuard {
 
 async function defaultResolveHost(hostname) {
   const lookupFn = await getNodeDnsLookup();
-  if (!lookupFn) return []; // no DNS resolution available in this runtime (e.g. browser bundle)
+  if (!lookupFn) return null; // no DNS API in this runtime (browser bundle): see assertResolvedSafe()
   const records = await lookupFn(hostname, { all: true, verbatim: true });
   return records.map((record) => record.address);
 }
 
 // Loaded lazily (and only under Node) so this module remains safe to bundle for browsers,
-// where "node:dns" does not exist.
+// where "node:dns" does not exist. Under Node a failed import rejects instead of
+// resolving to null, so resolution fails closed rather than skipping the DNS check.
 let dnsLookupPromise = null;
 function getNodeDnsLookup() {
   if (!dnsLookupPromise) {
     dnsLookupPromise =
       typeof process !== "undefined" && process?.versions?.node
-        ? import("node:dns/promises")
-            .then((dns) => dns.lookup)
-            .catch(() => null)
+        ? import("node:dns/promises").then((dns) => dns.lookup)
         : Promise.resolve(null);
   }
   return dnsLookupPromise;

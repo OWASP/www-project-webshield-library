@@ -1,10 +1,18 @@
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
+import { nextRedirectInit } from "../a10-ssrf-defense/redirect.js";
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
-const CREDENTIAL_HEADERS = new Set(["authorization", "x-csrf-token", "cookie"]);
 
-function stripCredentialHeaders(headers = {}) {
-  return Object.fromEntries(Object.entries(headers).filter(([name]) => !CREDENTIAL_HEADERS.has(name.toLowerCase())));
+// Outside a browser there is no page to resolve relative URLs against, so this
+// placeholder stands in for "the page's own origin".
+const NO_PAGE_BASE = "http://owl.invalid/";
+
+// fetch() resolves relative URLs against the document base URL in browsers.
+function pageContext() {
+  return {
+    base: globalThis.document?.baseURI || globalThis.location?.href || NO_PAGE_BASE,
+    origin: globalThis.location?.origin || new URL(NO_PAGE_BASE).origin
+  };
 }
 
 export class HTTPClient {
@@ -30,29 +38,29 @@ export class HTTPClient {
     this.responseInterceptors.push(interceptor);
   }
 
-  // Relative URLs always resolve under baseUrl/the current origin, so only an
-  // absolute request URL can point somewhere else and needs an origin check.
+  // Resolves the URL exactly as fetch() will rather than pattern-matching the raw
+  // string: " https://evil", "//evil" and "/\evil" all look relative but resolve to
+  // another origin. Credentials may only go to baseUrl's origin (the page's origin
+  // when baseUrl is empty or relative) or an explicitly allowlisted origin.
   _isCredentialSafeOrigin(requestUrl) {
-    if (!ABSOLUTE_URL_PATTERN.test(requestUrl)) return true;
-
-    let targetOrigin;
+    const page = pageContext();
+    let target;
     try {
-      targetOrigin = new URL(requestUrl).origin;
+      target = new URL(requestUrl, page.base);
     } catch {
       return false;
     }
+    if (target.origin === "null") return false; // opaque origins (data:, file:, ...) never match
 
-    if (this.allowedOrigins.has(targetOrigin)) return true;
+    if (this.allowedOrigins.has(target.origin)) return true;
 
-    if (this.baseUrl) {
-      try {
-        return new URL(this.baseUrl).origin === targetOrigin;
-      } catch {
-        return false;
-      }
+    let ownOrigin;
+    try {
+      ownOrigin = new URL(this.baseUrl).origin;
+    } catch {
+      ownOrigin = page.origin; // empty or relative baseUrl
     }
-
-    return false;
+    return target.origin === ownOrigin;
   }
 
   async request(url, options = {}) {
@@ -141,14 +149,7 @@ export class HTTPClient {
       if (!location) return response;
 
       const next = new URL(location, target);
-      if (next.origin !== new URL(target).origin) {
-        init = { ...init, headers: stripCredentialHeaders(init.headers) };
-      }
-      const method = String(init.method || "GET").toUpperCase();
-      if (response.status === 303 || ((response.status === 301 || response.status === 302) && method === "POST")) {
-        init = { ...init, method: "GET" };
-        delete init.body;
-      }
+      init = nextRedirectInit(init, response.status, new URL(target), next);
       target = next.toString();
     }
 

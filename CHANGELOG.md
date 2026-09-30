@@ -19,6 +19,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - A10: `SSRFGuard.createSafeLookup()` validates resolved addresses at socket-connect time, and `SafeFetcher` accepts a `dispatcher` to pin connections to them. This closes the DNS-rebinding race between `assertResolvedSafe()` and `fetch`'s own lookup.
 - A08: `HTTPClient` with an `outboundRequestPolicy` no longer lets `fetch` auto-follow redirects. Every hop is DNS-validated, the policy's hop limit applies, and `Authorization`/`X-CSRF-Token`/`Cookie` are stripped on cross-origin redirects.
+- A03: `InputSanitizer` (moderate profile) no longer allows `javascript:` URLs preceded by control characters (e.g. `&#1;javascript:`), which browsers ignore when reading the scheme. Out-of-range numeric entities no longer throw a `RangeError`; they decode to U+FFFD as in browsers.
+- A08: `HTTPClient` resolves request URLs the way `fetch` does before attaching credentials. URLs such as `" https://evil"`, `//evil` or `/\evil` previously passed as "relative" when `baseUrl` was empty (the `useSecureHttpClient` default) and received the Bearer and CSRF tokens.
+- A10: `SafeFetcher` strips `Authorization`/`Proxy-Authorization`/`Cookie`/`X-CSRF-Token` when a redirect leaves the current origin, and turns a 303 (or a 301/302 after POST) into a bodiless GET, as native `fetch` does.
+- A01: `ACLManager` now enforces deny-overrides across rules: a wildcard `deny` beats a direct `allow`. Rule keys can no longer collide through `:` in action or resource names, and `RBACManager.can()` rejects actions containing `:`.
+- A06: `DependencyRiskScanner.passesPolicy()` normalizes severities (case-insensitive, npm's `moderate`/`info`) and blocks findings whose severity is still unrecognized. `ComponentPolicy` compares versions by semver precedence and blocks missing or unparsable versions (`v1.0.0`, `2.0.0-beta.1` and `undefined` previously passed a `2.0.0` minimum).
+- A10: `SSRFGuard.assertResolvedSafe()` fails closed when a resolver returns no addresses. `validateUrl()` also blocks `localhost.`, `*.localhost`, IPv4-compatible `::a.b.c.d`, IPv6 multicast (`ff00::/8`), site-local (`fec0::/10`), local-use NAT64 (`64:ff9b:1::/48`) and 6to4 addresses that embed a blocked IPv4 address.
+
+### Changed
+
+- A08/A10: under Node, `HTTPClient` with an `SSRFGuard` policy resolves DNS before each request, so hostnames that don't resolve (such as fake domains in tests) now fail with `SSRF_BLOCKED: Host could not be resolved`. Pass a `resolveHost` option in tests. Browsers are unaffected.
+- A10: a custom `resolveHost` that returns `[]`, `null` or a non-array now blocks the request instead of allowing it.
+- A06: `passesPolicy()` throws `INVALID_INPUT` for an unknown threshold (previously every finding was blocked). `ComponentPolicy` throws `MISCONFIGURATION` for a `minVersions` entry that isn't a valid version, and returns `reason: "unparsable_version"` for a package version it can't parse.
+- A01: `ACLManager.setPolicy()` throws `INVALID_INPUT` for an effect other than `"allow"` or `"deny"`. It still replaces the rule for the exact same resource/action pair, so toggling a rule (freeze/unfreeze) keeps working.
 
 ### Fixed
 

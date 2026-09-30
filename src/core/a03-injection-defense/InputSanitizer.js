@@ -33,13 +33,20 @@ const NAMED_ENTITIES = {
   colon: ":", tab: "\t", newline: "\n"
 };
 
+// Browsers replace NUL, surrogates, and out-of-range references with U+FFFD;
+// String.fromCodePoint() would throw a RangeError on attacker input instead.
+function isValidCodePoint(codePoint) {
+  return codePoint > 0 && codePoint <= 0x10ffff && (codePoint < 0xd800 || codePoint > 0xdfff);
+}
+
 // Attribute values are entity-decoded before scheme checks, since browsers do the
 // same before interpreting a URL - otherwise "&#106;avascript:" bypasses the filter.
 function decodeEntities(value) {
   return String(value).replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, ref) => {
     if (ref[0] === "#") {
       const codePoint = ref[1].toLowerCase() === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
-      return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+      if (Number.isNaN(codePoint)) return match;
+      return isValidCodePoint(codePoint) ? String.fromCodePoint(codePoint) : "�";
     }
     return NAMED_ENTITIES[ref.toLowerCase()] || match;
   });
@@ -53,10 +60,14 @@ function encodeAttrValue(value) {
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Browsers strip tabs/newlines/whitespace from a URL before reading its scheme,
-// so "java\tscript:" and similar whitespace-obfuscated payloads must too.
+// Browsers strip leading C0 controls/spaces and every tab/newline from a URL before
+// reading its scheme, so "\x01javascript:" and "java\tscript:" must be normalized the
+// same way. Removing every control character and whitespace is a safe superset.
+// eslint-disable-next-line no-control-regex
+const URL_IGNORED_CHARS = /[\x00-\x20\s]+/g;
+
 function isSafeUrl(rawValue) {
-  const normalized = decodeEntities(rawValue).replace(/\s+/g, "");
+  const normalized = decodeEntities(rawValue).replace(URL_IGNORED_CHARS, "");
   const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(normalized);
   if (!schemeMatch) return true; // relative URL - no scheme to police
   return SAFE_URL_PROTOCOLS.has(`${schemeMatch[1].toLowerCase()}:`);

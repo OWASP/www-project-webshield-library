@@ -35,4 +35,46 @@ describe("A06 vulnerable components", () => {
       reason: "not_in_allowlist"
     });
   });
+
+  test("normalizes scanner severities and blocks unrecognized ones", async () => {
+    const scanner = new DependencyRiskScanner({
+      scan: async () => [
+        { name: "a", severity: "moderate" },
+        { name: "b", severity: "CRITICAL" },
+        { name: "c", severity: "info" }
+      ]
+    });
+    const policy = await scanner.passesPolicy("medium");
+    expect(policy.pass).toBe(false);
+    expect(policy.blocked.map((b) => b.package)).toEqual(["a", "b"]);
+
+    const unknown = new DependencyRiskScanner({ scan: async () => [{ name: "d", severity: "severe" }] });
+    expect((await unknown.passesPolicy("critical")).pass).toBe(false);
+    await expect(unknown.passesPolicy("urgent")).rejects.toThrow("Unknown severity threshold");
+  });
+
+  test("minimum version check uses semver precedence and fails closed", () => {
+    const policy = new ComponentPolicy({ minVersions: { lib: "2.0.0" } });
+    const allowed = (version) => policy.evaluate({ name: "lib", version }).allowed;
+    expect(allowed(undefined)).toBe(false);
+    expect(allowed("v1.0.0")).toBe(false);
+    expect(allowed("2.0.0-beta.1")).toBe(false);
+    expect(allowed("^2.0.0")).toBe(false);
+    expect(allowed("1.10.0")).toBe(false);
+    expect(allowed("v2.0.0")).toBe(true);
+    expect(allowed("2.0.1")).toBe(true);
+    expect(allowed("10.0.0")).toBe(true);
+    expect(policy.evaluate({ name: "lib", version: "latest" }).reason).toBe("unparsable_version");
+  });
+
+  test("orders pre-release identifiers per semver", () => {
+    const policy = new ComponentPolicy({ minVersions: { lib: "1.0.0-alpha.10" } });
+    expect(policy.evaluate({ name: "lib", version: "1.0.0-alpha.9" }).allowed).toBe(false);
+    expect(policy.evaluate({ name: "lib", version: "1.0.0-beta" }).allowed).toBe(true);
+    expect(policy.evaluate({ name: "lib", version: "1.0.0" }).allowed).toBe(true);
+  });
+
+  test("rejects an invalid minimum version at construction", () => {
+    expect(() => new ComponentPolicy({ minVersions: { lib: ">=2" } })).toThrow("not a valid version");
+  });
 });

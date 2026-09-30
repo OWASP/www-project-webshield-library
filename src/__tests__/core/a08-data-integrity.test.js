@@ -236,4 +236,35 @@ describe("A08 data integrity", () => {
     });
     await expect(client.request("https://api.example.com/loop")).rejects.toThrow("Redirect hop limit exceeded");
   });
+
+  test("credential origin check resolves URLs the way fetch does (empty baseUrl)", async () => {
+    const client = new HTTPClient({
+      tokenProvider: () => "VICTIM-TOKEN",
+      fetchImpl: async () => {
+        throw new Error("fetch should not be called");
+      }
+    });
+    for (const url of [" https://evil.example/x", "\thttps://evil.example/x", "//evil.example/x", "/\\evil.example/x", "\\\\evil.example/x"]) {
+      await expect(client.request(url)).rejects.toMatchObject({ code: "CREDENTIAL_LEAK_BLOCKED" });
+    }
+  });
+
+  test("empty baseUrl allows the page's own origin, relative or absolute", async () => {
+    const urls = [];
+    const client = new HTTPClient({
+      tokenProvider: () => "token",
+      fetchImpl: async (url) => {
+        urls.push(url);
+        return okResponse();
+      }
+    });
+    await client.request("/api/items");
+    await client.request(`${window.location.origin}/api/items`);
+    expect(urls).toEqual(["/api/items", `${window.location.origin}/api/items`]);
+  });
+
+  test("never sends credentials to opaque-origin URLs", async () => {
+    const client = new HTTPClient({ tokenProvider: () => "token", fetchImpl: async () => okResponse() });
+    await expect(client.request("data:text/plain,hi")).rejects.toMatchObject({ code: "CREDENTIAL_LEAK_BLOCKED" });
+  });
 });

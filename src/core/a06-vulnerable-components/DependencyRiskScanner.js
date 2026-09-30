@@ -1,3 +1,14 @@
+import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
+
+const SEVERITY_ORDER = ["low", "medium", "high", "critical"];
+// Vocabulary used by common scanners (npm audit: "info"/"moderate") mapped onto ours.
+const SEVERITY_ALIASES = { info: "low", informational: "low", moderate: "medium" };
+
+function severityIndex(severity) {
+  const value = String(severity ?? "").trim().toLowerCase();
+  return SEVERITY_ORDER.indexOf(SEVERITY_ALIASES[value] || value);
+}
+
 export class DependencyRiskScanner {
   /**
    * @param {{scan: () => Promise<Array<{name:string,severity:string,fixedVersion?:string,currentVersion?:string}>>}} provider
@@ -16,11 +27,18 @@ export class DependencyRiskScanner {
     }));
   }
 
+  // Severities are matched case-insensitively with scanner aliases (e.g. npm's
+  // "moderate"); a finding whose severity is still unrecognized blocks the gate.
   async passesPolicy(threshold = "high") {
-    const severities = ["low", "medium", "high", "critical"];
-    const thresholdIdx = severities.indexOf(threshold);
+    const thresholdIdx = severityIndex(threshold);
+    if (thresholdIdx === -1) {
+      throw new SecurityError(SecurityErrorCode.INVALID_INPUT, "Unknown severity threshold", { threshold });
+    }
     const results = await this.scan();
-    const blocked = results.filter((r) => severities.indexOf(r.severity) >= thresholdIdx);
+    const blocked = results.filter((r) => {
+      const idx = severityIndex(r.severity);
+      return idx === -1 || idx >= thresholdIdx;
+    });
     return { pass: blocked.length === 0, blocked, results };
   }
 }
