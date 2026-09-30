@@ -80,4 +80,50 @@ describe("A03 injection defense", () => {
     expect(validator.validateLength("secret", { min: 6, max: 10 })).toBe(true);
     expect(validator.validateLength("x", { min: 2 })).toBe(false);
   });
+
+  test("moderate profile strips javascript: URLs hidden behind control characters", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    for (const prefix of ["&#1;", "\u0001", "&#x1f;", "\u0000", " \t\n"]) {
+      const clean = sanitizer.sanitizeHTML('<a href="' + prefix + 'javascript:alert(1)">x</a>');
+      expect(clean).toBe("<a>x</a>");
+    }
+    // Checked with the browser's own parser: none of these may yield a javascript: link.
+    for (const prefix of ["&#1;", "&#0;", "&#x1f;", "&#x80;", "&Tab;"]) {
+      const container = document.createElement("div");
+      container.innerHTML = sanitizer.sanitizeHTML('<a href="' + prefix + 'javascript:alert(1)">x</a>');
+      expect(container.querySelector("a").protocol).not.toBe("javascript:");
+    }
+    expect(sanitizer.sanitizeHTML('<a href="https://example.com/">x</a>')).toBe('<a href="https://example.com/">x</a>');
+  });
+
+  test("out-of-range and surrogate numeric entities become U+FFFD instead of throwing", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    expect(sanitizer.sanitizeHTML('<a title="&#99999999;&#xD800;">x</a>')).toBe('<a title="\uFFFD\uFFFD">x</a>');
+  });
+
+  test("moderate output is always balanced", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    expect(sanitizer.sanitizeHTML("<div/>text</p></div></li>")).toBe("<div>text</div>");
+    expect(sanitizer.sanitizeHTML("<b><i>x</b>y")).toBe("<b><i>x</i></b>y");
+    expect(sanitizer.sanitizeHTML("<ul><li>a<li>b</ul>")).toBe("<ul><li>a<li>b</li></li></ul>");
+    expect(sanitizer.sanitizeHTML("a<br>b<img src=x.png>")).toBe('a<br />b<img src="x.png" />');
+  });
+
+  test("validateSchema is stable with global/sticky patterns", () => {
+    const validator = new InputValidator();
+    const schema = { code: { pattern: /^[A-Z]{3}$/g } };
+    const results = [1, 2, 3].map(() => validator.validateSchema({ code: "ABC" }, schema).valid);
+    expect(results).toEqual([true, true, true]);
+    expect(schema.code.pattern.lastIndex).toBe(0);
+  });
+
+  test("moderate profile drops class unless the class name is allowlisted", () => {
+    const overlay = '<div class="fixed inset-0 z-50 bg-white">Session expired</div>';
+    expect(new InputSanitizer("moderate").sanitizeHTML(overlay)).toBe("<div>Session expired</div>");
+
+    const sanitizer = new InputSanitizer("moderate", { allowedClasses: ["highlight", "muted"] });
+    expect(sanitizer.sanitizeHTML('<span class="highlight fixed inset-0 highlight">x</span>')).toBe('<span class="highlight">x</span>');
+    expect(sanitizer.sanitizeHTML('<span class="fixed">x</span>')).toBe("<span>x</span>");
+    expect(sanitizer.sanitizeHTML('<span class="muted&#x20;highlight">x</span>')).toBe('<span class="muted highlight">x</span>');
+  });
 });

@@ -38,4 +38,4 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 - **Vue and Angular adapters** — named as goals in the original project roadmap; only the React adapter exists. Would become `@owasp-webshield/vue`/`@owasp-webshield/angular` under the current naming scheme.
 - **A browser-safe package `.` root for real encryption** — today `CryptoManager` is a throwing stub in the browser build
 
-- **A real, shipped CI security-gate GitHub Action** — `docs/github-actions-security-gate.md` currently documents a pattern, not a reusable action; `owl-enabled-node-secrets-app`'s `NpmAuditProvider` (a real `npm audit`-backed `DependencyRiskScanner` provider) is a candidate to upstream into the core package, since today `DependencyRiskScanner` ships with no built-in provider at all.
+- **A real, shipped CI security-gate GitHub Action** — no reusable action exists yet; `owl-enabled-node-secrets-app`'s `NpmAuditProvider` (a real `npm audit`-backed `DependencyRiskScanner` provider) is a candidate to upstream into the core package, since today `DependencyRiskScanner` ships with no built-in provider at all.

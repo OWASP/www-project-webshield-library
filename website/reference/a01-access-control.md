@@ -2,6 +2,10 @@
 
 Deterministic, deny-overrides access control combining role-based (`RBACManager`) and resource-level (`ACLManager`) policies through a single `PermissionChecker`.
 
+::: warning Enforce access on the server
+`PermissionGate` and `usePermission` in the React adapter only decide what the UI renders. They are not a security boundary: anyone can call your API directly or change the JavaScript running in their browser. Authorize every request on the server with the same rules (`PermissionChecker` works there unchanged), and treat the client-side checks as UX.
+:::
+
 ## Core API (`@owasp-webshield/core`)
 
 ```js

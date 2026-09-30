@@ -146,7 +146,7 @@ Benefits:
 
 - **Development teams** — add category-based security controls quickly and keep feature code focused on business logic instead of reimplementing checks.
 - **Security teams** — standardize controls across services and frontends, and track decisions via typed metadata and events instead of ad hoc logging.
-- **DevSecOps** — enforce quality gates with deterministic failures and integrate policy checks into pull-request pipelines (see [deployment-recipes.md](./deployment-recipes.md) and [github-actions-security-gate.md](./github-actions-security-gate.md)).
+- **DevSecOps** — enforce quality gates with deterministic failures and integrate policy checks into pull-request pipelines (for example, failing a build on `DependencyRiskScanner.passesPolicy()` or `SecurityConfigManager.detectUnsafeSettings()` findings).
 
 ## Architecture Evolution Targets
 

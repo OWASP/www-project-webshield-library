@@ -6,6 +6,7 @@ import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 // browser, and other modern JS runtimes — so this file has no environment-
 // specific import at all and is safe to evaluate in a browser bundle.
 const BASE64URL_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const TOKEN_PATTERN = /^[!-~]+$/; // printable ASCII: covers base64url and server-issued token formats
 
 function bytesToBase64Url(bytes) {
   let result = "";
@@ -66,6 +67,21 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
+function readCookie(name) {
+  const cookies = globalThis.document?.cookie;
+  if (!cookies) return null;
+  for (const part of cookies.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator === -1 || part.slice(0, separator).trim() !== name) continue;
+    try {
+      return decodeURIComponent(part.slice(separator + 1).trim()) || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 function defaultStorage() {
   let value = null;
   return {
@@ -99,6 +115,39 @@ export class CSRFTokenManager {
     return token;
   }
 
+  /**
+   * Stores a token issued by the server (synchronizer-token pattern), e.g. from a
+   * login response or a `<meta name="csrf-token">` tag. A token generated in the
+   * browser proves nothing to the server; it has to validate one it issued itself.
+   */
+  setToken(token) {
+    if (typeof token !== "string" || !TOKEN_PATTERN.test(token)) {
+      throw new SecurityError(SecurityErrorCode.INVALID_INPUT, "CSRF token must be a non-empty printable ASCII string");
+    }
+    this.storage.set(token);
+    return token;
+  }
+
+  /**
+   * Double-submit cookie pattern: the server sets a readable (non-HttpOnly) cookie
+   * and compares it with the header. The cookie is read on every request, so the
+   * header always carries the server's current token. Browser only.
+   * @param {string} [cookieName]
+   */
+  static fromCookie(cookieName = "XSRF-TOKEN") {
+    return new CSRFTokenManager({
+      storage: {
+        get: () => readCookie(cookieName),
+        set: () => {
+          throw new SecurityError(
+            SecurityErrorCode.MISCONFIGURATION,
+            "Cookie-backed CSRF tokens are issued and rotated by the server"
+          );
+        }
+      }
+    });
+  }
+
   attach(headers = {}) {
     const token = this.getToken();
     if (!token) return headers;
@@ -108,7 +157,9 @@ export class CSRFTokenManager {
   validate(token) {
     const expected = this.getToken();
     const expectedBytes = typeof expected === "string" ? stringToBytes(expected) : null;
-    const tokenBytes = typeof token === "string" ? stringToBytes(token) : null;
+    // Tokens are printable ASCII; rejecting anything else up front keeps
+    // stringToBytes()'s byte mapping from treating distinct non-ASCII strings as equal.
+    const tokenBytes = typeof token === "string" && TOKEN_PATTERN.test(token) ? stringToBytes(token) : null;
     const valid = Boolean(expectedBytes && tokenBytes && constantTimeEqual(expectedBytes, tokenBytes));
     if (!valid) {
       throw new SecurityError(SecurityErrorCode.CSRF_INVALID, "CSRF token validation failed");

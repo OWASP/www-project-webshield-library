@@ -220,11 +220,12 @@ export function ArticleWorkspace({ rawHtml }) {
 
 ## Notes
 
+- **`PermissionGate`, `AuthGate` and `usePermission` only decide what the UI renders.** Anyone can call your API directly or change the JavaScript running in their browser, so every request must be authorized again on the server. Use the same `RBACManager`/`ACLManager`/`PermissionChecker` rules there, as the Node example's `server.js` does.
 - `useAuthToken()` updates when the underlying token changes, clears, rotates, or expires.
-- `useSecureHttpClient()` creates a single `CSRFTokenManager` per hook instance and supports async token providers.
+- `useSecureHttpClient()` sends a CSRF token that the server issued: by default the `XSRF-TOKEN` cookie (double-submit pattern, read on every request), or pass a `csrfManager` holding a token from your server (`csrfManager.setToken(token)`). It never makes up a token in the browser, since the server couldn't validate one.
 - `useDependencyRiskScanner()` returns `{ loading, results, error, runScan, scanner }` and keeps `runScan` stable.
 - `useSecurityMonitoring()` is safe without a provider, but the provider is recommended so logging and events are available.
-- Rotate the CSRF token on auth boundary changes (login/logout), not just once at bootstrap.
+- Have the server rotate the CSRF token on auth boundary changes (login/logout), not just once at bootstrap.
 - Keep token storage in-memory unless persistence is explicitly required.
 - Avoid bypassing `PermissionGate` in route-level components — check permissions there, not deeper in the tree, so a missed check can't slip through.
 

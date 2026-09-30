@@ -1,5 +1,5 @@
 import React from "react";
-import { ThreatModelGuard } from "@owasp-webshield/core/modules/a04-insecure-design-guard/ThreatModelGuard.js";
+import { ThreatModelGuard } from "@owasp-webshield/core";
 
 /**
  * React hook wrapper around core ThreatModelGuard.

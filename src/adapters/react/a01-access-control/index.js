@@ -1,5 +1,5 @@
 import React from "react";
-import { PermissionChecker } from "@owasp-webshield/core/modules/a01-access-control/PermissionChecker.js";
+import { PermissionChecker } from "@owasp-webshield/core";
 import { useAuth } from "../a07-auth-session/index.js";
 
 export const ACLContext = React.createContext(null);
@@ -34,9 +34,16 @@ export function usePermission(action, resource) {
 	}, [rbacManager, aclManager]);
 
 	return React.useMemo(() => {
-		const role = session?.roles?.[0];
-		if (!role || !checker) return { allowed: false, reason: "no_role" };
-		return checker.check({ role, action, resource });
+		const roles = Array.isArray(session?.roles) ? session.roles : [];
+		if (roles.length === 0 || !checker) return { allowed: false, reason: "no_role" };
+		// Allowed if any of the session's roles grants it; an ACL deny applies to every
+		// role, so the first result already reports it.
+		let result;
+		for (const role of roles) {
+			result = checker.check({ role, action, resource });
+			if (result.allowed || result.reason === "acl_deny_override") return result;
+		}
+		return result;
 	}, [session, checker, action, resource]);
 }
 

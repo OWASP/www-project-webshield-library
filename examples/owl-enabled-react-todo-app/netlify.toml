@@ -4,3 +4,16 @@
   # so a fresh checkout (like Netlify's) doesn't have it. Build the root package first.
   command = "cd ../.. && npm ci && npm run build && cd examples/owl-enabled-react-todo-app && npm run build"
   publish = "dist"
+
+# Security headers for the deployed demo. The OWL library only hardens requests;
+# response headers like these must come from the server/host.
+[[headers]]
+  for = "/*"
+  [headers.values]
+  Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+  X-Content-Type-Options = "nosniff"
+  X-Frame-Options = "DENY"
+  Referrer-Policy = "strict-origin-when-cross-origin"
+  Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+  Cross-Origin-Opener-Policy = "same-origin"

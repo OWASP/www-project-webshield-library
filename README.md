@@ -152,8 +152,6 @@ export function App() {
 | [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-webshield/core` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
 | [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) ([live demo](https://owl-todo-demo.netlify.app/)) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
 | [Node API integration](docs/node-api-integration.md) | Express-style middleware patterns |
-| [Deployment recipes](docs/deployment-recipes.md) | Production and CI deployment patterns |
-| [GitHub Actions gate](docs/github-actions-security-gate.md) | Security quality gate for CI/CD |
 
 ## Scripts
 
