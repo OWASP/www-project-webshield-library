@@ -14,6 +14,7 @@ import {
   withSecurityHeaders,
   A10SSRFDefense
 } from "../../adapters/react/index.js";
+import { CSRFTokenManager } from "../../core/index.js";
 
 describe("React adapter A02-A10 hooks", () => {
   test("A02 useCryptoManager creates manager with working deriveKey", () => {
@@ -112,7 +113,36 @@ describe("React adapter A02-A10 hooks", () => {
 
     const response = await result.current.request("/health", { method: "GET" });
     expect(response.data.headers.Authorization).toBe("Bearer token-async");
-    expect(response.data.headers["X-CSRF-Token"]).toBeTruthy();
+    // No XSRF-TOKEN cookie and no server-issued token: no made-up CSRF header.
+    expect(response.data.headers["X-CSRF-Token"]).toBeUndefined();
+  });
+
+  test("A08 useSecureHttpClient sends the server's XSRF-TOKEN cookie (double-submit)", async () => {
+    const sent = [];
+    const fetchImpl = async (_url, options) => {
+      sent.push(options.headers["X-CSRF-Token"]);
+      return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+    };
+    const { result } = renderHook(() => A08DataIntegrity.useSecureHttpClient({ fetchImpl }));
+    document.cookie = "XSRF-TOKEN=server%2Dissued-1";
+    await result.current.request("/a", { method: "POST" });
+    document.cookie = "XSRF-TOKEN=server-issued-2"; // server rotated it
+    await result.current.request("/b", { method: "POST" });
+    document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    expect(sent).toEqual(["server-issued-1", "server-issued-2"]);
+  });
+
+  test("A08 useSecureHttpClient uses a server-issued token from a csrfManager", async () => {
+    const csrfManager = new CSRFTokenManager();
+    csrfManager.setToken("token-from-login-response");
+    let sent;
+    const fetchImpl = async (_url, options) => {
+      sent = options.headers["X-CSRF-Token"];
+      return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+    };
+    const { result } = renderHook(() => A08DataIntegrity.useSecureHttpClient({ csrfManager, fetchImpl }));
+    await result.current.request("/a", { method: "POST" });
+    expect(sent).toBe("token-from-login-response");
   });
 
   test("A08 withSecurityHeaders applies request-side defaults without removing caller headers", () => {

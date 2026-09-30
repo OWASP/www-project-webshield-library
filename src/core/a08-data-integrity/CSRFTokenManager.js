@@ -67,6 +67,21 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
+function readCookie(name) {
+  const cookies = globalThis.document?.cookie;
+  if (!cookies) return null;
+  for (const part of cookies.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator === -1 || part.slice(0, separator).trim() !== name) continue;
+    try {
+      return decodeURIComponent(part.slice(separator + 1).trim()) || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 function defaultStorage() {
   let value = null;
   return {
@@ -98,6 +113,39 @@ export class CSRFTokenManager {
     const token = this.generateToken();
     this.storage.set(token);
     return token;
+  }
+
+  /**
+   * Stores a token issued by the server (synchronizer-token pattern), e.g. from a
+   * login response or a `<meta name="csrf-token">` tag. A token generated in the
+   * browser proves nothing to the server; it has to validate one it issued itself.
+   */
+  setToken(token) {
+    if (typeof token !== "string" || !TOKEN_PATTERN.test(token)) {
+      throw new SecurityError(SecurityErrorCode.INVALID_INPUT, "CSRF token must be a non-empty printable ASCII string");
+    }
+    this.storage.set(token);
+    return token;
+  }
+
+  /**
+   * Double-submit cookie pattern: the server sets a readable (non-HttpOnly) cookie
+   * and compares it with the header. The cookie is read on every request, so the
+   * header always carries the server's current token. Browser only.
+   * @param {string} [cookieName]
+   */
+  static fromCookie(cookieName = "XSRF-TOKEN") {
+    return new CSRFTokenManager({
+      storage: {
+        get: () => readCookie(cookieName),
+        set: () => {
+          throw new SecurityError(
+            SecurityErrorCode.MISCONFIGURATION,
+            "Cookie-backed CSRF tokens are issued and rotated by the server"
+          );
+        }
+      }
+    });
   }
 
   attach(headers = {}) {

@@ -340,4 +340,27 @@ describe("A08 data integrity", () => {
       expect(calls[0].redirect).toBeUndefined();
     });
   });
+
+  test("CSRF setToken stores a server-issued token and validate accepts it", () => {
+    const csrf = new CSRFTokenManager();
+    csrf.setToken("srv-issued_token.123");
+    expect(csrf.attach({})["X-CSRF-Token"]).toBe("srv-issued_token.123");
+    expect(csrf.validate("srv-issued_token.123")).toBe(true);
+    expect(() => csrf.setToken("")).toThrow("printable ASCII");
+    expect(() => csrf.setToken("t\u0141")).toThrow("printable ASCII");
+  });
+
+  test("CSRF fromCookie reads the server's cookie on every call and refuses local rotation", () => {
+    const csrf = CSRFTokenManager.fromCookie("XSRF-TOKEN");
+    expect(csrf.getToken()).toBeNull();
+    document.cookie = "other=1";
+    document.cookie = "XSRF-TOKEN=abc%3D%3D";
+    expect(csrf.getToken()).toBe("abc==");
+    expect(csrf.attach({})["X-CSRF-Token"]).toBe("abc==");
+    document.cookie = "XSRF-TOKEN=rotated";
+    expect(csrf.getToken()).toBe("rotated");
+    expect(() => csrf.rotateToken()).toThrow("issued and rotated by the server");
+    document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "other=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  });
 });

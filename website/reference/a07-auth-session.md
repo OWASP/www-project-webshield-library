@@ -109,5 +109,6 @@ export function AuthTree({ children }) {
 
 - `useAuthToken()` updates when the underlying `TokenManager` emits `token:changed`, `token:cleared`, or `token:rotated`.
 - `AuthProvider` also schedules an auth-state recheck at `expiresAt`, so `AuthGate` falls back automatically once the token expires.
+- `AuthGate` only controls what the UI renders. The server must still reject requests without a valid session or token; see the [A01 note](/reference/a01-access-control).
 
 See also: [React Adapter Setup](/guide/react-setup) for the full multi-category provider tree.

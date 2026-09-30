@@ -18,7 +18,10 @@ const MODERATE_ALLOWED_TAGS = new Set([
   "h1", "h2", "h3", "h4", "h5", "h6"
 ]);
 
-const GLOBAL_ALLOWED_ATTRS = new Set(["title", "class"]);
+// "class" is not allowed by default: user content could borrow the page's own CSS
+// (e.g. Tailwind's "fixed inset-0 z-50") to overlay a fake login form. Opt in to
+// specific class names with the `allowedClasses` option.
+const GLOBAL_ALLOWED_ATTRS = new Set(["title"]);
 const TAG_ALLOWED_ATTRS = {
   a: new Set(["href", "target", "rel"]),
   img: new Set(["src", "alt", "width", "height"])
@@ -150,10 +153,17 @@ function tokenizeHTML(html) {
   return tokens;
 }
 
-function sanitizeAttrs(tagName, attrs) {
+function sanitizeAttrs(tagName, attrs, allowedClasses) {
   const safeAttrs = [];
   for (const [name, value] of Object.entries(attrs)) {
     if (name.startsWith("on") || name === "style") continue;
+    if (name === "class") {
+      const kept = decodeEntities(value)
+        .split(/\s+/)
+        .filter((className) => allowedClasses.has(className));
+      if (kept.length) safeAttrs.push(`class="${encodeAttrValue([...new Set(kept)].join(" "))}"`);
+      continue;
+    }
     const isAllowed = GLOBAL_ALLOWED_ATTRS.has(name) || TAG_ALLOWED_ATTRS[tagName]?.has(name);
     if (!isAllowed) continue;
     if (URL_ATTRS.has(name) && !isSafeUrl(value)) continue;
@@ -162,7 +172,7 @@ function sanitizeAttrs(tagName, attrs) {
   return safeAttrs.length ? ` ${safeAttrs.join(" ")}` : "";
 }
 
-function sanitizeTokens(tokens, { allowTags }) {
+function sanitizeTokens(tokens, { allowTags, allowedClasses }) {
   let output = "";
   const stripStack = [];
   // Allowed tags left open, so output is always balanced: stray closing tags are
@@ -201,7 +211,7 @@ function sanitizeTokens(tokens, { allowTags }) {
       continue;
     }
 
-    const attrString = sanitizeAttrs(token.name, token.attrs);
+    const attrString = sanitizeAttrs(token.name, token.attrs, allowedClasses);
     if (VOID_ELEMENTS.has(token.name)) {
       output += `<${token.name}${attrString} />`;
     } else {
@@ -216,14 +226,21 @@ function sanitizeTokens(tokens, { allowTags }) {
 }
 
 export class InputSanitizer {
-  constructor(profile = "strict") {
+  /**
+   * @param {"strict"|"moderate"} [profile]
+   * @param {{allowedClasses?: string[]}} [options] class names that may survive on
+   *   moderate-profile tags; every other class name is removed.
+   */
+  constructor(profile = "strict", options = {}) {
     this.profile = profile === "moderate" ? "moderate" : "strict";
+    this.allowedClasses = new Set(options.allowedClasses || []);
   }
 
   sanitizeHTML(input) {
     const tokens = tokenizeHTML(String(input || ""));
     return sanitizeTokens(tokens, {
-      allowTags: this.profile === "moderate" ? MODERATE_ALLOWED_TAGS : null
+      allowTags: this.profile === "moderate" ? MODERATE_ALLOWED_TAGS : null,
+      allowedClasses: this.allowedClasses
     });
   }
 }

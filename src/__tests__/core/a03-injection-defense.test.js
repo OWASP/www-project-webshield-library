@@ -116,4 +116,14 @@ describe("A03 injection defense", () => {
     expect(results).toEqual([true, true, true]);
     expect(schema.code.pattern.lastIndex).toBe(0);
   });
+
+  test("moderate profile drops class unless the class name is allowlisted", () => {
+    const overlay = '<div class="fixed inset-0 z-50 bg-white">Session expired</div>';
+    expect(new InputSanitizer("moderate").sanitizeHTML(overlay)).toBe("<div>Session expired</div>");
+
+    const sanitizer = new InputSanitizer("moderate", { allowedClasses: ["highlight", "muted"] });
+    expect(sanitizer.sanitizeHTML('<span class="highlight fixed inset-0 highlight">x</span>')).toBe('<span class="highlight">x</span>');
+    expect(sanitizer.sanitizeHTML('<span class="fixed">x</span>')).toBe("<span>x</span>");
+    expect(sanitizer.sanitizeHTML('<span class="muted&#x20;highlight">x</span>')).toBe('<span class="muted highlight">x</span>');
+  });
 });

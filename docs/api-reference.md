@@ -132,7 +132,7 @@ import {
 
 const salt = generateSalt();
 const crypto = new CryptoManager({
-  kdfAdapter: new PBKDF2Adapter({ iterations: 210000, keyLength: 32, digest: "sha256" })
+  kdfAdapter: new PBKDF2Adapter({ iterations: 600000, keyLength: 32, digest: "sha256" })
 });
 
 const { key } = crypto.deriveKey("correct-horse-battery-staple", salt);
@@ -622,7 +622,7 @@ export function ProfileLoader({ tokenManager }) {
 }
 ```
 
-- `useSecureHttpClient()` creates one `CSRFTokenManager` per hook instance and rotates a token during initialization.
+- `useSecureHttpClient()` sends a CSRF token that your server issued, because only the server can validate it. By default it reads the `XSRF-TOKEN` cookie on every request (double-submit pattern; `csrfCookieName` changes the name). Alternatively, pass `csrfManager` with a token from your server (`csrfManager.setToken(token)`, e.g. from the login response). It also accepts `allowedOrigins` and `outboundRequestPolicy`.
 - `withSecurityHeaders()` applies request-side defaults (`credentials: "same-origin"`, `referrerPolicy: "strict-origin-when-cross-origin"`) and preserves caller-supplied options and headers. Response headers such as `X-Frame-Options` must be set by your server.
 
 ### A09 Logging Monitoring Adapter

@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
-import { PBKDF2Adapter } from "./KDFAdapters.js";
+import { DEFAULT_PBKDF2_ITERATIONS, PBKDF2Adapter } from "./KDFAdapters.js";
 
 function toBase64(buffer) {
   return Buffer.from(buffer).toString("base64");
@@ -15,7 +15,7 @@ export class CryptoManager {
     this.kdfAdapter =
       options.kdfAdapter ||
       new PBKDF2Adapter({
-        iterations: options.iterations || 210000,
+        iterations: options.iterations || DEFAULT_PBKDF2_ITERATIONS,
         keyLength: options.keyLength || 32,
         digest: options.digest || "sha256"
       });

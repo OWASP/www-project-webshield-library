@@ -78,4 +78,16 @@ describe("A02 crypto integrity", () => {
       expect(SecretPolicy.isEntropySufficient(strong)).toBe(true);
     }
   });
+
+  test("PBKDF2 defaults follow OWASP guidance for SHA-256 and old keys stay reproducible", () => {
+    expect(new PBKDF2Adapter().iterations).toBe(600000);
+    expect(new CryptoManager().kdfAdapter.iterations).toBe(600000);
+
+    const salt = Buffer.from("fixed-salt");
+    const legacy = new CryptoManager({ iterations: 210000 });
+    const legacyKey = legacy.deriveKey("pw", salt).key;
+    expect(new CryptoManager().deriveKey("pw", salt).key.equals(legacyKey)).toBe(false);
+    const payload = legacy.encrypt("data", legacyKey);
+    expect(legacy.decrypt(payload, legacy.deriveKey("pw", salt).key)).toBe("data");
+  });
 });

@@ -33,6 +33,9 @@ console.log(cleanHtml, validation.valid, INJECTION_DEFENSE_TYPES);
 `InputSanitizer` is tokenizer-based, not regex-based — it closes bypasses via unclosed `<script>` tags, `/`-separated event handlers (e.g. `<svg/onload=...>`), and obfuscated `javascript:` URLs. The `moderate` profile allows a fixed set of formatting tags; `strict` strips all markup.
 :::
 
+- Moderate-profile attributes are limited to `title`, `href`/`target`/`rel` on links, and `src`/`alt`/`width`/`height` on images, with URLs restricted to `http:`, `https:`, `mailto:` and `tel:`.
+- `class` is removed by default: user content could otherwise borrow your own CSS (for example Tailwind's `fixed inset-0 z-50`) to cover the page with a fake login form. To keep specific class names, pass them explicitly: `new InputSanitizer("moderate", { allowedClasses: ["highlight"] })`, or `<SanitizedText profile="moderate" allowedClasses={["highlight"]} />` in React.
+
 ## React Adapter (`@owasp-webshield/react`)
 
 ```jsx

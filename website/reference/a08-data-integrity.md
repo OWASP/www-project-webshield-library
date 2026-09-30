@@ -28,6 +28,7 @@ const response = await client.request("/profile", { method: "GET" });
 console.log(response.ok, response.data, DATA_INTEGRITY_TYPES);
 ```
 
+- **Where CSRF tokens come from.** The server validates the token, so it has to be one the server issued and can look up. Either keep one per session on the server and send it to the client (synchronizer token: `new CSRFTokenManager({ storage: { get: () => req.session.csrf, set: (t) => (req.session.csrf = t) } })`, with `rotateToken()` at login and `setToken()` on the client), or set it in a readable cookie and compare it with the `X-CSRF-Token` header (double-submit: `CSRFTokenManager.fromCookie("XSRF-TOKEN")` on the client). The default in-memory storage holds one token for the whole process, so on a server it would be shared by every user.
 - `HTTPClient` accepts a `tokenProvider` function that may return a string, `null`, or a promise for either value. The client always awaits it before sending the request.
 - `Authorization` / `X-CSRF-Token` headers are only attached to requests whose target matches `baseUrl`'s origin, or an origin explicitly listed in `allowedOrigins` — otherwise a `CREDENTIAL_LEAK_BLOCKED` `SecurityError` is thrown. This closes a cross-origin credential leak; see [CHANGELOG](/changelog) for the 1.0.3 fix.
 - Passing an `outboundRequestPolicy` (typically a [`SSRFGuard`](/reference/a10-ssrf-defense)) composes transport hardening with SSRF defense in one client: the target is DNS-validated, redirects are followed manually with every hop re-validated, and `Authorization`/`X-CSRF-Token`/`Cookie` are stripped when a redirect leaves the original origin. In browsers the target of a manual redirect is hidden (an `opaqueredirect` response), so it can't be validated and the request fails with `SSRF_BLOCKED`. Request the final URL directly.
@@ -62,5 +63,5 @@ export function ProfileLoader({ tokenManager }) {
 }
 ```
 
-- `useSecureHttpClient()` creates one `CSRFTokenManager` per hook instance and rotates a token during initialization.
+- `useSecureHttpClient()` sends a CSRF token that your server issued, because only the server can validate it. By default it reads the `XSRF-TOKEN` cookie on every request (double-submit pattern; `csrfCookieName` changes the name). Alternatively, pass `csrfManager` with a token from your server (`csrfManager.setToken(token)`, e.g. from the login response). It also accepts `allowedOrigins` and `outboundRequestPolicy`.
 - `withSecurityHeaders()` applies request-side defaults (`credentials: "same-origin"`, `referrerPolicy: "strict-origin-when-cross-origin"`) and preserves caller-supplied options and headers. Response headers such as `X-Frame-Options` must be set by your server.
