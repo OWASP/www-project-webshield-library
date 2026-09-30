@@ -2,7 +2,7 @@
 
 - [Incubator Project](https://owasp.org/projects/)
 - [Tool Project](https://github.com/OWASP/www-project-webshield-library.git)
-- [Version 0.1.0](https://github.com/OWASP/www-project-webshield-library/releases)
+- [Version 1.0.0](https://github.com/OWASP/www-project-webshield-library/releases)
 
 ### Downloads or Social Links
 

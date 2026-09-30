@@ -1,6 +1,19 @@
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
+import { hasCredentialHeaders, nextRedirectInit } from "../a10-ssrf-defense/redirect.js";
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+
+// Outside a browser there is no page to resolve relative URLs against, so this
+// placeholder stands in for "the page's own origin".
+const NO_PAGE_BASE = "http://owl.invalid/";
+
+// fetch() resolves relative URLs against the document base URL in browsers.
+function pageContext() {
+  return {
+    base: globalThis.document?.baseURI || globalThis.location?.href || NO_PAGE_BASE,
+    origin: globalThis.location?.origin || new URL(NO_PAGE_BASE).origin
+  };
+}
 
 export class HTTPClient {
   /**
@@ -10,7 +23,7 @@ export class HTTPClient {
     this.baseUrl = options.baseUrl || "";
     this.csrfManager = options.csrfManager || null;
     this.tokenProvider = options.tokenProvider || null;
-    this.fetchImpl = options.fetchImpl || fetch;
+    this.fetchImpl = options.fetchImpl || ((...args) => fetch(...args));
     this.outboundRequestPolicy = options.outboundRequestPolicy || null;
     this.allowedOrigins = new Set(options.allowedOrigins || []);
     this.requestInterceptors = [];
@@ -25,39 +38,35 @@ export class HTTPClient {
     this.responseInterceptors.push(interceptor);
   }
 
-  // Relative URLs always resolve under baseUrl/the current origin, so only an
-  // absolute request URL can point somewhere else and needs an origin check.
+  // Resolves the URL exactly as fetch() will rather than pattern-matching the raw
+  // string: " https://evil", "//evil" and "/\evil" all look relative but resolve to
+  // another origin. Credentials may only go to baseUrl's origin (the page's origin
+  // when baseUrl is empty or relative) or an explicitly allowlisted origin.
   _isCredentialSafeOrigin(requestUrl) {
-    if (!ABSOLUTE_URL_PATTERN.test(requestUrl)) return true;
-
-    let targetOrigin;
+    const page = pageContext();
+    let target;
     try {
-      targetOrigin = new URL(requestUrl).origin;
+      target = new URL(requestUrl, page.base);
     } catch {
       return false;
     }
+    if (target.origin === "null") return false; // opaque origins (data:, file:, ...) never match
 
-    if (this.allowedOrigins.has(targetOrigin)) return true;
+    if (this.allowedOrigins.has(target.origin)) return true;
 
-    if (this.baseUrl) {
-      try {
-        return new URL(this.baseUrl).origin === targetOrigin;
-      } catch {
-        return false;
-      }
+    let ownOrigin;
+    try {
+      ownOrigin = new URL(this.baseUrl).origin;
+    } catch {
+      ownOrigin = page.origin; // empty or relative baseUrl
     }
-
-    return false;
+    return target.origin === ownOrigin;
   }
 
   async request(url, options = {}) {
     let config = {
       ...options,
-      headers: {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        ...(options.headers || {})
-      }
+      headers: { ...(options.headers || {}) }
     };
 
     const requestUrl = ABSOLUTE_URL_PATTERN.test(url) ? url : `${this.baseUrl}${url}`;
@@ -87,11 +96,17 @@ export class HTTPClient {
       config = (await interceptor(config)) || config;
     }
 
+    // fetch keeps custom headers such as X-CSRF-Token when it follows a redirect to
+    // another origin, so credentialed requests follow redirects themselves unless
+    // the caller chose a `redirect` mode explicitly.
+    let response;
     if (this.outboundRequestPolicy) {
-      this.outboundRequestPolicy.validateUrl(requestUrl);
+      response = await this._followRedirects(requestUrl, config, this.outboundRequestPolicy);
+    } else if (config.redirect === undefined && hasCredentialHeaders(config.headers)) {
+      response = await this._followRedirects(requestUrl, config, null);
+    } else {
+      response = await this.fetchImpl(requestUrl, config);
     }
-
-    const response = await this.fetchImpl(requestUrl, config);
     const normalized = {
       ok: response.ok,
       status: response.status,
@@ -119,5 +134,50 @@ export class HTTPClient {
     }
 
     return normalized;
+  }
+
+  // Follows redirects manually: every hop passes the outbound policy (when there is
+  // one), and credentials are dropped when a redirect leaves the current origin.
+  async _followRedirects(requestUrl, config, policy) {
+    const maxHops = policy ? (Number.isInteger(policy.maxRedirectHops) ? policy.maxRedirectHops : 3) : 20;
+    let target = requestUrl;
+    let init = { ...config, redirect: "manual" };
+
+    for (let hop = 0; hop <= maxHops; hop++) {
+      if (typeof policy?.assertResolvedSafe === "function") {
+        await policy.assertResolvedSafe(target);
+      } else if (policy) {
+        policy.validateUrl(target);
+      }
+
+      const response = await this.fetchImpl(target, init);
+      // Browsers hide the Location of a manual redirect (status 0, type "opaqueredirect"),
+      // so the next hop can't be checked; refuse it instead of returning a blank response.
+      if (response.type === "opaqueredirect") {
+        throw policy
+          ? new SecurityError(
+              SecurityErrorCode.SSRF_BLOCKED,
+              "Redirect cannot be validated in this runtime (opaque redirect); request the final URL directly",
+              { url: target }
+            )
+          : new SecurityError(
+              SecurityErrorCode.CREDENTIAL_LEAK_BLOCKED,
+              'Credentialed request was redirected to a target that cannot be checked in this runtime; request the final URL directly, or pass redirect: "follow" to accept forwarding the credentials',
+              { url: target }
+            );
+      }
+      const isRedirect = response.status >= 300 && response.status < 400;
+      const location = isRedirect ? response.headers?.get?.("location") : null;
+      if (!location) return response;
+
+      const base = new URL(target, pageContext().base);
+      const next = new URL(location, base);
+      init = nextRedirectInit(init, response.status, base, next);
+      target = next.toString();
+    }
+
+    throw policy
+      ? new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Redirect hop limit exceeded", { max: maxHops })
+      : new SecurityError(SecurityErrorCode.INVALID_INPUT, "Redirect hop limit exceeded", { max: maxHops });
   }
 }

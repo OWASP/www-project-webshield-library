@@ -1,7 +1,7 @@
 {
-  "name": "@owasp-core/owl-react",
-  "version": "0.1.0",
-  "description": "React adapter for OWL (OWASP Web Shield Library): category-aligned providers, hooks, and guard components for @owasp-core/owl",
+  "name": "@owasp-webshield/react",
+  "version": "1.0.0",
+  "description": "React adapter for OWL (OWASP Web Shield Library): category-aligned providers, hooks, and guard components for @owasp-webshield/core",
   "private": false,
   "type": "module",
   "main": "./index.js",
@@ -59,6 +59,6 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@owasp-core/owl": "^1.0.4"
+    "@owasp-webshield/core": "file:../../.."
   }
 }

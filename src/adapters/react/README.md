@@ -1,43 +1,40 @@
-# @owasp-core/owl-react
+# @owasp-webshield/react
 
-React adapter for [OWL (OWASP Web Shield Library)](https://owasp.org/www-project-webshield-library/) — category-aligned providers, hooks, and guard components for [`@owasp-core/owl`](https://www.npmjs.com/package/@owasp-core/owl), covering every OWASP Top 10 category (A01–A10).
+React adapter for [OWL (OWASP Web Shield Library)](https://owasp.org/www-project-webshield-library/) — category-aligned providers, hooks, and guard components for [`@owasp-webshield/core`](https://www.npmjs.com/package/@owasp-webshield/core), covering every OWASP Top 10 category (A01–A10).
 
 ## Installation
 
 ```bash
-npm install @owasp-core/owl @owasp-core/owl-react
+npm install @owasp-webshield/core @owasp-webshield/react
 ```
 
-`@owasp-core/owl` is a peer dependency in spirit (declared as a regular dependency here so a bare `npm install @owasp-core/owl-react` works), and `react`/`react-dom` `>=18` are required peer dependencies.
+`@owasp-webshield/core` is a peer dependency in spirit (declared as a regular dependency here so a bare `npm install @owasp-webshield/react` works), and `react`/`react-dom` `>=18` are required peer dependencies.
 
 ## Quick start
 
 ```jsx
-import React from "react";
-import {
-  AuthProvider,
-  ACLProvider,
-  RBACProvider,
-  AuthGate,
-  PermissionGate
-} from "@owasp-core/owl-react";
+import { createOwlClient } from "@owasp-webshield/core";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-webshield/react";
 
-export function App({ authManager, aclManager, rbacManager }) {
+const owl = createOwlClient({
+  roles: { viewer: { permissions: ["read:reports"] } }
+});
+owl.authManager.setSession({ userId: "u1", roles: ["viewer"] });
+
+export function App() {
   return (
-    <AuthProvider authManager={authManager}>
-      <ACLProvider aclManager={aclManager}>
-        <RBACProvider rbacManager={rbacManager}>
-          <AuthGate fallback={<div>Please sign in</div>}>
-            <PermissionGate action="read" resource="reports" fallback={<div>Forbidden</div>}>
-              <div>Secure Content</div>
-            </PermissionGate>
-          </AuthGate>
-        </RBACProvider>
-      </ACLProvider>
-    </AuthProvider>
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Please sign in</div>}>
+        <PermissionGate action="read" resource="reports" fallback={<div>Forbidden</div>}>
+          <div>Secure Content</div>
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
   );
 }
 ```
+
+`OwlProvider` composes `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` into one component; wire them individually (each is exported too) if you need managers built up in different places.
 
 ## Module map
 
@@ -53,8 +50,9 @@ export function App({ authManager, aclManager, rbacManager }) {
 | A08 Data Integrity | `useSecureHttpClient`, `withSecurityHeaders` |
 | A09 Logging Monitoring | `SecurityProvider`, `useSecurityMonitoring`, `SecurityAlert` |
 | A10 SSRF Defense | `useSafeFetcher` |
+| *(cross-cutting)* | `OwlProvider` — composes the A01/A07/A09 providers above into one component; pair with `createOwlClient()` from `@owasp-webshield/core` |
 
-Each category is also available as a deep import (e.g. `@owasp-core/owl-react/a01-access-control/index.js`) if you only need one.
+Each category is also available as a deep import (e.g. `@owasp-webshield/react/a01-access-control/index.js`) if you only need one.
 
 ## Documentation
 

@@ -69,4 +69,25 @@ describe("A02 crypto integrity", () => {
     const entropy = SecretPolicy.minimumEntropyBits(secret);
     expect(SecretPolicy.isEntropySufficient(secret, entropy)).toBe(true);
   });
+
+  test("predictable secrets score low even when long and mixed-class", () => {
+    for (const weak of ["Password123!", "Summer2024!!", "qwertyuiop12", "abcdefghijkl", "P@ssw0rd2023", "Admin#12345"]) {
+      expect(SecretPolicy.isEntropySufficient(weak)).toBe(false);
+    }
+    for (const strong of ["Xq7!vP2@mK9#", "j8Kd-92Lx-q0Zs-Vt3m"]) {
+      expect(SecretPolicy.isEntropySufficient(strong)).toBe(true);
+    }
+  });
+
+  test("PBKDF2 defaults follow OWASP guidance for SHA-256 and old keys stay reproducible", () => {
+    expect(new PBKDF2Adapter().iterations).toBe(600000);
+    expect(new CryptoManager().kdfAdapter.iterations).toBe(600000);
+
+    const salt = Buffer.from("fixed-salt");
+    const legacy = new CryptoManager({ iterations: 210000 });
+    const legacyKey = legacy.deriveKey("pw", salt).key;
+    expect(new CryptoManager().deriveKey("pw", salt).key.equals(legacyKey)).toBe(false);
+    const payload = legacy.encrypt("data", legacyKey);
+    expect(legacy.decrypt(payload, legacy.deriveKey("pw", salt).key)).toBe("data");
+  });
 });

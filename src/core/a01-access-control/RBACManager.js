@@ -26,6 +26,9 @@ export class RBACManager {
   }
 
   can(role, action, resource) {
+    // Permissions are "action:resource" strings, so an action containing ":" could
+    // match a different permission (e.g. "read:reports" + "public" vs "read:reports:public").
+    if (String(action).includes(":")) return false;
     const key = `${action}:${resource}`;
     const wildcard = `${action}:*`;
     const perms = this._flattenPermissions(role);

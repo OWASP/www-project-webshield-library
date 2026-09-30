@@ -146,4 +146,28 @@ describe("React adapter hooks", () => {
       jest.useRealTimers();
     }
   });
+
+  test("usePermission allows when any of the session's roles grants it", () => {
+    const tokenManager = new TokenManager({ now: () => 0 });
+    tokenManager.setTokens({ accessToken: "token", expiresAt: 999999 });
+    const authManager = new AuthManager({ tokenManager });
+    authManager.setSession({ userId: "1", roles: ["viewer", "billing"] });
+
+    const aclManager = new ACLManager();
+    const rbacManager = new RBACManager();
+    rbacManager.defineRole("viewer", ["read:reports"]);
+    rbacManager.defineRole("billing", ["pay:invoices"]);
+
+    const wrapper = wrapperFactory({ authManager, aclManager, rbacManager });
+    expect(renderHook(() => usePermission("pay", "invoices"), { wrapper }).result.current.allowed).toBe(true);
+    expect(renderHook(() => usePermission("read", "reports"), { wrapper }).result.current.allowed).toBe(true);
+    expect(renderHook(() => usePermission("delete", "reports"), { wrapper }).result.current).toMatchObject({
+      allowed: false,
+      reason: "rbac_denied"
+    });
+
+    aclManager.setPolicy("invoices", "pay", "deny");
+    const denied = renderHook(() => usePermission("pay", "invoices"), { wrapper: wrapperFactory({ authManager, aclManager, rbacManager }) });
+    expect(denied.result.current).toMatchObject({ allowed: false, reason: "acl_deny_override" });
+  });
 });

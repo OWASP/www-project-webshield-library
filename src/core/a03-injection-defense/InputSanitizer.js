@@ -18,7 +18,10 @@ const MODERATE_ALLOWED_TAGS = new Set([
   "h1", "h2", "h3", "h4", "h5", "h6"
 ]);
 
-const GLOBAL_ALLOWED_ATTRS = new Set(["title", "class"]);
+// "class" is not allowed by default: user content could borrow the page's own CSS
+// (e.g. Tailwind's "fixed inset-0 z-50") to overlay a fake login form. Opt in to
+// specific class names with the `allowedClasses` option.
+const GLOBAL_ALLOWED_ATTRS = new Set(["title"]);
 const TAG_ALLOWED_ATTRS = {
   a: new Set(["href", "target", "rel"]),
   img: new Set(["src", "alt", "width", "height"])
@@ -33,13 +36,20 @@ const NAMED_ENTITIES = {
   colon: ":", tab: "\t", newline: "\n"
 };
 
+// Browsers replace NUL, surrogates, and out-of-range references with U+FFFD;
+// String.fromCodePoint() would throw a RangeError on attacker input instead.
+function isValidCodePoint(codePoint) {
+  return codePoint > 0 && codePoint <= 0x10ffff && (codePoint < 0xd800 || codePoint > 0xdfff);
+}
+
 // Attribute values are entity-decoded before scheme checks, since browsers do the
 // same before interpreting a URL - otherwise "&#106;avascript:" bypasses the filter.
 function decodeEntities(value) {
   return String(value).replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, ref) => {
     if (ref[0] === "#") {
       const codePoint = ref[1].toLowerCase() === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
-      return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+      if (Number.isNaN(codePoint)) return match;
+      return isValidCodePoint(codePoint) ? String.fromCodePoint(codePoint) : "�";
     }
     return NAMED_ENTITIES[ref.toLowerCase()] || match;
   });
@@ -53,10 +63,14 @@ function encodeAttrValue(value) {
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Browsers strip tabs/newlines/whitespace from a URL before reading its scheme,
-// so "java\tscript:" and similar whitespace-obfuscated payloads must too.
+// Browsers strip leading C0 controls/spaces and every tab/newline from a URL before
+// reading its scheme, so "\x01javascript:" and "java\tscript:" must be normalized the
+// same way. Removing every control character and whitespace is a safe superset.
+// eslint-disable-next-line no-control-regex
+const URL_IGNORED_CHARS = /[\x00-\x20\s]+/g;
+
 function isSafeUrl(rawValue) {
-  const normalized = decodeEntities(rawValue).replace(/\s+/g, "");
+  const normalized = decodeEntities(rawValue).replace(URL_IGNORED_CHARS, "");
   const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(normalized);
   if (!schemeMatch) return true; // relative URL - no scheme to police
   return SAFE_URL_PROTOCOLS.has(`${schemeMatch[1].toLowerCase()}:`);
@@ -139,10 +153,17 @@ function tokenizeHTML(html) {
   return tokens;
 }
 
-function sanitizeAttrs(tagName, attrs) {
+function sanitizeAttrs(tagName, attrs, allowedClasses) {
   const safeAttrs = [];
   for (const [name, value] of Object.entries(attrs)) {
     if (name.startsWith("on") || name === "style") continue;
+    if (name === "class") {
+      const kept = decodeEntities(value)
+        .split(/\s+/)
+        .filter((className) => allowedClasses.has(className));
+      if (kept.length) safeAttrs.push(`class="${encodeAttrValue([...new Set(kept)].join(" "))}"`);
+      continue;
+    }
     const isAllowed = GLOBAL_ALLOWED_ATTRS.has(name) || TAG_ALLOWED_ATTRS[tagName]?.has(name);
     if (!isAllowed) continue;
     if (URL_ATTRS.has(name) && !isSafeUrl(value)) continue;
@@ -151,9 +172,13 @@ function sanitizeAttrs(tagName, attrs) {
   return safeAttrs.length ? ` ${safeAttrs.join(" ")}` : "";
 }
 
-function sanitizeTokens(tokens, { allowTags }) {
+function sanitizeTokens(tokens, { allowTags, allowedClasses }) {
   let output = "";
   const stripStack = [];
+  // Allowed tags left open, so output is always balanced: stray closing tags are
+  // dropped (they could close the surrounding page's elements) and anything still
+  // open at the end is closed.
+  const openTags = [];
 
   for (const token of tokens) {
     if (stripStack.length > 0) {
@@ -180,26 +205,42 @@ function sanitizeTokens(tokens, { allowTags }) {
     }
 
     if (token.type === "close") {
-      output += `</${token.name}>`;
+      const index = openTags.lastIndexOf(token.name);
+      if (index === -1) continue;
+      while (openTags.length > index) output += `</${openTags.pop()}>`;
       continue;
     }
 
-    const attrString = sanitizeAttrs(token.name, token.attrs);
-    output += token.selfClosing ? `<${token.name}${attrString} />` : `<${token.name}${attrString}>`;
+    const attrString = sanitizeAttrs(token.name, token.attrs, allowedClasses);
+    if (VOID_ELEMENTS.has(token.name)) {
+      output += `<${token.name}${attrString} />`;
+    } else {
+      // Browsers ignore "/>" on non-void HTML elements (<div/> opens a div), so treat it as an open tag.
+      output += `<${token.name}${attrString}>`;
+      openTags.push(token.name);
+    }
   }
 
+  while (openTags.length > 0) output += `</${openTags.pop()}>`;
   return output;
 }
 
 export class InputSanitizer {
-  constructor(profile = "strict") {
+  /**
+   * @param {"strict"|"moderate"} [profile]
+   * @param {{allowedClasses?: string[]}} [options] class names that may survive on
+   *   moderate-profile tags; every other class name is removed.
+   */
+  constructor(profile = "strict", options = {}) {
     this.profile = profile === "moderate" ? "moderate" : "strict";
+    this.allowedClasses = new Set(options.allowedClasses || []);
   }
 
   sanitizeHTML(input) {
     const tokens = tokenizeHTML(String(input || ""));
     return sanitizeTokens(tokens, {
-      allowTags: this.profile === "moderate" ? MODERATE_ALLOWED_TAGS : null
+      allowTags: this.profile === "moderate" ? MODERATE_ALLOWED_TAGS : null,
+      allowedClasses: this.allowedClasses
     });
   }
 }

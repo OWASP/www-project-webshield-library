@@ -1,0 +1,59 @@
+name: owl-deploy-todo-app
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "examples/owl-enabled-react-todo-app/**"
+      - "src/core/**"
+      - "src/index.js"
+      - "src/index.browser.js"
+      - "src/adapters/react/**"
+      - "package.json"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy to Netlify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install root workspace
+        run: npm ci
+
+      - name: Build core package
+        run: npm run build
+
+      # npm ci installs exactly what package-lock.json records (and fails if it's out of
+      # date), so this job can't pick up an unreviewed dependency version.
+      - name: Install todo app
+        working-directory: examples/owl-enabled-react-todo-app
+        run: npm ci
+
+      - name: Build todo app
+        working-directory: examples/owl-enabled-react-todo-app
+        run: npm run build
+
+      - name: Deploy to Netlify
+        working-directory: examples/owl-enabled-react-todo-app
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_TODO_APP_SITE_ID }}
+        # Exact version: this step holds the Netlify token, so it must not run whatever
+        # "latest" happens to be at deploy time. Bump deliberately.
+        run: npx --yes netlify-cli@27.10.2 deploy --prod --dir=dist

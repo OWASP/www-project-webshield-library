@@ -7,8 +7,13 @@ import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
  * }} KDFAdapter
  */
 
+// OWASP Password Storage Cheat Sheet: PBKDF2-HMAC-SHA256 needs 600,000 iterations
+// (210,000 is the figure for SHA-512). Keys derived with the 1.0.x default of
+// 210,000 need `iterations: 210000` passed explicitly to be reproduced.
+export const DEFAULT_PBKDF2_ITERATIONS = 600000;
+
 export class PBKDF2Adapter {
-  constructor({ iterations = 210000, keyLength = 32, digest = "sha256" } = {}) {
+  constructor({ iterations = DEFAULT_PBKDF2_ITERATIONS, keyLength = 32, digest = "sha256" } = {}) {
     this.iterations = iterations;
     this.keyLength = keyLength;
     this.digest = digest;

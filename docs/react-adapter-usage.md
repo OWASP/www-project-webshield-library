@@ -2,7 +2,56 @@
 
 ## Goal
 
-Show how to wire `@owasp-core/owl-react` providers, hooks, and guard components around real `@owasp-core/owl` managers.
+Show how to wire `@owasp-webshield/react` providers, hooks, and guard components around real `@owasp-webshield/core` managers.
+
+## Quick start: `createOwlClient` + `OwlProvider`
+
+For the common case — one `AuthManager`/`RBACManager`/`ACLManager`/logger/event-emitter set for the whole app — `createOwlClient()` (core) builds and wires them from one config object, and `OwlProvider` (React adapter) composes the four providers `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` into one component:
+
+```js
+// security.js
+import { createOwlClient } from "@owasp-webshield/core";
+
+export const owl = createOwlClient({
+  roles: {
+    viewer: { permissions: ["read:articles"] },
+    editor: { permissions: ["update:articles"], inherits: ["viewer"] }
+  },
+  acl: [{ resource: "articles", action: "delete", effect: "deny" }]
+});
+
+owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
+```
+
+```jsx
+import React from "react";
+import { AuthGate, OwlProvider, PermissionGate, SecurityAlert } from "@owasp-webshield/react";
+import { owl } from "./security.js";
+
+export function AppProviders({ children }) {
+  return (
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<SecurityAlert level="warn" message="Please sign in" />}>
+        <PermissionGate
+          action="read"
+          resource="articles"
+          fallback={<SecurityAlert level="error" message="Article access denied" />}
+        >
+          {children}
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
+  );
+}
+```
+
+`OwlProvider` also accepts individual manager props (`authManager`, `aclManager`, `rbacManager`, `logger`, `events`) that override the same-named property on `client` — useful if you build most of the client with `createOwlClient()` but need to swap one manager in by hand (a custom `TokenManager` storage adapter, for instance).
+
+See the [`owl-enabled-react-todo-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) for this pattern in a full app.
+
+## Manual setup (full control)
+
+If you need managers that `createOwlClient()` doesn't cover in one call (a `CSRFTokenManager`/`HTTPClient`/`SSRFGuard` pipeline, custom token refresh hooks, etc.), or you just want to see what `createOwlClient`/`OwlProvider` do under the hood, here's the same setup wired by hand:
 
 ## Bootstrap managers once
 
@@ -13,7 +62,7 @@ import {
   RBACManager,
   SecurityLogger,
   TokenManager
-} from "@owasp-core/owl";
+} from "@owasp-webshield/core";
 
 export const tokenManager = new TokenManager({
   onRefresh: async (refreshToken) => ({
@@ -54,7 +103,7 @@ import {
   RBACProvider,
   SecurityAlert,
   SecurityProvider
-} from "@owasp-core/owl-react";
+} from "@owasp-webshield/react";
 import {
   aclManager,
   authManager,
@@ -103,7 +152,7 @@ import {
   useSecurityMonitoring,
   useThreatModelGuard,
   withSecurityHeaders
-} from "@owasp-core/owl-react";
+} from "@owasp-webshield/react";
 import { tokenManager } from "./security-bootstrap.js";
 
 export function ArticleWorkspace({ rawHtml }) {
@@ -171,11 +220,12 @@ export function ArticleWorkspace({ rawHtml }) {
 
 ## Notes
 
+- **`PermissionGate`, `AuthGate` and `usePermission` only decide what the UI renders.** Anyone can call your API directly or change the JavaScript running in their browser, so every request must be authorized again on the server. Use the same `RBACManager`/`ACLManager`/`PermissionChecker` rules there, as the Node example's `server.js` does.
 - `useAuthToken()` updates when the underlying token changes, clears, rotates, or expires.
-- `useSecureHttpClient()` creates a single `CSRFTokenManager` per hook instance and supports async token providers.
+- `useSecureHttpClient()` sends a CSRF token that the server issued: by default the `XSRF-TOKEN` cookie (double-submit pattern, read on every request), or pass a `csrfManager` holding a token from your server (`csrfManager.setToken(token)`). It never makes up a token in the browser, since the server couldn't validate one.
 - `useDependencyRiskScanner()` returns `{ loading, results, error, runScan, scanner }` and keeps `runScan` stable.
 - `useSecurityMonitoring()` is safe without a provider, but the provider is recommended so logging and events are available.
-- Rotate the CSRF token on auth boundary changes (login/logout), not just once at bootstrap.
+- Have the server rotate the CSRF token on auth boundary changes (login/logout), not just once at bootstrap.
 - Keep token storage in-memory unless persistence is explicitly required.
 - Avoid bypassing `PermissionGate` in route-level components — check permissions there, not deeper in the tree, so a missed check can't slip through.
 

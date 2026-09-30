@@ -31,4 +31,12 @@ describe("A04 insecure design guard", () => {
     expect(result.valid).toBe(false);
     expect(result.missing).toContain("audit-log");
   });
+
+  test("prototype property names are not treated as states", () => {
+    const guard = new ThreatModelGuard({ transitions: { draft: ["submitted"] } });
+    for (const from of ["constructor", "__proto__", "toString", "hasOwnProperty"]) {
+      expect(guard.canTransition(from, "x")).toBe(false);
+    }
+    expect(guard.validateTransition("constructor", "x")).toEqual({ valid: false, reason: "forbidden_transition" });
+  });
 });

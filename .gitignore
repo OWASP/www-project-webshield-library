@@ -23,3 +23,6 @@ website/.vitepress/cache/
 # OS artifacts
 .DS_Store
 Thumbs.db
+
+# Local Netlify folder
+.netlify

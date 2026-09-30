@@ -14,6 +14,7 @@ import {
   withSecurityHeaders,
   A10SSRFDefense
 } from "../../adapters/react/index.js";
+import { CSRFTokenManager } from "../../core/index.js";
 
 describe("React adapter A02-A10 hooks", () => {
   test("A02 useCryptoManager creates manager with working deriveKey", () => {
@@ -112,14 +113,45 @@ describe("React adapter A02-A10 hooks", () => {
 
     const response = await result.current.request("/health", { method: "GET" });
     expect(response.data.headers.Authorization).toBe("Bearer token-async");
-    expect(response.data.headers["X-CSRF-Token"]).toBeTruthy();
+    // No XSRF-TOKEN cookie and no server-issued token: no made-up CSRF header.
+    expect(response.data.headers["X-CSRF-Token"]).toBeUndefined();
   });
 
-  test("A08 withSecurityHeaders applies defaults without removing caller headers", () => {
+  test("A08 useSecureHttpClient sends the server's XSRF-TOKEN cookie (double-submit)", async () => {
+    const sent = [];
+    const fetchImpl = async (_url, options) => {
+      sent.push(options.headers["X-CSRF-Token"]);
+      return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+    };
+    const { result } = renderHook(() => A08DataIntegrity.useSecureHttpClient({ fetchImpl }));
+    document.cookie = "XSRF-TOKEN=server%2Dissued-1";
+    await result.current.request("/a", { method: "POST" });
+    document.cookie = "XSRF-TOKEN=server-issued-2"; // server rotated it
+    await result.current.request("/b", { method: "POST" });
+    document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    expect(sent).toEqual(["server-issued-1", "server-issued-2"]);
+  });
+
+  test("A08 useSecureHttpClient uses a server-issued token from a csrfManager", async () => {
+    const csrfManager = new CSRFTokenManager();
+    csrfManager.setToken("token-from-login-response");
+    let sent;
+    const fetchImpl = async (_url, options) => {
+      sent = options.headers["X-CSRF-Token"];
+      return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+    };
+    const { result } = renderHook(() => A08DataIntegrity.useSecureHttpClient({ csrfManager, fetchImpl }));
+    await result.current.request("/a", { method: "POST" });
+    expect(sent).toBe("token-from-login-response");
+  });
+
+  test("A08 withSecurityHeaders applies request-side defaults without removing caller headers", () => {
     const headers = withSecurityHeaders({ headers: { "X-Request-Id": "req-1" } });
-    expect(headers.headers["X-Content-Type-Options"]).toBe("nosniff");
-    expect(headers.headers["X-Frame-Options"]).toBe("DENY");
+    expect(headers.credentials).toBe("same-origin");
+    expect(headers.referrerPolicy).toBe("strict-origin-when-cross-origin");
+    expect(headers.headers["X-Frame-Options"]).toBeUndefined();
     expect(headers.headers["X-Request-Id"]).toBe("req-1");
+    expect(withSecurityHeaders({ credentials: "include" }).credentials).toBe("include");
   });
 
   test("A09 useSecurityMonitoring reads provider context", () => {
@@ -149,5 +181,48 @@ describe("React adapter A02-A10 hooks", () => {
     const fetchImpl = async () => ({ ok: true });
     const { result } = renderHook(() => A10SSRFDefense.useSafeFetcher({}, fetchImpl));
     await expect(result.current.fetch("http://127.0.0.1/internal")).rejects.toThrow();
+  });
+
+  test("A03 SanitizedText renders sanitized HTML without double-escaping", () => {
+    const { container } = render(
+      React.createElement(
+        "div",
+        null,
+        React.createElement(A03InjectionDefense.SanitizedText, { html: "Tom & Jerry <script>x</script>" }),
+        React.createElement(A03InjectionDefense.SanitizedText, { html: '<b>bold</b><img src=x onerror="alert(1)">', profile: "moderate" })
+      )
+    );
+    const [strict, moderate] = container.querySelectorAll("span");
+    expect(strict.textContent).toBe("Tom & Jerry ");
+    expect(moderate.innerHTML).toBe('<b>bold</b><img src="x">');
+  });
+
+  test("hooks keep their instance across renders with an inline config", () => {
+    const { result: fetcher, rerender: rerenderFetcher } = renderHook(() => A10SSRFDefense.useSafeFetcher({ allowProtocols: ["https:"] }));
+    const firstFetcher = fetcher.current;
+    rerenderFetcher();
+    expect(fetcher.current).toBe(firstFetcher);
+
+    const { result: report, rerender: rerenderReport } = renderHook(() =>
+      A05SecurityMisconfiguration.useHardeningReport({ cors: { origin: "*" } })
+    );
+    const firstReport = report.current;
+    rerenderReport();
+    expect(report.current).toBe(firstReport);
+
+    const { result: crypto, rerender: rerenderCrypto } = renderHook(() => A02CryptoIntegrity.useCryptoManager({ iterations: 1000 }));
+    const firstCrypto = crypto.current;
+    rerenderCrypto();
+    expect(crypto.current).toBe(firstCrypto);
+  });
+
+  test("hooks rebuild when the config actually changes", () => {
+    const { result, rerender } = renderHook(({ protocols }) => A10SSRFDefense.useSafeFetcher({ allowProtocols: protocols }), {
+      initialProps: { protocols: ["https:"] }
+    });
+    const first = result.current;
+    rerender({ protocols: ["https:", "http:"] });
+    expect(result.current).not.toBe(first);
+    expect(result.current.guard.allowProtocols.has("http:")).toBe(true);
   });
 });

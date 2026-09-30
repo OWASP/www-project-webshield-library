@@ -2,7 +2,7 @@
 
 ## Goal
 
-Show how to compose the `@owasp-core/owl` modules directly in a framework-agnostic application service.
+Show how to compose the `@owasp-webshield/core` modules directly in a framework-agnostic application service.
 
 ## Bootstrap security services
 
@@ -23,7 +23,7 @@ import {
   SecurityConfigManager,
   SecurityLogger,
   TokenManager
-} from "@owasp-core/owl";
+} from "@owasp-webshield/core";
 
 const logger = new SecurityLogger();
 

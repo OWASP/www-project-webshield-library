@@ -1,6 +1,6 @@
 # OWL Enabled Node Secrets App
 
-A small team credential vault — built directly on `@owasp-core/owl`, no framework —
+A small team credential vault — built directly on `@owasp-webshield/core`, no framework —
 showing every OWASP Top 10 category (A01–A10) doing real work. This example replaces
 `core-node-demo`.
 
@@ -37,6 +37,11 @@ npm run serve       # a small REST API on :8787 — see "Try the API" below
 
 ## Try the API (`npm run serve`)
 
+> ⚠️ **Demo only — do not copy the login route.** `POST /login` issues a session for
+> whichever role the request body names, with no credentials, so anyone who can reach the
+> server can become `admin`. A real service must authenticate the user (password, SSO,
+> passkey, ...) and take roles from its own user store, never from the request.
+
 The server keeps one global session at a time (same simplification the CLI makes) —
 log in again to switch roles. Every mutating request needs both the bearer token from
 `/login` and the CSRF token in `X-CSRF-Token`; omitting either is rejected.
@@ -71,6 +76,7 @@ Other routes: `GET /secrets`, `POST /secrets/:name/rotate` (`{"newValue": "..."}
 
 ## Notes
 
+- The RBAC/ACL roles and the token/session managers are built with `createOwlClient()` (one config object) instead of constructing `RBACManager`/`ACLManager`/`TokenManager`/`AuthManager` separately — see `vault.js`. `EventEmitter`/`SecurityLogger` are still constructed directly since this vault wires the logger's sink into its own audit-trail event channel, which is more specific than `createOwlClient`'s config covers.
 - Vault state (secrets, roles, audit log) is in-memory only — restarting either entry point resets everything.
 - `SSRFGuard.assertResolvedSafe()` does a real DNS lookup for non-literal hostnames in Node (unlike the browser build, which skips DNS entirely). The demo's outbound webhook target, `hooks.example.com`, doesn't have a real DNS record, so `vault.js` injects a fixed `resolveHost` returning a deterministic, non-private address for it — keeping the whole example runnable offline instead of depending on real network access.
 - `npm audit --json` is run against the repo root (`../..`), since this example's own `package.json` has no dependencies to meaningfully audit. Point `NpmAuditProvider`'s `cwd` option at any project with a `package-lock.json` to scan it instead.

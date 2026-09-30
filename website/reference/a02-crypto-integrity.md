@@ -6,7 +6,7 @@ Key derivation, authenticated encryption, and secret-strength policy in one modu
 This module imports Node's built-in `node:crypto`. It runs fine in Node.js and in the React adapter's hooks when your app is server-rendered or Node-bundled, but bundling it directly into a browser build requires polyfilling `node:crypto` — see the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle).
 :::
 
-## Core API (`@owasp-core/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
 import {
@@ -15,11 +15,11 @@ import {
   PBKDF2Adapter,
   SecretPolicy,
   generateSalt
-} from "@owasp-core/owl";
+} from "@owasp-webshield/core";
 
 const salt = generateSalt();
 const crypto = new CryptoManager({
-  kdfAdapter: new PBKDF2Adapter({ iterations: 210000, keyLength: 32, digest: "sha256" })
+  kdfAdapter: new PBKDF2Adapter({ iterations: 600000, keyLength: 32, digest: "sha256" })
 });
 
 const { key } = crypto.deriveKey("correct-horse-battery-staple", salt);
@@ -35,14 +35,15 @@ SecretPolicy.isEntropySufficient("correct-horse-battery-staple", 60);
 SecretPolicy.isRotationWindowExceeded(Date.now() - 86_500_000, 86_400_000);
 ```
 
+- The default KDF is PBKDF2-HMAC-SHA256 with 600,000 iterations, per the OWASP Password Storage Cheat Sheet. **Upgrading from 1.0.x:** the old default was 210,000, so a key derived from the same password and salt with default settings now comes out different. To decrypt existing data, pass `new CryptoManager({ iterations: 210000 })`, then re-encrypt under a key derived with the new default. `deriveKey()` uses `pbkdf2Sync`, which blocks the event loop for tens to hundreds of milliseconds per call depending on hardware, so don't run it in a request hot path.
 - `Argon2Adapter` takes a `deriveFn` you supply — OWL does not bundle an Argon2 implementation itself, keeping the core dependency-free.
 - `SecretPolicy.minimumEntropyBits()` / `isEntropySufficient()` estimate entropy from distinct-character count × bits-per-symbol implied by the character classes present, not raw length — see [CHANGELOG](/changelog) for the 1.0.3 fix to this estimate.
 
-## React Adapter (`@owasp-core/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 ```jsx
 import React from "react";
-import { useCryptoManager } from "@owasp-core/owl-react";
+import { useCryptoManager } from "@owasp-webshield/react";
 
 export function PasswordPreview() {
   const crypto = useCryptoManager();

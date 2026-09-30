@@ -2,3 +2,16 @@
   base = "website"
   command = "npm run build"
   publish = ".vitepress/dist"
+
+# Security headers for the docs site. VitePress needs inline scripts and style
+# attributes, so the CSP restricts framing, plugins, <base> and form targets only.
+[[headers]]
+  for = "/*"
+  [headers.values]
+  Content-Security-Policy = "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+  X-Content-Type-Options = "nosniff"
+  X-Frame-Options = "DENY"
+  Referrer-Policy = "strict-origin-when-cross-origin"
+  Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+  Cross-Origin-Opener-Policy = "same-origin"

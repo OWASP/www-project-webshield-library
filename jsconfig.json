@@ -6,10 +6,10 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@owasp-core/owl": [
+      "@owasp-webshield/core": [
         "src/index.js"
       ],
-      "@owasp-core/owl-react": [
+      "@owasp-webshield/react": [
         "src/adapters/react/index.js"
       ]
     },

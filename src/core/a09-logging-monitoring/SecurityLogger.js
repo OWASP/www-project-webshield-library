@@ -1,8 +1,33 @@
-const DEFAULT_REDACT_KEYS = ["password", "token", "secret", "authorization", "cookie"];
+// Matched as case-insensitive substrings of each field name.
+const DEFAULT_REDACT_KEYS = [
+  "password",
+  "passwd",
+  "pwd",
+  "token",
+  "secret",
+  "authorization",
+  "cookie",
+  "apikey",
+  "api_key",
+  "api-key",
+  "privatekey",
+  "private_key",
+  "accesskey",
+  "access_key",
+  "credential",
+  "session",
+  "bearer"
+];
 
-// Catches secrets logged under an unlisted field name. JWTs reliably start with
-// "eyJ" (base64url of `{"`), so this has a very low false-positive rate.
-const DEFAULT_VALUE_PATTERNS = [/^eyJ[a-z0-9_-]+\.[a-z0-9_-]+\.[a-z0-9_-]*$/i];
+// Catch secrets logged under an unlisted field name:
+// - JWTs reliably start with "eyJ" (base64url of `{"`), so this has a very low false-positive rate.
+// - "Bearer <token>" / "Basic <credentials>" authorization values.
+// - URLs carrying a credential in the query string or fragment (OAuth callbacks, signed links).
+const DEFAULT_VALUE_PATTERNS = [
+  /^eyJ[a-z0-9_-]+\.[a-z0-9_-]+\.[a-z0-9_-]*$/i,
+  /^(?:bearer|basic)\s+\S+/i,
+  /[?&#](?:access_token|id_token|refresh_token|token|api[_-]?key|key|secret|password|passwd|code|sig|signature)=[^&#\s]+/i
+];
 
 const MAX_REDACT_DEPTH = 20;
 

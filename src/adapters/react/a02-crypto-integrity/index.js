@@ -1,9 +1,11 @@
 import React from "react";
-import { CryptoManager } from "@owasp-core/owl/core/a02-crypto-integrity/CryptoManager.js";
+import { CryptoManager } from "@owasp-webshield/core";
+import { useStableValue } from "../useStableValue.js";
 
 /**
  * React hook wrapper around core CryptoManager.
  */
 export function useCryptoManager(options = {}) {
-  return React.useMemo(() => new CryptoManager(options), [options]);
+  const stableOptions = useStableValue(options);
+  return React.useMemo(() => new CryptoManager(stableOptions), [stableOptions]);
 }

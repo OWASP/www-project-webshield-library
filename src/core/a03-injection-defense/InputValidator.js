@@ -18,15 +18,26 @@ export class InputValidator {
       if (rule.maxLength && String(value).length > rule.maxLength) {
         errors.push({ field: key, code: "maxLength", message: `${key} must be at most ${rule.maxLength}` });
       }
-      if (rule.pattern && !rule.pattern.test(String(value))) {
+      // A copy without the g/y flags: those make RegExp#test() stateful (lastIndex),
+      // so the same valid value would alternately pass and fail.
+      const pattern = rule.pattern && new RegExp(rule.pattern.source, rule.pattern.flags.replace(/[gy]/g, ""));
+      if (pattern && !pattern.test(String(value))) {
         errors.push({ field: key, code: "pattern", message: `${key} format is invalid` });
       }
     }
     return { valid: errors.length === 0, errors };
   }
 
+  // Same acceptance as /^[^\s@]+@[^\s@]+\.[^\s@]+$/ (one "@", non-empty local part,
+  // a dot inside the domain, no whitespace), checked in linear time: that regex
+  // backtracks quadratically on domains with many dots ("a@a.a.a.a...@").
   validateEmail(value) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ""));
+    const input = String(value || "");
+    if (/\s/.test(input)) return false;
+    const at = input.indexOf("@");
+    if (at <= 0 || input.indexOf("@", at + 1) !== -1) return false;
+    const domain = input.slice(at + 1);
+    return domain.slice(1, -1).includes(".");
   }
 
   validateUrl(value) {

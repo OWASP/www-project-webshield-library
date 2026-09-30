@@ -2,10 +2,10 @@
 
 `TokenManager` handles token storage, expiry scheduling, and refresh; `AuthManager` layers session state (user, roles, metadata) on top of it.
 
-## Core API (`@owasp-core/owl`)
+## Core API (`@owasp-webshield/core`)
 
 ```js
-import { AuthManager, AUTH_TYPES, TokenManager } from "@owasp-core/owl";
+import { AuthManager, AUTH_TYPES, TokenManager } from "@owasp-webshield/core";
 
 const tokenManager = new TokenManager({
   onRefresh: async (refreshToken, currentAccess) => ({
@@ -31,7 +31,7 @@ authManager.clearSession();
 console.log(AUTH_TYPES);
 ```
 
-## React Adapter (`@owasp-core/owl-react`)
+## React Adapter (`@owasp-webshield/react`)
 
 This is usually the first provider tree an app wires up, since most other guards (`PermissionGate`, `SecurityAlert`) render relative to auth state:
 
@@ -47,7 +47,7 @@ import {
   SecurityProvider,
   useAuth,
   useAuthToken
-} from "@owasp-core/owl-react";
+} from "@owasp-webshield/react";
 
 function SessionSummary() {
   const { session, isAuthenticated } = useAuth();
@@ -85,7 +85,30 @@ export function AuthTree({ authManager, aclManager, rbacManager, logger, events 
 }
 ```
 
+Or use `OwlProvider` to compose those four providers in one component, paired with `createOwlClient()` to build the managers:
+
+```jsx
+import { createOwlClient } from "@owasp-webshield/core";
+import { AuthGate, OwlProvider, PermissionGate } from "@owasp-webshield/react";
+
+const owl = createOwlClient({ roles: { editor: { permissions: ["read:reports"] } } });
+owl.authManager.setSession({ userId: "u1", roles: ["editor"] });
+
+export function AuthTree({ children }) {
+  return (
+    <OwlProvider client={owl}>
+      <AuthGate fallback={<div>Please sign in</div>}>
+        <PermissionGate action="read" resource="reports" fallback={<div>Denied</div>}>
+          {children}
+        </PermissionGate>
+      </AuthGate>
+    </OwlProvider>
+  );
+}
+```
+
 - `useAuthToken()` updates when the underlying `TokenManager` emits `token:changed`, `token:cleared`, or `token:rotated`.
 - `AuthProvider` also schedules an auth-state recheck at `expiresAt`, so `AuthGate` falls back automatically once the token expires.
+- `AuthGate` only controls what the UI renders. The server must still reject requests without a valid session or token; see the [A01 note](/reference/a01-access-control).
 
 See also: [React Adapter Setup](/guide/react-setup) for the full multi-category provider tree.

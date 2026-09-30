@@ -1,10 +1,13 @@
 import http from "node:http";
-import { SecurityError, SecurityErrorCode } from "@owasp-core/owl";
+import { SecurityError, SecurityErrorCode } from "@owasp-webshield/core";
 import { SecretsVault } from "./vault.js";
 
 // Single global session, same simplification the CLI walkthrough (index.js)
 // makes — one login at a time. Re-POST /login with a different role to
 // switch identities.
+//
+// DEMO ONLY: /login trusts the role in the request body and checks no credentials,
+// so anyone who can reach this server can become admin. Never copy it into a real service.
 const vault = new SecretsVault();
 const PORT = process.env.PORT || 8787;
 
