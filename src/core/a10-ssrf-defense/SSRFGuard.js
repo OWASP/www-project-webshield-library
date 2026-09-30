@@ -98,6 +98,14 @@ function isBlockedIPv6(hostname) {
   return false;
 }
 
+// A loop rather than /\.+$/: that regex backtracks quadratically on long runs of
+// dots that aren't at the end ("a....b"), and hostnames come from untrusted URLs.
+function stripTrailingDots(value) {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === ".") end--;
+  return value.slice(0, end);
+}
+
 function stripBrackets(hostname) {
   return hostname.replace(/^\[/, "").replace(/\]$/, "");
 }
@@ -127,7 +135,7 @@ export class SSRFGuard {
 
   isPrivateHost(hostname) {
     // A trailing dot ("localhost.") is the same fully-qualified name to a resolver.
-    const bare = stripBrackets(hostname).toLowerCase().replace(/\.+$/, "");
+    const bare = stripTrailingDots(stripBrackets(hostname).toLowerCase());
     // RFC 6761: "localhost" and every "*.localhost" name are loopback.
     if (bare === "localhost" || bare.endsWith(".localhost") || bare.endsWith(".local")) {
       return true;

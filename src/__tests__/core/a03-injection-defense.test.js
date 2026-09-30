@@ -126,4 +126,15 @@ describe("A03 injection defense", () => {
     expect(sanitizer.sanitizeHTML('<span class="fixed">x</span>')).toBe("<span>x</span>");
     expect(sanitizer.sanitizeHTML('<span class="muted&#x20;highlight">x</span>')).toBe('<span class="muted highlight">x</span>');
   });
+
+  test("validateEmail keeps its rules and runs in linear time on many dots (no ReDoS)", () => {
+    const validator = new InputValidator();
+    for (const ok of ["user@example.com", "a@b.c", "first.last+tag@sub.example.co.uk"]) expect(validator.validateEmail(ok)).toBe(true);
+    for (const bad of ["", null, "@b.c", "a@.c", "a@b.", "a@bc", "a@@b.c", "a@b.c@d", "a b@c.d", "a@b.c\n"]) {
+      expect(validator.validateEmail(bad)).toBe(false);
+    }
+    const start = performance.now();
+    expect(validator.validateEmail("a@" + "a.".repeat(200000) + "@")).toBe(false);
+    expect(performance.now() - start).toBeLessThan(500);
+  });
 });
