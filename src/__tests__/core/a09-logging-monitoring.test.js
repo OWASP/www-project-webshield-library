@@ -65,4 +65,24 @@ describe("A09 logging and monitoring", () => {
     logger.info("login", { data: "eyJhbGciOiJIUzI1NiJ9.secretJWTpayload.sig" });
     expect(output.details.data).toBe("[REDACTED]");
   });
+
+  test("redacts common secret field names and credential-bearing values by default", () => {
+    let entry;
+    const logger = new SecurityLogger({ sink: (e) => (entry = e) });
+    logger.info("evt", {
+      apiKey: "k-1",
+      api_key: "k-2",
+      privateKey: "-----BEGIN",
+      sessionId: "s-1",
+      passwd: "p",
+      credentials: "c",
+      header: "Bearer abc.def",
+      callback: "https://app.example/cb?code=xyz&state=1",
+      link: "https://app.example/reset#access_token=abc",
+      userId: "u-1",
+      path: "https://app.example/items?page=2"
+    });
+    const kept = Object.entries(entry.details).filter(([, v]) => v !== "[REDACTED]").map(([k]) => k);
+    expect(kept).toEqual(["userId", "path"]);
+  });
 });

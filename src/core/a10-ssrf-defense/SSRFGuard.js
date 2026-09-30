@@ -254,16 +254,25 @@ async function defaultResolveHost(hostname) {
   return records.map((record) => record.address);
 }
 
+// Under Node a failed import must fail closed (reject) rather than skip the DNS check.
+// The try block also tells bundlers (esbuild) that this import may be unresolvable,
+// which keeps browser builds from failing on "node:dns/promises".
+async function loadNodeDnsLookup() {
+  try {
+    const dns = await import("node:dns/promises");
+    return dns.lookup;
+  } catch (error) {
+    throw new Error(`node:dns/promises could not be loaded: ${error}`);
+  }
+}
+
 // Loaded lazily (and only under Node) so this module remains safe to bundle for browsers,
-// where "node:dns" does not exist. Under Node a failed import rejects instead of
-// resolving to null, so resolution fails closed rather than skipping the DNS check.
+// where "node:dns" does not exist.
 let dnsLookupPromise = null;
 function getNodeDnsLookup() {
   if (!dnsLookupPromise) {
     dnsLookupPromise =
-      typeof process !== "undefined" && process?.versions?.node
-        ? import("node:dns/promises").then((dns) => dns.lookup)
-        : Promise.resolve(null);
+      typeof process !== "undefined" && process?.versions?.node ? loadNodeDnsLookup() : Promise.resolve(null);
   }
   return dnsLookupPromise;
 }

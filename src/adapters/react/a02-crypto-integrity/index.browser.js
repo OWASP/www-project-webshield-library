@@ -1,5 +1,6 @@
 import React from "react";
 import { CryptoManager } from "@owasp-webshield/core/modules/a02-crypto-integrity/CryptoManager.browser.js";
+import { useStableValue } from "../useStableValue.js";
 
 /**
  * Browser build of the A02 crypto adapter (see package.json's "browser" export
@@ -8,5 +9,6 @@ import { CryptoManager } from "@owasp-webshield/core/modules/a02-crypto-integrit
  * browser-portable equivalent.
  */
 export function useCryptoManager(options = {}) {
-  return React.useMemo(() => new CryptoManager(options), [options]);
+  const stableOptions = useStableValue(options);
+  return React.useMemo(() => new CryptoManager(stableOptions), [stableOptions]);
 }

@@ -5,8 +5,9 @@ export class ThreatModelGuard {
   }
 
   canTransition(from, to) {
-    const allowed = this.transitions[from] || [];
-    return allowed.includes(to);
+    // Own keys only: "constructor", "__proto__" etc. must not resolve to Object.prototype members.
+    const allowed = Object.hasOwn(this.transitions, from) ? this.transitions[from] : [];
+    return Array.isArray(allowed) && allowed.includes(to);
   }
 
   validateTransition(from, to) {

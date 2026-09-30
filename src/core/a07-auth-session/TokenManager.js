@@ -20,6 +20,7 @@ export class TokenManager {
     this.onRefresh = options.onRefresh;
     this.events = new EventEmitter();
     this.key = "owl.auth.tokens";
+    this._refreshing = null;
   }
 
   _read() {
@@ -75,8 +76,20 @@ export class TokenManager {
     if (!this.onRefresh || !tokens.refreshToken) {
       throw new SecurityError(SecurityErrorCode.TOKEN_EXPIRED, "Token expired and no refresh hook configured");
     }
+    // Concurrent callers share one in-flight refresh, so a rotating refresh token is
+    // presented only once (servers that detect refresh-token reuse revoke the session).
+    if (!this._refreshing) {
+      this._refreshing = this._refresh(tokens).finally(() => {
+        this._refreshing = null;
+      });
+    }
+    return this._refreshing;
+  }
+
+  async _refresh(tokens) {
     const next = await this.onRefresh(tokens.refreshToken, tokens.accessToken);
-    this.setTokens(next);
+    // Servers that don't rotate refresh tokens omit it; keep the current one.
+    this.setTokens({ ...next, refreshToken: next?.refreshToken || tokens.refreshToken });
     this.events.emit("token:rotated", next);
     return next.accessToken;
   }

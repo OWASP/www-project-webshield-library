@@ -36,6 +36,9 @@ const pinned = new SafeFetcher({
 });
 ```
 
+- Give the pinned `Agent` to outbound calls to untrusted URLs only, and never share it with unpinned code. A keep-alive connection is reused without another lookup, so pinning holds only if every socket in the pool was opened through `createSafeLookup()`.
+- On a redirect, `SafeFetcher` strips `Authorization`, `Proxy-Authorization`, `Cookie` and `X-CSRF-Token` when the origin changes, and turns a 303 (or a 301/302 after POST) into a bodiless GET, as native `fetch` does.
+
 ## React Adapter (`@owasp-webshield/react`)
 
 ```jsx

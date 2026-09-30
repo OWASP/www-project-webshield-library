@@ -144,6 +144,15 @@ export class HTTPClient {
       }
 
       const response = await this.fetchImpl(target, init);
+      // Browsers hide the Location of a manual redirect (status 0, type "opaqueredirect"),
+      // so the next hop can't be validated; refuse it instead of returning a blank response.
+      if (response.type === "opaqueredirect") {
+        throw new SecurityError(
+          SecurityErrorCode.SSRF_BLOCKED,
+          "Redirect cannot be validated in this runtime (opaque redirect); request the final URL directly",
+          { url: target }
+        );
+      }
       const isRedirect = response.status >= 300 && response.status < 400;
       const location = isRedirect ? response.headers?.get?.("location") : null;
       if (!location) return response;

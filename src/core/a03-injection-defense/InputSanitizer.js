@@ -165,6 +165,10 @@ function sanitizeAttrs(tagName, attrs) {
 function sanitizeTokens(tokens, { allowTags }) {
   let output = "";
   const stripStack = [];
+  // Allowed tags left open, so output is always balanced: stray closing tags are
+  // dropped (they could close the surrounding page's elements) and anything still
+  // open at the end is closed.
+  const openTags = [];
 
   for (const token of tokens) {
     if (stripStack.length > 0) {
@@ -191,14 +195,23 @@ function sanitizeTokens(tokens, { allowTags }) {
     }
 
     if (token.type === "close") {
-      output += `</${token.name}>`;
+      const index = openTags.lastIndexOf(token.name);
+      if (index === -1) continue;
+      while (openTags.length > index) output += `</${openTags.pop()}>`;
       continue;
     }
 
     const attrString = sanitizeAttrs(token.name, token.attrs);
-    output += token.selfClosing ? `<${token.name}${attrString} />` : `<${token.name}${attrString}>`;
+    if (VOID_ELEMENTS.has(token.name)) {
+      output += `<${token.name}${attrString} />`;
+    } else {
+      // Browsers ignore "/>" on non-void HTML elements (<div/> opens a div), so treat it as an open tag.
+      output += `<${token.name}${attrString}>`;
+      openTags.push(token.name);
+    }
   }
 
+  while (openTags.length > 0) output += `</${openTags.pop()}>`;
   return output;
 }
 

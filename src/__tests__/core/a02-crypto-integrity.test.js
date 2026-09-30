@@ -69,4 +69,13 @@ describe("A02 crypto integrity", () => {
     const entropy = SecretPolicy.minimumEntropyBits(secret);
     expect(SecretPolicy.isEntropySufficient(secret, entropy)).toBe(true);
   });
+
+  test("predictable secrets score low even when long and mixed-class", () => {
+    for (const weak of ["Password123!", "Summer2024!!", "qwertyuiop12", "abcdefghijkl", "P@ssw0rd2023", "Admin#12345"]) {
+      expect(SecretPolicy.isEntropySufficient(weak)).toBe(false);
+    }
+    for (const strong of ["Xq7!vP2@mK9#", "j8Kd-92Lx-q0Zs-Vt3m"]) {
+      expect(SecretPolicy.isEntropySufficient(strong)).toBe(true);
+    }
+  });
 });

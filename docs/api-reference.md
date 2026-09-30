@@ -337,6 +337,8 @@ const safeFetcher = new SafeFetcher({
 
 await safeFetcher.fetch("https://api.example.com/users", { method: "GET" });
 // Node: pin the connection to the validated address (closes the DNS-rebinding race).
+// Use this Agent only for untrusted URLs: pooled keep-alive sockets skip the lookup,
+// so every socket in the pool must have been opened through createSafeLookup().
 import { Agent } from "undici";
 const pinned = new SafeFetcher({
   guard,

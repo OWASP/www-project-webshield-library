@@ -37,6 +37,11 @@ npm run serve       # a small REST API on :8787 — see "Try the API" below
 
 ## Try the API (`npm run serve`)
 
+> ⚠️ **Demo only — do not copy the login route.** `POST /login` issues a session for
+> whichever role the request body names, with no credentials, so anyone who can reach the
+> server can become `admin`. A real service must authenticate the user (password, SSO,
+> passkey, ...) and take roles from its own user store, never from the request.
+
 The server keeps one global session at a time (same simplification the CLI makes) —
 log in again to switch roles. Every mutating request needs both the bearer token from
 `/login` and the CSRF token in `X-CSRF-Token`; omitting either is rejected.

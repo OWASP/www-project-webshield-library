@@ -267,4 +267,28 @@ describe("A08 data integrity", () => {
     const client = new HTTPClient({ tokenProvider: () => "token", fetchImpl: async () => okResponse() });
     await expect(client.request("data:text/plain,hi")).rejects.toMatchObject({ code: "CREDENTIAL_LEAK_BLOCKED" });
   });
+
+  test("CSRF validate rejects non-ASCII lookalikes of the real token", () => {
+    const csrf = new CSRFTokenManager();
+    const token = csrf.rotateToken();
+    const lookalike = [...token].map((c) => String.fromCharCode(c.charCodeAt(0) + 0x100)).join("");
+    expect(() => csrf.validate(lookalike)).toThrow("CSRF token validation failed");
+    expect(csrf.validate(token)).toBe(true);
+  });
+
+  test("CSRF validate still accepts server-issued standard base64 tokens from custom storage", () => {
+    const csrf = new CSRFTokenManager({ storage: { get: () => "ab+/cd==", set: () => {} } });
+    expect(csrf.validate("ab+/cd==")).toBe(true);
+  });
+
+  test("a browser opaque redirect fails with a clear SSRF error instead of a blank response", async () => {
+    const client = new HTTPClient({
+      outboundRequestPolicy: new SSRFGuard({ resolveHost: async () => ["93.184.216.34"] }),
+      fetchImpl: async () => ({ type: "opaqueredirect", status: 0, ok: false, headers: new Headers() })
+    });
+    await expect(client.request("https://api.example.com/moved")).rejects.toMatchObject({
+      code: "SSRF_BLOCKED",
+      message: expect.stringContaining("opaque redirect")
+    });
+  });
 });

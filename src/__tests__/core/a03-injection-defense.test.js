@@ -100,4 +100,20 @@ describe("A03 injection defense", () => {
     const sanitizer = new InputSanitizer("moderate");
     expect(sanitizer.sanitizeHTML('<a title="&#99999999;&#xD800;">x</a>')).toBe('<a title="\uFFFD\uFFFD">x</a>');
   });
+
+  test("moderate output is always balanced", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    expect(sanitizer.sanitizeHTML("<div/>text</p></div></li>")).toBe("<div>text</div>");
+    expect(sanitizer.sanitizeHTML("<b><i>x</b>y")).toBe("<b><i>x</i></b>y");
+    expect(sanitizer.sanitizeHTML("<ul><li>a<li>b</ul>")).toBe("<ul><li>a<li>b</li></li></ul>");
+    expect(sanitizer.sanitizeHTML("a<br>b<img src=x.png>")).toBe('a<br />b<img src="x.png" />');
+  });
+
+  test("validateSchema is stable with global/sticky patterns", () => {
+    const validator = new InputValidator();
+    const schema = { code: { pattern: /^[A-Z]{3}$/g } };
+    const results = [1, 2, 3].map(() => validator.validateSchema({ code: "ABC" }, schema).valid);
+    expect(results).toEqual([true, true, true]);
+    expect(schema.code.pattern.lastIndex).toBe(0);
+  });
 });

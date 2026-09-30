@@ -152,4 +152,47 @@ describe("React adapter A02-A10 hooks", () => {
     const { result } = renderHook(() => A10SSRFDefense.useSafeFetcher({}, fetchImpl));
     await expect(result.current.fetch("http://127.0.0.1/internal")).rejects.toThrow();
   });
+
+  test("A03 SanitizedText renders sanitized HTML without double-escaping", () => {
+    const { container } = render(
+      React.createElement(
+        "div",
+        null,
+        React.createElement(A03InjectionDefense.SanitizedText, { html: "Tom & Jerry <script>x</script>" }),
+        React.createElement(A03InjectionDefense.SanitizedText, { html: '<b>bold</b><img src=x onerror="alert(1)">', profile: "moderate" })
+      )
+    );
+    const [strict, moderate] = container.querySelectorAll("span");
+    expect(strict.textContent).toBe("Tom & Jerry ");
+    expect(moderate.innerHTML).toBe('<b>bold</b><img src="x">');
+  });
+
+  test("hooks keep their instance across renders with an inline config", () => {
+    const { result: fetcher, rerender: rerenderFetcher } = renderHook(() => A10SSRFDefense.useSafeFetcher({ allowProtocols: ["https:"] }));
+    const firstFetcher = fetcher.current;
+    rerenderFetcher();
+    expect(fetcher.current).toBe(firstFetcher);
+
+    const { result: report, rerender: rerenderReport } = renderHook(() =>
+      A05SecurityMisconfiguration.useHardeningReport({ cors: { origin: "*" } })
+    );
+    const firstReport = report.current;
+    rerenderReport();
+    expect(report.current).toBe(firstReport);
+
+    const { result: crypto, rerender: rerenderCrypto } = renderHook(() => A02CryptoIntegrity.useCryptoManager({ iterations: 1000 }));
+    const firstCrypto = crypto.current;
+    rerenderCrypto();
+    expect(crypto.current).toBe(firstCrypto);
+  });
+
+  test("hooks rebuild when the config actually changes", () => {
+    const { result, rerender } = renderHook(({ protocols }) => A10SSRFDefense.useSafeFetcher({ allowProtocols: protocols }), {
+      initialProps: { protocols: ["https:"] }
+    });
+    const first = result.current;
+    rerender({ protocols: ["https:", "http:"] });
+    expect(result.current).not.toBe(first);
+    expect(result.current.guard.allowProtocols.has("http:")).toBe(true);
+  });
 });

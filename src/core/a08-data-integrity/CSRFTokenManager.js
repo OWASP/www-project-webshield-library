@@ -6,6 +6,7 @@ import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 // browser, and other modern JS runtimes — so this file has no environment-
 // specific import at all and is safe to evaluate in a browser bundle.
 const BASE64URL_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const TOKEN_PATTERN = /^[!-~]+$/; // printable ASCII: covers base64url and server-issued token formats
 
 function bytesToBase64Url(bytes) {
   let result = "";
@@ -108,7 +109,9 @@ export class CSRFTokenManager {
   validate(token) {
     const expected = this.getToken();
     const expectedBytes = typeof expected === "string" ? stringToBytes(expected) : null;
-    const tokenBytes = typeof token === "string" ? stringToBytes(token) : null;
+    // Tokens are printable ASCII; rejecting anything else up front keeps
+    // stringToBytes()'s byte mapping from treating distinct non-ASCII strings as equal.
+    const tokenBytes = typeof token === "string" && TOKEN_PATTERN.test(token) ? stringToBytes(token) : null;
     const valid = Boolean(expectedBytes && tokenBytes && constantTimeEqual(expectedBytes, tokenBytes));
     if (!valid) {
       throw new SecurityError(SecurityErrorCode.CSRF_INVALID, "CSRF token validation failed");

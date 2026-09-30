@@ -18,7 +18,10 @@ export class InputValidator {
       if (rule.maxLength && String(value).length > rule.maxLength) {
         errors.push({ field: key, code: "maxLength", message: `${key} must be at most ${rule.maxLength}` });
       }
-      if (rule.pattern && !rule.pattern.test(String(value))) {
+      // A copy without the g/y flags: those make RegExp#test() stateful (lastIndex),
+      // so the same valid value would alternately pass and fail.
+      const pattern = rule.pattern && new RegExp(rule.pattern.source, rule.pattern.flags.replace(/[gy]/g, ""));
+      if (pattern && !pattern.test(String(value))) {
         errors.push({ field: key, code: "pattern", message: `${key} format is invalid` });
       }
     }
