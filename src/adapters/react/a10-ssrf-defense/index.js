@@ -1,6 +1,5 @@
 import React from "react";
-import { SSRFGuard } from "@owasp-webshield/core/modules/a10-ssrf-defense/SSRFGuard.js";
-import { SafeFetcher } from "@owasp-webshield/core/modules/a10-ssrf-defense/SafeFetcher.js";
+import { SafeFetcher, SSRFGuard } from "@owasp-webshield/core";
 import { useStableValue } from "../useStableValue.js";
 
 /**

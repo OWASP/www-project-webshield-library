@@ -1,6 +1,5 @@
 import React from "react";
-import { HardeningReporter } from "@owasp-webshield/core/modules/a05-security-misconfiguration/HardeningReporter.js";
-import { SecurityConfigManager } from "@owasp-webshield/core/modules/a05-security-misconfiguration/SecurityConfigManager.js";
+import { HardeningReporter, SecurityConfigManager } from "@owasp-webshield/core";
 import { useStableValue } from "../useStableValue.js";
 
 /**

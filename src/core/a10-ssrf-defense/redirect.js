@@ -18,6 +18,16 @@ function withoutHeaders(headers, names) {
   return Array.isArray(headers) ? kept : Object.fromEntries(kept);
 }
 
+/** True when `headers` (any shape fetch accepts) carries a credential header. */
+export function hasCredentialHeaders(headers) {
+  if (!headers) return false;
+  if (typeof headers.forEach === "function" && typeof headers.get === "function") {
+    return [...CREDENTIAL_HEADERS].some((name) => headers.get(name) !== null);
+  }
+  const entries = Array.isArray(headers) ? headers : Object.entries(headers);
+  return entries.some(([name]) => CREDENTIAL_HEADERS.has(String(name).toLowerCase()));
+}
+
 /**
  * Returns the request init for the next hop of a redirect, following the Fetch
  * spec: credentials are dropped when the redirect leaves the current origin, and

@@ -291,4 +291,53 @@ describe("A08 data integrity", () => {
       message: expect.stringContaining("opaque redirect")
     });
   });
+
+  describe("credentialed requests without an SSRF policy", () => {
+    const credentialedClient = (fetchImpl, extra = {}) => {
+      const csrf = new CSRFTokenManager();
+      csrf.rotateToken();
+      return new HTTPClient({ baseUrl: "https://api.example.com", csrfManager: csrf, tokenProvider: () => "SECRET", fetchImpl, ...extra });
+    };
+
+    test("strip credentials when a redirect leaves the origin", async () => {
+      const calls = [];
+      const responses = [redirectResponse("https://third-party.example/collect"), okResponse()];
+      const client = credentialedClient(async (url, cfg) => (calls.push({ url, cfg }), responses.shift()));
+      await client.request("/start");
+      expect(calls[0].cfg.redirect).toBe("manual");
+      expect(calls[1].url).toBe("https://third-party.example/collect");
+      expect(calls[1].cfg.headers.Authorization).toBeUndefined();
+      expect(calls[1].cfg.headers["X-CSRF-Token"]).toBeUndefined();
+    });
+
+    test("keep credentials on a same-origin redirect", async () => {
+      const calls = [];
+      const responses = [redirectResponse("/v2/start", 307), okResponse()];
+      const client = credentialedClient(async (url, cfg) => (calls.push({ url, cfg }), responses.shift()));
+      await client.request("/start");
+      expect(calls[1].url).toBe("https://api.example.com/v2/start");
+      expect(calls[1].cfg.headers.Authorization).toBe("Bearer SECRET");
+      expect(calls[1].cfg.headers["X-CSRF-Token"]).toBeTruthy();
+    });
+
+    test("refuse an opaque browser redirect instead of forwarding credentials blindly", async () => {
+      const client = credentialedClient(async () => ({ type: "opaqueredirect", status: 0, ok: false, headers: new Headers() }));
+      await expect(client.request("/start")).rejects.toMatchObject({ code: "CREDENTIAL_LEAK_BLOCKED" });
+    });
+
+    test("an explicit redirect mode is respected", async () => {
+      const calls = [];
+      const client = credentialedClient(async (url, cfg) => (calls.push(cfg), okResponse()));
+      await client.request("/start", { redirect: "follow" });
+      expect(calls).toHaveLength(1);
+      expect(calls[0].redirect).toBe("follow");
+    });
+
+    test("requests without credentials keep fetch's default redirect handling", async () => {
+      const calls = [];
+      const client = new HTTPClient({ fetchImpl: async (url, cfg) => (calls.push(cfg), okResponse()) });
+      await client.request("https://public.example/data");
+      expect(calls[0].redirect).toBeUndefined();
+    });
+  });
 });

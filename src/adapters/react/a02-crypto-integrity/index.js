@@ -1,5 +1,5 @@
 import React from "react";
-import { CryptoManager } from "@owasp-webshield/core/modules/a02-crypto-integrity/CryptoManager.js";
+import { CryptoManager } from "@owasp-webshield/core";
 import { useStableValue } from "../useStableValue.js";
 
 /**

@@ -24,16 +24,35 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A10: `SafeFetcher` strips `Authorization`/`Proxy-Authorization`/`Cookie`/`X-CSRF-Token` when a redirect leaves the current origin, and turns a 303 (or a 301/302 after POST) into a bodiless GET, as native `fetch` does.
 - A01: `ACLManager` now enforces deny-overrides across rules: a wildcard `deny` beats a direct `allow`. Rule keys can no longer collide through `:` in action or resource names, and `RBACManager.can()` rejects actions containing `:`.
 - A06: `DependencyRiskScanner.passesPolicy()` normalizes severities (case-insensitive, npm's `moderate`/`info`) and blocks findings whose severity is still unrecognized. `ComponentPolicy` compares versions by semver precedence and blocks missing or unparsable versions (`v1.0.0`, `2.0.0-beta.1` and `undefined` previously passed a `2.0.0` minimum).
+- A08: credentialed `HTTPClient` requests (with `Authorization` or `X-CSRF-Token`) no longer let `fetch` auto-follow redirects, even without an `outboundRequestPolicy`. `fetch` forwards custom headers such as `X-CSRF-Token` to a cross-origin redirect target; redirects are now followed manually, with credentials stripped when the origin changes.
+- A07: a token refresh that is still in flight when `clearTokens()` (logout) or `setTokens()` (a new login) runs no longer writes its result back. Previously a logout during a refresh signed the user back in. The stale refresh rejects with `AUTH_REQUIRED`.
+- React: the adapter imports `@owasp-webshield/core` from its package root instead of `modules/*` paths, so apps bundle one copy of the library instead of two. Previously `instanceof SecurityError` returned `false` for errors thrown through adapter hooks such as `useSecureHttpClient`. `SecurityError` also matches `instanceof` across copies of the package (e.g. two installed versions) through a `Symbol.for` brand.
 - A10: `SSRFGuard.assertResolvedSafe()` fails closed when a resolver returns no addresses. `validateUrl()` also blocks `localhost.`, `*.localhost`, IPv4-compatible `::a.b.c.d`, IPv6 multicast (`ff00::/8`), site-local (`fec0::/10`), local-use NAT64 (`64:ff9b:1::/48`) and 6to4 addresses that embed a blocked IPv4 address.
 
 ### Changed
 
 - A08/A10: under Node, `HTTPClient` with an `SSRFGuard` policy resolves DNS before each request, so hostnames that don't resolve (such as fake domains in tests) now fail with `SSRF_BLOCKED: Host could not be resolved`. Pass a `resolveHost` option in tests. Browsers are unaffected.
 - A10: a custom `resolveHost` that returns `[]`, `null` or a non-array now blocks the request instead of allowing it.
+- A08: in browsers, a credentialed `HTTPClient` request that gets redirected now fails with `CREDENTIAL_LEAK_BLOCKED`, because the browser hides the redirect target. Pass `redirect: "follow"` in the request options to accept forwarding the credentials, or request the final URL directly.
+- A07: `refreshIfNeeded()` rejects with `AUTH_REQUIRED` when the session was cleared or replaced while the refresh was in flight.
 - A06: `passesPolicy()` throws `INVALID_INPUT` for an unknown threshold (previously every finding was blocked). `ComponentPolicy` throws `MISCONFIGURATION` for a `minVersions` entry that isn't a valid version, and returns `reason: "unparsable_version"` for a package version it can't parse.
 - A01: `ACLManager.setPolicy()` throws `INVALID_INPUT` for an effect other than `"allow"` or `"deny"`. It still replaces the rule for the exact same resource/action pair, so toggling a rule (freeze/unfreeze) keeps working.
+- A02: `SecretPolicy.minimumEntropyBits()` scores predictable segments (common passwords, years, character sequences, keyboard runs) at a small fixed cost instead of per character, so `Password123!` now scores 23 bits instead of 72. Scores for random-looking secrets are unchanged; existing thresholds may now reject secrets they used to accept.
+- A05: `SecurityConfigManager` defaults `cookies.httpOnly` to `true` and reports new findings: `reflected_cors` (`cors.origin: true`), `credentialed_any_origin_cors` (wildcard or reflected origin with `credentials: true`), `wildcard_cors` for an origin array containing `"*"`, and `cookie_not_httponly`.
+- A09: `SecurityLogger` also redacts fields named like `passwd`, `pwd`, `apiKey`/`api_key`, `privateKey`, `accessKey`, `credential`, `session` and `bearer`, plus `Bearer`/`Basic` authorization values and URLs with a credential in the query or fragment (`?code=`, `#access_token=`, ...).
+- A08: `CSRFTokenManager.validate()` rejects tokens that aren't printable ASCII. Previously non-ASCII lookalikes of the real token could compare equal.
+- A08: `HTTPClient` with an `outboundRequestPolicy` throws `SSRF_BLOCKED` for a browser `opaqueredirect` response, instead of returning a blank status-0 response with an `INVALID_INPUT` error.
+- React: `SanitizedText` renders the sanitizer's output as HTML. It was passed as a text child, so it was escaped twice (`Tom &amp; Jerry`) and moderate-profile tags showed up as literal text.
 
 ### Fixed
+
+- A07: `TokenManager.refreshIfNeeded()` shares one in-flight refresh between concurrent callers, so a rotating refresh token is presented once. It keeps the current refresh token when `onRefresh` doesn't return a new one.
+- A03: `InputSanitizer` output is always balanced: stray closing tags are dropped, non-void `<tag/>` opens the tag as browsers do, and unclosed tags are closed.
+- A03: `InputValidator.validateSchema()` gives stable results for patterns with the `g`/`y` flag.
+- A04: `ThreatModelGuard` no longer throws for state names such as `constructor` or `__proto__`.
+- React: `usePermission()` and `PermissionGate` allow when any of the session's roles grants the permission (previously only `roles[0]` was checked).
+- React: `useSafeFetcher()`, `useCryptoManager()` and `useHardeningReport()` keep their instance across renders when the config is structurally equal, instead of rebuilding it on every render for inline config objects.
+- Docs: the pinned `Agent` must be dedicated to untrusted URLs (pooled sockets skip the lookup), and the Node example warns that its `/login` route issues sessions without credentials.
 
 - A08: `HTTPClient` and `withSecurityHeaders()` no longer send `X-Frame-Options`/`X-Content-Type-Options` as *request* headers (they only apply to responses). `withSecurityHeaders()` now sets `credentials: "same-origin"` and `referrerPolicy: "strict-origin-when-cross-origin"`.
 - A08/A10: the default `fetch` is now called unbound, avoiding "Illegal invocation" errors in browsers.

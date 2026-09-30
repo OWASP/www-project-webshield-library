@@ -1,5 +1,5 @@
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
-import { nextRedirectInit } from "../a10-ssrf-defense/redirect.js";
+import { hasCredentialHeaders, nextRedirectInit } from "../a10-ssrf-defense/redirect.js";
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
 
@@ -96,9 +96,17 @@ export class HTTPClient {
       config = (await interceptor(config)) || config;
     }
 
-    const response = this.outboundRequestPolicy
-      ? await this._fetchWithPolicy(requestUrl, config)
-      : await this.fetchImpl(requestUrl, config);
+    // fetch keeps custom headers such as X-CSRF-Token when it follows a redirect to
+    // another origin, so credentialed requests follow redirects themselves unless
+    // the caller chose a `redirect` mode explicitly.
+    let response;
+    if (this.outboundRequestPolicy) {
+      response = await this._followRedirects(requestUrl, config, this.outboundRequestPolicy);
+    } else if (config.redirect === undefined && hasCredentialHeaders(config.headers)) {
+      response = await this._followRedirects(requestUrl, config, null);
+    } else {
+      response = await this.fetchImpl(requestUrl, config);
+    }
     const normalized = {
       ok: response.ok,
       status: response.status,
@@ -128,40 +136,48 @@ export class HTTPClient {
     return normalized;
   }
 
-  // Follows redirects manually so every hop passes the outbound policy, and
-  // drops credentials when a redirect leaves the original origin.
-  async _fetchWithPolicy(requestUrl, config) {
-    const policy = this.outboundRequestPolicy;
-    const maxHops = Number.isInteger(policy.maxRedirectHops) ? policy.maxRedirectHops : 3;
+  // Follows redirects manually: every hop passes the outbound policy (when there is
+  // one), and credentials are dropped when a redirect leaves the current origin.
+  async _followRedirects(requestUrl, config, policy) {
+    const maxHops = policy ? (Number.isInteger(policy.maxRedirectHops) ? policy.maxRedirectHops : 3) : 20;
     let target = requestUrl;
     let init = { ...config, redirect: "manual" };
 
     for (let hop = 0; hop <= maxHops; hop++) {
-      if (typeof policy.assertResolvedSafe === "function") {
+      if (typeof policy?.assertResolvedSafe === "function") {
         await policy.assertResolvedSafe(target);
-      } else {
+      } else if (policy) {
         policy.validateUrl(target);
       }
 
       const response = await this.fetchImpl(target, init);
       // Browsers hide the Location of a manual redirect (status 0, type "opaqueredirect"),
-      // so the next hop can't be validated; refuse it instead of returning a blank response.
+      // so the next hop can't be checked; refuse it instead of returning a blank response.
       if (response.type === "opaqueredirect") {
-        throw new SecurityError(
-          SecurityErrorCode.SSRF_BLOCKED,
-          "Redirect cannot be validated in this runtime (opaque redirect); request the final URL directly",
-          { url: target }
-        );
+        throw policy
+          ? new SecurityError(
+              SecurityErrorCode.SSRF_BLOCKED,
+              "Redirect cannot be validated in this runtime (opaque redirect); request the final URL directly",
+              { url: target }
+            )
+          : new SecurityError(
+              SecurityErrorCode.CREDENTIAL_LEAK_BLOCKED,
+              'Credentialed request was redirected to a target that cannot be checked in this runtime; request the final URL directly, or pass redirect: "follow" to accept forwarding the credentials',
+              { url: target }
+            );
       }
       const isRedirect = response.status >= 300 && response.status < 400;
       const location = isRedirect ? response.headers?.get?.("location") : null;
       if (!location) return response;
 
-      const next = new URL(location, target);
-      init = nextRedirectInit(init, response.status, new URL(target), next);
+      const base = new URL(target, pageContext().base);
+      const next = new URL(location, base);
+      init = nextRedirectInit(init, response.status, base, next);
       target = next.toString();
     }
 
-    throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Redirect hop limit exceeded", { max: maxHops });
+    throw policy
+      ? new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Redirect hop limit exceeded", { max: maxHops })
+      : new SecurityError(SecurityErrorCode.INVALID_INPUT, "Redirect hop limit exceeded", { max: maxHops });
   }
 }
