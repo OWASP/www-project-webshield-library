@@ -27,6 +27,15 @@ export default [
     }
   },
   {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        URL: "readonly"
+      }
+    }
+  },
+  {
     files: ["src/**/*.jsx", "examples/**/*.jsx"],
     rules: {
       "no-unused-vars": "off"

@@ -5,8 +5,10 @@
   "private": false,
   "type": "module",
   "main": "./index.js",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "browser": "./index.browser.js",
       "default": "./index.js"
     },
