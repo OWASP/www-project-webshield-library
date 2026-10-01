@@ -7,6 +7,9 @@ Guides, references, and integration examples for OWL.
 - [Architecture & Adoption Guide](./architecture.md)
 - [API Reference](./api-reference.md)
 - [Troubleshooting](./troubleshooting.md)
+- [Benchmark traceability matrix (all benchmarks)](./benchmarks/traceability-matrix.md)
+- [Benchmark: OWL vs OWASP NodeGoat (traceability matrix)](./benchmarks/nodegoat.md)
+- [Benchmark: OWL vs OWASP Juice Shop (traceability matrix)](./benchmarks/juice-shop.md)
 
 ## Integration Examples
 

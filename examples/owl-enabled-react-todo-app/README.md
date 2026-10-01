@@ -20,9 +20,10 @@ login screen.
 ## Deploying a live demo (Netlify)
 
 This folder has its own `netlify.toml`, so it can be deployed as a second Netlify site
-alongside the docs site, pointed at the same GitHub repo. See
-[`docs/todo-app-deployment.md`](../../docs/todo-app-deployment.md) for the full one-time setup
-walkthrough, troubleshooting, and how to reproduce Netlify's build locally.
+alongside the docs site, pointed at the same GitHub repo. Deploys run from
+[`.github/workflows/release-owl-todo-app.yml`](../../.github/workflows/release-owl-todo-app.yml)
+on pushes to `main` that touch this app or the core library. It needs a Netlify site created once,
+plus the `NETLIFY_AUTH_TOKEN` and `NETLIFY_TODO_APP_SITE_ID` repository secrets.
 
 ## What it demonstrates
 
