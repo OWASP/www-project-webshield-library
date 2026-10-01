@@ -1,33 +1,39 @@
 #!/usr/bin/env node
-// Checks relative links in the repository's Markdown: the target file must exist and,
-// for a "#fragment", the target page must have that heading or an explicit <a id>/<a name>.
-// External (http, mailto) and site-absolute ("/guide/...") links are not checked.
+// Checks relative links in the repository's Markdown: the target must be a file (or folder)
+// tracked by git and, for a "#fragment", the target page must have that heading or an
+// explicit <a id>/<a name>. External (http, mailto) and site-absolute ("/guide/...") links
+// are not checked.
+//
+// Only git-tracked files count, so untracked local drafts can neither be scanned nor make a
+// link pass locally that would fail in CI.
 //
 // Usage: node scripts/ci/check-doc-links.mjs
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const SCAN = ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", "GOVERNANCE.md", "docs", "examples"];
-const SKIP_DIRS = new Set(["node_modules", "dist", ".git"]);
+const SCAN_FILES = ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", "GOVERNANCE.md"];
+const SCAN_DIRS = ["docs/", "examples/"];
 
-function collect(path, out = []) {
-  const full = join(ROOT, path);
-  if (!existsSync(full)) return out;
-  if (statSync(full).isDirectory()) {
-    for (const entry of readdirSync(full)) {
-      if (!SKIP_DIRS.has(entry)) collect(join(path, entry), out);
-    }
-  } else if (path.endsWith(".md")) {
-    out.push(path);
-  }
-  return out;
+const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: ROOT, encoding: "utf8" }).split("\0").filter(Boolean);
+const trackedPaths = new Set(tracked);
+for (const file of tracked) {
+  // Folders containing tracked files are valid link targets too ("../examples/foo/").
+  for (let i = file.indexOf("/"); i !== -1; i = file.indexOf("/", i + 1)) trackedPaths.add(file.slice(0, i));
 }
+const isTracked = (absolutePath) => {
+  const rel = relative(ROOT, absolutePath).replace(/\\/g, "/");
+  return rel === "" || trackedPaths.has(rel.replace(/\/$/, ""));
+};
 
-// Removes fenced code blocks and inline code, so example links inside code aren't checked.
+// Blanks out fenced code blocks and inline code, so example links inside code aren't checked.
+// Fenced blocks keep their newlines, so reported line numbers still match the file.
 function stripCode(markdown) {
-  return markdown.replace(/^(```|~~~)[\s\S]*?^\1/gm, "").replace(/`[^`\n]*`/g, "");
+  return markdown
+    .replace(/^(```|~~~)[\s\S]*?^\1/gm, (block) => block.replace(/[^\n]/g, ""))
+    .replace(/`[^`\n]*`/g, "");
 }
 
 // GitHub's heading slug: lowercase, drop punctuation and emoji, spaces become "-",
@@ -53,7 +59,9 @@ function hasAnchor(file, fragment) {
 }
 
 const errors = [];
-const files = SCAN.flatMap((path) => collect(path));
+const files = tracked.filter(
+  (file) => file.endsWith(".md") && (SCAN_FILES.includes(file) || SCAN_DIRS.some((dir) => file.startsWith(dir)))
+);
 for (const file of files) {
   const source = join(ROOT, file);
   const lines = stripCode(readFileSync(source, "utf8")).split("\n");
@@ -63,8 +71,8 @@ for (const file of files) {
       const [pathPart, fragment] = rawTarget.split("#");
       const target = pathPart ? resolve(dirname(source), decodeURIComponent(pathPart)) : source;
       const where = `${file.replace(/\\/g, "/")}:${index + 1}`;
-      if (!existsSync(target)) {
-        errors.push({ where, message: `missing file: ${rawTarget}` });
+      if (!isTracked(target)) {
+        errors.push({ where, message: `missing file (or not committed): ${rawTarget}` });
       } else if (fragment && target.endsWith(".md") && !hasAnchor(target, fragment)) {
         errors.push({ where, message: `missing anchor #${fragment} in ${relative(ROOT, target).replace(/\\/g, "/")}` });
       }
