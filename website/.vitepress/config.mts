@@ -16,7 +16,7 @@ const referenceSidebar = [
 
 export default defineConfig({
   title: "OWL",
-  description: "OWASP Web Shield Library — practical OWASP Top 10 security controls for JavaScript",
+  description: "OWASP Webshield Library — practical OWASP Top 10 security controls for JavaScript",
   cleanUrls: true,
   lastUpdated: true,
 
@@ -73,7 +73,7 @@ export default defineConfig({
 
     footer: {
       message: "Released under the Apache 2.0 License.",
-      copyright: "Copyright © OWASP Web Shield Library Project"
+      copyright: "Copyright © OWASP Webshield Library Project"
     }
   }
 });

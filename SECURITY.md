@@ -28,7 +28,7 @@ Use one of the following private channels:
 
 | Channel | Details |
 |---|---|
-| 📧 Email | [cybersreejith@gmail.com](mailto:cybersreejith@gmail.com) |
+| 📧 Email | [cybersreejith@owasp.org](mailto:cybersreejith@owasp.org) |
 | 🔒 GitHub Security Advisories | [Report privately →](https://github.com/OWASP/www-project-webshield-library/security/advisories/new) |
 
 ### What to include in your report

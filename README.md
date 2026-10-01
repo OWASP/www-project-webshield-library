@@ -2,7 +2,7 @@
   <img src="https://owasp.org/assets/images/logo.png" width="180" alt="OWASP Logo" />
 </p>
 
-<h1 align="center">OWASP Web Shield Library</h1>
+<h1 align="center">OWASP Webshield Library</h1>
 
 <p align="center">
   <strong>OWL — Practical, reusable OWASP Top 10 security controls for modern JavaScript applications.</strong>
@@ -211,5 +211,5 @@ Apache 2.0 — see [LICENSE.md](LICENSE.md).
 ---
 
 <p align="center">
-  <sub>OWASP Web Shield Library &mdash; <em>making security controls as natural as any other dependency.</em></sub>
+  <sub>OWASP Webshield Library &mdash; <em>making security controls as natural as any other dependency.</em></sub>
 </p>

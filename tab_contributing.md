@@ -24,7 +24,7 @@ tags: owasp javascript react security-library top10
 
 | Name | Role | Contact |
 |---|---|---|
-| **Sreejith Sreekandan Nair** | OWL Project Leader | [cybersreejith@gmail.com](mailto:cybersreejith@gmail.com) |
+| **Sreejith Sreekandan Nair** | OWL Project Leader | [cybersreejith@owasp.org](mailto:cybersreejith@owasp.org) |
 
 ---
 

@@ -1,7 +1,7 @@
 # Project Governance
 
 <p align="center">
-  <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/owasp-lab%20project-blue" alt="OWASP Lab Project" /></a>
+  <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/owasp-incubator-blue" alt="OWASP Incubator Project" /></a>
 </p>
 
 ---

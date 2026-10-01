@@ -1,6 +1,6 @@
 # @owasp-webshield/react
 
-React adapter for [OWL (OWASP Web Shield Library)](https://owasp.org/www-project-webshield-library/) — category-aligned providers, hooks, and guard components for [`@owasp-webshield/core`](https://www.npmjs.com/package/@owasp-webshield/core), covering every OWASP Top 10 category (A01–A10).
+React adapter for [OWL (OWASP Webshield Library)](https://owasp.org/www-project-webshield-library/) — category-aligned providers, hooks, and guard components for [`@owasp-webshield/core`](https://www.npmjs.com/package/@owasp-webshield/core), covering every OWASP Top 10 category (A01–A10).
 
 ## Installation
 

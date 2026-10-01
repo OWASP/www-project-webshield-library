@@ -30,7 +30,7 @@ function TopBar({ tab, setTab }) {
         <div className="flex items-center gap-3">
           <ShieldMark />
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-owl-700">OWASP Web Shield</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-owl-700">OWASP Webshield</p>
             <p className="text-sm font-medium text-slate-500">Enabled React Todo App</p>
           </div>
         </div>

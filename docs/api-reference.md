@@ -2,7 +2,7 @@
 render_with_liquid: false
 ---
 
-# OWASP Web Shield Library API Reference
+# OWASP Webshield Library API Reference
 
 This page documents the public runtime API exported by `@owasp-webshield/core` and `@owasp-webshield/react`.
 

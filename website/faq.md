@@ -30,7 +30,7 @@ A browser-safe `.` entry point (so the package root itself works without the `./
 
 ## Why is the package called `@owasp-webshield/core` and not `@owl/core`?
 
-The library's own acronym has always been **OWL** (OWASP Web Shield Library) — that hasn't changed. The npm *scope* changed several times for availability reasons, not naming preference: `@owl/*` → `@owsl/*` → `@owl/*` → `@owasp-core/*` (actually published, versions `0.1.0`–`1.0.4`) → `@owasp-js/*` (renamed in-repo, never published) → `@owasp-webshield/*` (current). `@owasp-webshield` was free to claim as an npm org/scope, so the package settled on `@owasp-webshield/core` and `@owasp-webshield/react` (React adapter). See [CHANGELOG](/changelog) for the full history.
+The library's own acronym has always been **OWL** (OWASP Webshield Library) — that hasn't changed. The npm *scope* changed several times for availability reasons, not naming preference: `@owl/*` → `@owsl/*` → `@owl/*` → `@owasp-core/*` (actually published, versions `0.1.0`–`1.0.4`) → `@owasp-js/*` (renamed in-repo, never published) → `@owasp-webshield/*` (current). `@owasp-webshield` was free to claim as an npm org/scope, so the package settled on `@owasp-webshield/core` and `@owasp-webshield/react` (React adapter). See [CHANGELOG](/changelog) for the full history.
 
 ## Does OWL require React?
 

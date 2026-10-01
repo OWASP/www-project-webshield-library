@@ -1,7 +1,7 @@
 {
   "name": "@owasp-webshield/core",
   "version": "1.0.0",
-  "description": "OWL (OWASP Web Shield Library): practical OWASP Top 10 mitigation helpers for JavaScript apps",
+  "description": "OWL (OWASP Webshield Library): practical OWASP Top 10 mitigation helpers for JavaScript apps",
   "private": false,
   "type": "module",
   "workspaces": [

@@ -10,7 +10,7 @@ tags: owasp javascript react security-library top10
   <img src="https://owasp.org/assets/images/logo.png" width="160" alt="OWASP Logo" />
 </p>
 
-<h2 align="center">OWASP Web Shield Library (OWL)</h2>
+<h2 align="center">OWASP Webshield Library (OWL)</h2>
 
 <p align="center">
   <strong>Practical, reusable OWASP Top 10 security controls for modern JavaScript applications.</strong>
@@ -19,7 +19,7 @@ tags: owasp javascript react security-library top10
 <p align="center">
   <a href="https://github.com/OWASP/www-project-webshield-library/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License" /></a>
   &nbsp;
-  <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/owasp-lab%20project-blue" alt="OWASP Lab Project" /></a>
+  <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/owasp-incubator-blue" alt="OWASP Incubator Project" /></a>
   &nbsp;
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen" alt="Node 20+" />
   &nbsp;
