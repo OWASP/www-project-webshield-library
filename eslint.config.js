@@ -7,7 +7,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ["src/**/*.js", "src/**/*.jsx", "examples/**/*.js", "examples/**/*.jsx", "jest.config.js"],
+    files: ["src/**/*.js", "src/**/*.jsx", "examples/**/*.js", "examples/**/*.jsx", "scripts/**/*.mjs", "jest.config.js"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

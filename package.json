@@ -48,7 +48,9 @@
     "build:cjs": "esbuild src/index.js --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
     "build:browser": "esbuild src/index.browser.js --bundle --platform=browser --format=esm --outfile=dist/index.browser.js",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "lint": "eslint .",
+    "lint:docs": "node scripts/ci/check-doc-links.mjs",
     "check": "npm run lint && npm run test",
     "prepublishOnly": "npm run check && npm run build && npm pack --dry-run"
   },
