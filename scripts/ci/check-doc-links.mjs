@@ -36,13 +36,24 @@ function stripCode(markdown) {
     .replace(/`[^`\n]*`/g, "");
 }
 
+// Removes HTML tags from heading text. Repeated until nothing changes, so nested input
+// such as "<<a>a>" can't leave a tag behind after a single pass.
+function stripTags(text) {
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(/<[^<>]*>/g, "");
+  } while (text !== previous);
+  return text;
+}
+
 // GitHub's heading slug: lowercase, drop punctuation and emoji, spaces become "-",
 // and repeated headings get "-1", "-2", ... suffixes.
 function anchorsOf(markdown) {
   const anchors = new Set();
   const seen = new Map();
   for (const [, text] of stripCode(markdown).matchAll(/^#{1,6}\s+(.+?)\s*#*\s*$/gm)) {
-    const plain = text.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/<[^>]+>/g, "").replace(/[*_~]/g, "");
+    const plain = stripTags(text.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")).replace(/[*_~]/g, "");
     const slug = plain.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s/g, "-");
     const count = seen.get(slug) || 0;
     anchors.add(count ? `${slug}-${count}` : slug);
