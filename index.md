@@ -1,5 +1,5 @@
 ---
-title: OWASP Webshield Library ( OWL )
+title: OWASP Webshield Library (OWL)
 layout: col-sidebar
 tags: owasp javascript react security-library top10
 level: 2

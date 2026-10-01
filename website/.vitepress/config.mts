@@ -32,8 +32,8 @@ export default defineConfig({
       {
         text: "npm",
         items: [
-          { text: "@owasp-core/owl", link: "https://www.npmjs.com/package/@owasp-core/owl" },
-          { text: "@owasp-core/owl-react", link: "https://www.npmjs.com/package/@owasp-core/owl-react" }
+          { text: "@owasp-webshield/core", link: "https://www.npmjs.com/package/@owasp-webshield/core" },
+          { text: "@owasp-webshield/react", link: "https://www.npmjs.com/package/@owasp-webshield/react" }
         ]
       }
     ],
@@ -63,7 +63,7 @@ export default defineConfig({
 
     socialLinks: [
       { icon: "github", link: "https://github.com/OWASP/www-project-webshield-library" },
-      { icon: "npm", link: "https://www.npmjs.com/package/@owasp-core/owl" }
+      { icon: "npm", link: "https://www.npmjs.com/package/@owasp-webshield/core" }
     ],
 
     editLink: {
