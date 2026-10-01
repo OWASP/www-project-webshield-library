@@ -21,8 +21,8 @@ login screen.
 
 This folder has its own `netlify.toml`, so it can be deployed as its own Netlify site alongside the
 docs site and the Todo app, pointed at the same GitHub repo. The setup mechanism is identical to
-[`docs/todo-app-deployment.md`](../../docs/todo-app-deployment.md) — just swap the base directory to
-`examples/owl-enabled-react-banking-dashboard`.
+the [Todo app's](../owl-enabled-react-todo-app/README.md#deploying-a-live-demo-netlify) — just swap
+the base directory to `examples/owl-enabled-react-banking-dashboard`.
 
 ## What it demonstrates
 

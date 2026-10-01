@@ -1,0 +1,115 @@
+name: owl-pr-review
+
+# Automated review checks for pull requests into main. Lint, unit tests, build and
+# packaging run in ci.yml, and dependency review, CodeQL and npm audit in security.yml;
+# this workflow adds the checks a human reviewer would otherwise do by hand.
+on:
+  pull_request:
+    branches:
+      - main
+    # labeled/unlabeled re-run the policy check when a maintainer adds a skip label.
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: PR policy (tests + CHANGELOG)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Check PR policy
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node scripts/ci/check-pr-policy.mjs
+
+  coverage:
+    name: Test coverage gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Fails when coverage drops below coverageThreshold in jest.config.js.
+      - name: Test with coverage
+        run: npm run test:coverage -- --coverageReporters=text-summary --coverageReporters=json-summary
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs");
+            const file = "coverage/coverage-summary.json";
+            if (!fs.existsSync(file)) process.exit(0);
+            const { total } = JSON.parse(fs.readFileSync(file, "utf8"));
+            const rows = ["statements", "branches", "functions", "lines"]
+              .map((k) => `| ${k} | ${total[k].pct}% | ${total[k].covered} / ${total[k].total} |`);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              ["## Test coverage", "", "| Metric | Coverage | Covered |", "|---|---|---|", ...rows, ""].join("\n"));
+          '
+
+  docs-links:
+    name: Docs link check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Check relative links and anchors
+        run: npm run lint:docs
+
+  workflow-security:
+    name: Workflow security (zizmor)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      # Exact version: bump deliberately, like the other pinned tools in these workflows.
+      - name: Audit GitHub Actions workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: pipx run zizmor==1.30.1 --format=github --min-severity=medium .github/workflows

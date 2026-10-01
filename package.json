@@ -55,8 +55,11 @@
     "build:types": "node scripts/build-types.mjs",
     "typecheck": "tsc --project tsconfig.types.json --noEmit && tsc --project tsconfig.react.types.json --noEmit",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "lint": "eslint .",
     "check": "npm run lint && npm run test && npm run typecheck",
+    "lint:docs": "node scripts/ci/check-doc-links.mjs",
+    "check": "npm run lint && npm run test",
     "prepublishOnly": "npm run check && npm run build && npm pack --dry-run"
   },
   "keywords": [
