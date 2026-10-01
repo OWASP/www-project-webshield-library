@@ -1,5 +1,5 @@
 ---
-title: OWASP Web Shield Library ( OWL )
+title: OWASP Webshield Library (OWL)
 layout: col-sidebar
 tags: owasp javascript react security-library top10
 level: 2
@@ -7,7 +7,7 @@ type: tool
 pitch: A developer-first JavaScript security library that maps directly to OWASP Top 10 controls, with a framework-agnostic core and React adapter
 ---
 
-## OWASP Web Shield Library (OWL)
+## OWASP Webshield Library (OWL)
 
 OWL is a practical, open source security library for modern JavaScript applications. It provides reusable protection utilities aligned to OWASP Top 10 categories and ships with a React adapter for fast integration.
 
@@ -37,5 +37,5 @@ This project now uses a tabbed layout to keep the homepage focused and make cont
 
 ## Project Leader
 
-- [Sreejith Nair](mailto:cybersreejith@gmail.com)
+- [Sreejith Sreekandan Nair](mailto:cybersreejith@owasp.org)
 - GitHub: [@cybersreejith](https://github.com/cybersreejith)

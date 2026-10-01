@@ -1,4 +1,4 @@
-### OWASP Web Shield Library Information
+### OWASP Webshield Library Information
 
 - [Incubator Project](https://owasp.org/projects/)
 - [Tool Project](https://github.com/OWASP/www-project-webshield-library.git)

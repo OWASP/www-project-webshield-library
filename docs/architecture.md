@@ -2,7 +2,7 @@
 render_with_liquid: false
 ---
 
-# OWASP Web Shield Library — Architecture & Adoption Guide
+# OWASP Webshield Library — Architecture & Adoption Guide
 
 ## What This Architecture Is Designed For
 

@@ -1,4 +1,4 @@
-# Contributing to OWASP Web Shield Library
+# Contributing to OWASP Webshield Library
 
 <p align="center">
   <a href="https://github.com/OWASP/www-project-webshield-library/graphs/contributors"><img src="https://img.shields.io/github/contributors/OWASP/www-project-webshield-library" alt="Contributors" /></a>

@@ -8,7 +8,7 @@
 
 | Leader | Role | Contact |
 |---|---|---|
-| [Sreejith Sreekandan Nair](https://github.com/sreejithnair) | Project Leader | [cybersreejith@gmail.com](mailto:cybersreejith@gmail.com) |
+| [Sreejith Sreekandan Nair](https://github.com/cybersreejith) | Project Leader | [cybersreejith@owasp.org](mailto:cybersreejith@owasp.org) |
 
 ---
 

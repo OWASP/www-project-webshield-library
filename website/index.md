@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "OWL"
-  text: "OWASP Web Shield Library"
+  text: "OWASP Webshield Library"
   tagline: Practical, reusable OWASP Top 10 security controls for modern JavaScript applications — a framework-agnostic core plus a full React adapter.
   actions:
     - theme: brand

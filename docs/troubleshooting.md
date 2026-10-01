@@ -1,4 +1,4 @@
-# OWASP Web Shield Library — Troubleshooting
+# OWASP Webshield Library — Troubleshooting
 
 ## What This Document Covers
 

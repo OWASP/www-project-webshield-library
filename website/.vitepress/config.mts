@@ -16,7 +16,7 @@ const referenceSidebar = [
 
 export default defineConfig({
   title: "OWL",
-  description: "OWASP Web Shield Library — practical OWASP Top 10 security controls for JavaScript",
+  description: "OWASP Webshield Library — practical OWASP Top 10 security controls for JavaScript",
   cleanUrls: true,
   lastUpdated: true,
 
@@ -32,8 +32,8 @@ export default defineConfig({
       {
         text: "npm",
         items: [
-          { text: "@owasp-core/owl", link: "https://www.npmjs.com/package/@owasp-core/owl" },
-          { text: "@owasp-core/owl-react", link: "https://www.npmjs.com/package/@owasp-core/owl-react" }
+          { text: "@owasp-webshield/core", link: "https://www.npmjs.com/package/@owasp-webshield/core" },
+          { text: "@owasp-webshield/react", link: "https://www.npmjs.com/package/@owasp-webshield/react" }
         ]
       }
     ],
@@ -63,7 +63,7 @@ export default defineConfig({
 
     socialLinks: [
       { icon: "github", link: "https://github.com/OWASP/www-project-webshield-library" },
-      { icon: "npm", link: "https://www.npmjs.com/package/@owasp-core/owl" }
+      { icon: "npm", link: "https://www.npmjs.com/package/@owasp-webshield/core" }
     ],
 
     editLink: {
@@ -73,7 +73,7 @@ export default defineConfig({
 
     footer: {
       message: "Released under the Apache 2.0 License.",
-      copyright: "Copyright © OWASP Web Shield Library Project"
+      copyright: "Copyright © OWASP Webshield Library Project"
     }
   }
 });
