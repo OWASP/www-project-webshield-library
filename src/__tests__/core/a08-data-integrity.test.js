@@ -23,6 +23,17 @@ describe("A08 data integrity", () => {
     expect(() => csrf.validate(`${token}x`)).toThrow();
   });
 
+  test("validate throws on an equal-length token that differs in one character", () => {
+    // Same length and printable ASCII, so only the byte-by-byte comparison can reject these.
+    const csrf = new CSRFTokenManager();
+    const token = csrf.rotateToken();
+    const flipAt = (i) => token.slice(0, i) + (token[i] === "A" ? "B" : "A") + token.slice(i + 1);
+    for (const i of [0, Math.floor(token.length / 2), token.length - 1]) {
+      expect(() => csrf.validate(flipAt(i))).toThrow("CSRF token validation failed");
+    }
+    expect(csrf.validate(token)).toBe(true);
+  });
+
   test("injects auth and csrf headers in request", async () => {
     const csrf = new CSRFTokenManager();
     csrf.rotateToken();
