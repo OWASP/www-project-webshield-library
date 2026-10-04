@@ -1,6 +1,6 @@
 {
   "name": "@owasp-webshield/next",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Next.js adapter for OWL (OWASP Webshield Library): App Router route handler guards, middleware CSRF checks, security headers, server-side sessions and client components",
   "private": false,
   "type": "module",

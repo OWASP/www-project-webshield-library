@@ -15,6 +15,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-10-04
+
 ### Added
 
 - **`@owasp-webshield/node` (new package, first release):** framework-neutral server functions for a Node `IncomingMessage` or a Fetch `Request`: per-request `authenticate()` (the app's `verifyToken` looks up the session), `assertPermission()` (any role, with ACL deny-overrides), `verifyCsrf()` (synchronizer token, or a double-submit cookie that is rejected when sent twice), `assertValidInput()` (with an optional unknown-field check against mass assignment), `sanitizeFields()`, `securityHeaders()`, the `assertHardened()` startup gate, `assertSafeOutboundUrl()`, `toErrorResponse()` (5xx messages are never exposed) and `logRequestError()`.
