@@ -39,12 +39,7 @@ export function createOwl(options?: {
         rbacManager: any;
         logger: any;
         events: any;
-        auth: {
-            session: Readonly<import("vue").Ref<any, any>>;
-            accessToken: Readonly<import("vue").Ref<any, any>>;
-            isAuthenticated: import("vue").ComputedRef<boolean>;
-            stop: () => void;
-        };
+        auth: any;
     };
     install(app: any): void;
 };
@@ -59,12 +54,7 @@ export function provideOwl(options: Parameters<typeof createOwl>[0]): {
     rbacManager: any;
     logger: any;
     events: any;
-    auth: {
-        session: Readonly<import("vue").Ref<any, any>>;
-        accessToken: Readonly<import("vue").Ref<any, any>>;
-        isAuthenticated: import("vue").ComputedRef<boolean>;
-        stop: () => void;
-    };
+    auth: any;
 };
 /**
  * The OWL context provided by `createOwl()` or `provideOwl()`.

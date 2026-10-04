@@ -13,8 +13,11 @@ export function useSecureHttpClient({ baseUrl, tokenProvider, fetchImpl, csrfMan
     csrfManager?: any;
     csrfCookieName?: string;
 }): any;
-export function withSecurityHeaders(init?: {}): {
-    headers: any;
-    credentials: string;
-    referrerPolicy: string;
+/**
+ * Request-side hardening only: X-Frame-Options/nosniff are response headers and must be set by the server.
+ * @param {RequestInit} [init]
+ * @returns {RequestInit & {headers: Record<string, string>}}
+ */
+export function withSecurityHeaders(init?: RequestInit): RequestInit & {
+    headers: Record<string, string>;
 };

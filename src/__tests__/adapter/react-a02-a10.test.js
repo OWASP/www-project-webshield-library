@@ -15,6 +15,7 @@ import {
   A10SSRFDefense
 } from "../../adapters/react/index.js";
 import { CSRFTokenManager } from "../../core/index.js";
+import * as BrowserA02 from "../../adapters/react/a02-crypto-integrity/index.browser.js";
 
 describe("React adapter A02-A10 hooks", () => {
   test("A02 useCryptoManager creates manager with working deriveKey", () => {
@@ -224,5 +225,45 @@ describe("React adapter A02-A10 hooks", () => {
     rerender({ protocols: ["https:", "http:"] });
     expect(result.current).not.toBe(first);
     expect(result.current.guard.allowProtocols.has("http:")).toBe(true);
+  });
+});
+
+describe("React adapter: withSecurityHeaders header forms and the browser A02 entry", () => {
+  test("keeps headers given as a Headers object or an array of pairs", () => {
+    expect(withSecurityHeaders({ headers: new Headers({ Authorization: "Bearer x" }) }).headers).toEqual({
+      authorization: "Bearer x"
+    });
+    expect(withSecurityHeaders({ headers: [["X-Request-Id", "req-1"]] }).headers).toEqual({ "X-Request-Id": "req-1" });
+    expect(withSecurityHeaders().headers).toEqual({});
+  });
+
+  test("the browser A02 entry builds a CryptoManager and keeps it across equal configs", () => {
+    const { result, rerender } = renderHook(({ options }) => BrowserA02.useCryptoManager(options), {
+      initialProps: { options: { iterations: 1000 } }
+    });
+    const first = result.current;
+    expect(first).toBeTruthy();
+    rerender({ options: { iterations: 1000 } });
+    expect(result.current).toBe(first);
+  });
+});
+
+describe("React adapter: defaults and missing providers", () => {
+  test("builder hooks work with no arguments", () => {
+    const { result } = renderHook(() => ({
+      guard: A04InsecureDesignGuard.useThreatModelGuard(),
+      report: A05SecurityMisconfiguration.useHardeningReport(),
+      fetcher: A10SSRFDefense.useSafeFetcher(),
+      monitoring: A09LoggingMonitoring.useSecurityMonitoring()
+    }));
+    expect(result.current.guard.canTransition("a", "b")).toBe(false);
+    expect(result.current.report).toEqual([]);
+    expect(result.current.fetcher).toBeTruthy();
+    expect(result.current.monitoring).toEqual({ logger: null, events: null });
+  });
+
+  test("SecurityAlert defaults to the warn level", () => {
+    render(React.createElement(SecurityAlert, { message: "careful" }));
+    expect(screen.getByRole("alert").getAttribute("data-level")).toBe("warn");
   });
 });

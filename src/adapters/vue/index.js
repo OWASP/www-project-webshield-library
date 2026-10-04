@@ -20,7 +20,7 @@ export { SecurityAlert, useSecurityMonitoring } from "./a09-logging-monitoring/i
 
 export { useSafeFetcher } from "./a10-ssrf-defense/index.js";
 
-export { createOwlRouterGuard } from "./router/index.js";
+export { createOwlRouterGuard, installOwlRouterGuard } from "./router/index.js";
 
 export * as A01AccessControl from "./a01-access-control/index.js";
 export * as A02CryptoIntegrity from "./a02-crypto-integrity/index.js";

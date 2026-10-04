@@ -1,0 +1,30 @@
+{
+  "name": "owl-enabled-vue-express-incident-desk",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build": "vite build",
+    "start": "node server/index.js --production",
+    "test": "node --test test/api.test.js"
+  },
+  "dependencies": {
+    "@owasp-webshield/core": "file:../..",
+    "@owasp-webshield/express": "file:../../src/adapters/express",
+    "@owasp-webshield/node": "file:../../src/adapters/node",
+    "@owasp-webshield/vue": "file:../../src/adapters/vue",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "undici": "^7.30.0",
+    "vue": "^3.5.43",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "vite": "^7.3.6"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

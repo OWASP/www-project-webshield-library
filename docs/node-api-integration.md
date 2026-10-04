@@ -203,7 +203,10 @@ http.createServer(async (req, res) => {
 ```
 
 [OWL Enabled Node Secrets App](../examples/owl-enabled-node-secrets-app/README.md) is a
-runnable server built this way.
+runnable server built this way. For the Express middleware in a complete app (sign-in with
+lockout, server-side sessions, CSRF via the `XSRF-TOKEN` cookie, per-incident ACL locks, an
+SSRF-guarded webhook), see
+[OWL Enabled Vue + Express Incident Desk](../examples/owl-enabled-vue-express-incident-desk/README.md).
 
 | Function | Category |
 |---|---|

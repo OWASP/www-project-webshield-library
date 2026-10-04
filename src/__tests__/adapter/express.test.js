@@ -196,6 +196,19 @@ describe("guardOutboundUrl", () => {
     expect(res.body).toEqual({ host: "hooks.example.com" });
   });
 
+  test("keeps the session that requireAuth stored on req.owl", async () => {
+    const { res } = await run(
+      [
+        auth,
+        guardOutboundUrl((req) => req.body.webhookUrl, { guard }),
+        (req, response) => response.end(JSON.stringify({ user: req.owl.session.userId, host: req.owl.outboundUrl.hostname })),
+        errorHandler()
+      ],
+      { method: "POST", headers: bearer("viewer-token"), body: { webhookUrl: "https://hooks.example.com/a" } }
+    );
+    expect(res.body).toEqual({ user: "u1", host: "hooks.example.com" });
+  });
+
   test("403 for an internal target, 400 for a non-URL", async () => {
     expect((await run(chain, { method: "POST", body: { webhookUrl: "https://intranet.example.com" } })).res.statusCode).toBe(403);
     expect((await run(chain, { method: "POST", body: { webhookUrl: 42 } })).res.statusCode).toBe(400);

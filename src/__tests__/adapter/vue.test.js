@@ -7,17 +7,20 @@ import { mount } from "@vue/test-utils";
 import { createApp, createSSRApp, defineComponent, h, nextTick, ref } from "vue";
 import { renderToString } from "vue/server-renderer";
 import { createMemoryHistory, createRouter } from "vue-router";
-import { createOwlClient, HTTPClient, SafeFetcher } from "@owasp-webshield/core";
+import { CSRFTokenManager, createOwlClient, CryptoManager, HTTPClient, SafeFetcher } from "@owasp-webshield/core";
 import {
   AuthGate,
   createOwl,
   createOwlRouterGuard,
+  installOwlRouterGuard,
   PermissionGate,
   provideOwl,
   SanitizedText,
   SecurityAlert,
   useAuth,
+  useACL,
   useAuthToken,
+  useCryptoManager,
   useDependencyRiskScanner,
   useHardeningReport,
   useInputSanitizer,
@@ -26,6 +29,7 @@ import {
   useSecureHttpClient,
   useSecurityMonitoring,
   useThreatModelGuard,
+  withSecurityHeaders,
   vSafeHtml
 } from "@owasp-webshield/vue";
 
@@ -412,5 +416,288 @@ describe("router guard", () => {
 
   test("needs the createOwl() plugin", () => {
     expect(() => createOwlRouterGuard({})).toThrow(/createOwl/);
+  });
+});
+
+describe("installOwlRouterGuard (re-checks the open page)", () => {
+  const Page = { render: () => null };
+  const routes = [
+    { path: "/", component: Page },
+    { path: "/login", component: Page },
+    { path: "/403", component: Page },
+    { path: "/account", component: Page, meta: { requiresAuth: true } },
+    { path: "/reports", component: Page, meta: { permission: { action: "write", resource: "reports" } } }
+  ];
+
+  async function setup({ roles = ["editor"], forbiddenRoute = "/403", ttlMs } = {}) {
+    const client = createClient();
+    client.logger = { warn: jest.fn() };
+    signIn(client, roles, ttlMs);
+    const owl = createOwl({ client });
+    const app = createApp({ render: () => null }).use(owl);
+    app.mount(document.createElement("div"));
+    const router = createRouter({ history: createMemoryHistory(), routes });
+    const uninstall = installOwlRouterGuard(router, owl, { forbiddenRoute });
+    await router.push("/");
+    return { client, owl, app, router, uninstall };
+  }
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  test("still guards navigation like createOwlRouterGuard", async () => {
+    const { router } = await setup({ roles: ["viewer"] });
+    await router.push("/reports");
+    expect(router.currentRoute.value.path).toBe("/403");
+  });
+
+  test("logout on a protected page redirects to login with the page as redirect", async () => {
+    const { client, router } = await setup();
+    await router.push("/account?tab=keys");
+    client.authManager.clearSession();
+    await settle();
+    expect(router.currentRoute.value.path).toBe("/login");
+    expect(router.currentRoute.value.query.redirect).toBe("/account?tab=keys");
+  });
+
+  test("token expiry on a protected page redirects to login", async () => {
+    // Shorten the token only after the navigation has finished, so a slow
+    // machine can't expire it before the page is reached.
+    const { client, router } = await setup();
+    await router.push("/account");
+    expect(router.currentRoute.value.path).toBe("/account");
+    client.tokenManager.setTokens({ accessToken: "t1", expiresAt: Date.now() + 50 });
+    expect(router.currentRoute.value.path).toBe("/account");
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    await settle();
+    expect(router.currentRoute.value.path).toBe("/login");
+  });
+
+  test("losing the permission redirects to the forbidden route, or / without one", async () => {
+    const first = await setup();
+    await first.router.push("/reports");
+    first.client.authManager.setSession({ userId: "u1", roles: ["viewer"] });
+    await settle();
+    expect(first.router.currentRoute.value.path).toBe("/403");
+
+    const second = await setup({ forbiddenRoute: null });
+    await second.router.push("/reports");
+    second.client.authManager.setSession({ userId: "u1", roles: ["viewer"] });
+    await settle();
+    expect(second.router.currentRoute.value.path).toBe("/");
+  });
+
+  test("session changes on a public page don't navigate", async () => {
+    const { client, router } = await setup();
+    const replace = jest.spyOn(router, "replace");
+    client.authManager.clearSession();
+    await settle();
+    expect(replace).not.toHaveBeenCalled();
+    expect(router.currentRoute.value.path).toBe("/");
+  });
+
+  test("does nothing before the initial navigation", async () => {
+    const client = createClient();
+    signIn(client);
+    const owl = createOwl({ client });
+    const router = createRouter({ history: createMemoryHistory(), routes });
+    const replace = jest.spyOn(router, "replace");
+    installOwlRouterGuard(router, owl);
+    client.authManager.clearSession();
+    await settle();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  test("stops when uninstalled or when the app unmounts", async () => {
+    const uninstalled = await setup();
+    await uninstalled.router.push("/account");
+    uninstalled.uninstall();
+    uninstalled.client.authManager.clearSession();
+    await settle();
+    expect(uninstalled.router.currentRoute.value.path).toBe("/account");
+    await uninstalled.router.push("/reports"); // the beforeEach guard is gone too
+    expect(uninstalled.router.currentRoute.value.path).toBe("/reports");
+
+    const unmounted = await setup();
+    await unmounted.router.push("/account");
+    unmounted.app.unmount();
+    unmounted.client.authManager.clearSession();
+    await settle();
+    expect(unmounted.router.currentRoute.value.path).toBe("/account");
+  });
+
+  test("needs the createOwl() plugin", () => {
+    expect(() => installOwlRouterGuard(createRouter({ history: createMemoryHistory(), routes }), {})).toThrow(/createOwl/);
+  });
+});
+
+describe("router guard edge cases", () => {
+  test("denies permission routes when no RBAC/ACL managers were provided", () => {
+    const client = createClient();
+    signIn(client);
+    const guard = createOwlRouterGuard(createOwl({ authManager: client.authManager }));
+    const to = { path: "/r", fullPath: "/r", matched: [{ meta: { permission: { action: "read", resource: "r" } } }] };
+    expect(guard(to)).toBe(false);
+  });
+
+  test("lets the login and forbidden routes through and reads meta from a bare route", () => {
+    const guard = createOwlRouterGuard(createOwl({ client: createClient() }), { forbiddenRoute: "/403" });
+    expect(guard({ path: "/login", fullPath: "/login", matched: [{ meta: { requiresAuth: true } }] })).toBe(true);
+    expect(guard({ path: "/403", fullPath: "/403", matched: [{ meta: { requiresAuth: true } }] })).toBe(true);
+    expect(guard({ path: "/x", fullPath: "/x", meta: { requiresAuth: true } })).toEqual({ path: "/login", query: { redirect: "/x" } });
+    expect(guard({ path: "/open", fullPath: "/open", matched: [{}] })).toBe(true);
+  });
+});
+
+describe("plugin edge cases", () => {
+  test("works without an AuthManager", () => {
+    const { result } = withSetup(() => ({ auth: useAuth(), permission: usePermission("read", "reports") }), {
+      owl: createOwl({})
+    });
+    expect(result.auth.authManager).toBeNull();
+    expect(result.auth.isAuthenticated.value).toBe(false);
+    expect(result.permission.value).toEqual({ allowed: false, reason: "no_role" });
+  });
+
+  test("individual managers override the client's", () => {
+    const client = createClient();
+    const other = createClient();
+    const { result } = withSetup(() => ({ auth: useAuth(), acl: useACL() }), {
+      owl: createOwl({ client, authManager: other.authManager })
+    });
+    expect(result.auth.authManager).toBe(other.authManager);
+    expect(result.acl).toBe(client.aclManager);
+  });
+
+  test("useACL fails clearly without an ACLManager", () => {
+    const Comp = defineComponent({
+      setup() {
+        useACL();
+        return () => null;
+      }
+    });
+    jest.spyOn(console, "warn").mockImplementation(() => {});
+    expect(() => mount(Comp, { global: { plugins: [createOwl({})] } })).toThrow(/aclManager/);
+    console.warn.mockRestore();
+  });
+
+  test("a token that is already expired at install is treated as signed out", () => {
+    const client = createClient();
+    client.tokenManager.setTokens({ accessToken: "old", expiresAt: Date.now() - 1 });
+    client.authManager.setSession({ userId: "u1", roles: ["viewer"] });
+    const { result } = withSetup(() => useAuth(), { client });
+    expect(result.isAuthenticated.value).toBe(false);
+  });
+
+  test("on Vue without app.onUnmount, wraps app.unmount to clean up", () => {
+    const client = createClient();
+    const owl = createOwl({ client });
+    const originalUnmount = jest.fn(() => "unmounted");
+    const fakeApp = { provide: jest.fn(), unmount: originalUnmount };
+    owl.install(fakeApp);
+    expect(fakeApp.provide).toHaveBeenCalledWith(expect.any(Symbol), owl.context);
+    expect(fakeApp.unmount()).toBe("unmounted");
+    expect(originalUnmount).toHaveBeenCalled();
+    signIn(client);
+    expect(owl.context.auth.isAuthenticated.value).toBe(false);
+  });
+});
+
+describe("composable defaults and reactive inputs", () => {
+  test("builders work with no arguments", () => {
+    const { result } = withSetup(() => ({
+      sanitizer: useInputSanitizer(),
+      guard: useThreatModelGuard(),
+      report: useHardeningReport(),
+      fetcher: useSafeFetcher(),
+      http: useSecureHttpClient()
+    }));
+    expect(result.sanitizer.value.sanitizeHTML("<b>x</b>")).not.toContain("<b>");
+    expect(result.guard.value.canTransition("a", "b")).toBe(false);
+    expect(result.report.value).toEqual([]);
+    expect(result.fetcher.value).toBeInstanceOf(SafeFetcher);
+    expect(result.http.value.csrfManager).not.toBeNull();
+  });
+
+  test("useCryptoManager encrypts and decrypts in Node", () => {
+    const { result } = withSetup(() => useCryptoManager({ iterations: 1000 }));
+    expect(result.value).toBeInstanceOf(CryptoManager);
+    const { key } = result.value.deriveKey("correct horse battery staple");
+    expect(result.value.decrypt(result.value.encrypt("secret", key), key)).toBe("secret");
+  });
+
+  test("useSecureHttpClient prefers a provided csrfManager", () => {
+    const csrfManager = new CSRFTokenManager();
+    csrfManager.setToken("server-issued");
+    const { result } = withSetup(() => useSecureHttpClient({ csrfManager }));
+    expect(result.value.csrfManager).toBe(csrfManager);
+  });
+
+  test("useSafeFetcher accepts a ref holding fetchImpl", async () => {
+    const first = jest.fn(async () => ({ status: 200, headers: new Headers() }));
+    const second = jest.fn(async () => ({ status: 200, headers: new Headers() }));
+    const fetchImpl = ref(first);
+    const { result } = withSetup(() => useSafeFetcher({ resolveHost: async () => ["203.0.113.10"] }, fetchImpl));
+    await result.value.fetch("https://a.example/");
+    fetchImpl.value = second;
+    await result.value.fetch("https://a.example/");
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  test("useDependencyRiskScanner follows a reactive provider", async () => {
+    const provider = ref({ scan: async () => [{ name: "a", severity: "low" }] });
+    const { result } = withSetup(() => useDependencyRiskScanner(provider));
+    await result.runScan();
+    expect(result.results.value[0].package).toBe("a");
+    provider.value = { scan: async () => [{ name: "b", severity: "high" }] };
+    await result.runScan();
+    expect(result.results.value[0].package).toBe("b");
+  });
+});
+
+describe("withSecurityHeaders", () => {
+  test("adds hardening defaults that the caller can override", () => {
+    expect(withSecurityHeaders()).toEqual({ credentials: "same-origin", referrerPolicy: "strict-origin-when-cross-origin", headers: {} });
+    expect(withSecurityHeaders({ credentials: "include", method: "POST" })).toMatchObject({ credentials: "include", method: "POST" });
+  });
+
+  test("keeps headers given as a Headers object, an array of pairs or a plain object", () => {
+    expect(withSecurityHeaders({ headers: new Headers({ Authorization: "Bearer x" }) }).headers).toEqual({ authorization: "Bearer x" });
+    expect(withSecurityHeaders({ headers: [["Authorization", "Bearer x"]] }).headers).toEqual({ Authorization: "Bearer x" });
+    const plain = { "X-Custom": "1" };
+    const result = withSecurityHeaders({ headers: plain });
+    expect(result.headers).toEqual({ "X-Custom": "1" });
+    expect(result.headers).not.toBe(plain);
+  });
+});
+
+describe("components and directive details", () => {
+  test("SecurityAlert renders slot content instead of the message", () => {
+    const wrapper = mount(SecurityAlert, { props: { message: "ignored" }, slots: { default: () => "from slot" } });
+    expect(wrapper.text()).toBe("from slot");
+    expect(wrapper.attributes("data-level")).toBe("warn");
+  });
+
+  test("SanitizedText keeps only allowed classes and follows prop changes", async () => {
+    const wrapper = mount(SanitizedText, {
+      props: { html: '<i class="ok nope">x</i>', profile: "moderate", allowedClasses: ["ok"] }
+    });
+    expect(wrapper.html()).toContain('<i class="ok">x</i>');
+    await wrapper.setProps({ html: "<b>new</b>" });
+    expect(wrapper.html()).toContain("<b>new</b>");
+  });
+
+  test("v-safe-html handles numbers and an object without html, and the argument sets the default profile", () => {
+    const Comp = defineComponent({
+      directives: { safeHtml: vSafeHtml },
+      template: `<div>
+        <p id="num" v-safe-html="42"></p>
+        <p id="empty" v-safe-html="{}"></p>
+        <p id="argObj" v-safe-html:moderate="{ html: '<b>b</b>' }"></p>
+      </div>`
+    });
+    const wrapper = mount(Comp);
+    expect(wrapper.find("#num").text()).toBe("42");
+    expect(wrapper.find("#empty").text()).toBe("");
+    expect(wrapper.find("#argObj").html()).toContain("<b>b</b>");
   });
 });

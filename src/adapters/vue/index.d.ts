@@ -3,7 +3,6 @@ export { useThreatModelGuard } from "./a04-insecure-design-guard/index.js";
 export { useHardeningReport } from "./a05-security-misconfiguration/index.js";
 export { useDependencyRiskScanner } from "./a06-vulnerable-components/index.js";
 export { useSafeFetcher } from "./a10-ssrf-defense/index.js";
-export { createOwlRouterGuard } from "./router/index.js";
 export * as A01AccessControl from "./a01-access-control/index.js";
 export * as A02CryptoIntegrity from "./a02-crypto-integrity/index.js";
 export * as A03InjectionDefense from "./a03-injection-defense/index.js";
@@ -20,3 +19,4 @@ export { SanitizedText, useInputSanitizer, vSafeHtml } from "./a03-injection-def
 export { AuthGate, useAuth, useAuthToken } from "./a07-auth-session/index.js";
 export { useSecureHttpClient, withSecurityHeaders } from "./a08-data-integrity/index.js";
 export { SecurityAlert, useSecurityMonitoring } from "./a09-logging-monitoring/index.js";
+export { createOwlRouterGuard, installOwlRouterGuard } from "./router/index.js";

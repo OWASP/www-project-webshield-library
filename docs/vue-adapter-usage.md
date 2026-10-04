@@ -201,7 +201,7 @@ element on the server and fill it in on the client.
 ```js
 // router.js
 import { createRouter, createWebHistory } from "vue-router";
-import { createOwlRouterGuard } from "@owasp-webshield/vue";
+import { installOwlRouterGuard } from "@owasp-webshield/vue";
 
 export function createAppRouter(owl) {
   const router = createRouter({
@@ -224,7 +224,7 @@ export function createAppRouter(owl) {
       }
     ]
   });
-  router.beforeEach(createOwlRouterGuard(owl, { loginRoute: "/login", forbiddenRoute: "/403" }));
+  installOwlRouterGuard(router, owl, { loginRoute: "/login", forbiddenRoute: "/403" });
   return router;
 }
 ```
@@ -236,6 +236,13 @@ export function createAppRouter(owl) {
   path within the app.
 - A denied navigation goes to `forbiddenRoute`, or is cancelled when there isn't one, and is logged
   as `navigation.denied` through the client's `SecurityLogger`.
+- The open page is re-checked whenever the session changes. A logout or an expired token on a
+  protected page redirects to `loginRoute`; losing the permission (a role change, a different user)
+  redirects to `forbiddenRoute`, or to `/` without one. Without this, the protected content would
+  stay on screen until the next navigation.
+- `installOwlRouterGuard()` returns a function that removes the guard and the watcher; both are also
+  removed when the app unmounts. For the navigation check alone, use
+  `router.beforeEach(createOwlRouterGuard(owl, options))`.
 
 ## Notes
 
@@ -246,3 +253,9 @@ export function createAppRouter(owl) {
   `@owasp-webshield/express`, so the two work together without configuration.
 - Real encryption (`useCryptoManager`) needs Node. In a browser bundle its methods throw.
 - Supported versions: Vue 3.3+, and Vue Router 4+ for the guard.
+
+## Runnable Example
+
+[OWL Enabled Vue + Express Incident Desk](../examples/owl-enabled-vue-express-incident-desk/README.md)
+is a full-stack app built this way: the plugin, gates, `v-safe-html`, `installOwlRouterGuard` and
+`useSecureHttpClient` in the front end, against an Express API that enforces the same roles.

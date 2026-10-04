@@ -722,10 +722,13 @@ rebuilt when a reactive argument changes. See [vue-adapter-usage.md](./vue-adapt
 ### Router guard
 
 ```js
+installOwlRouterGuard(router, owl, { loginRoute: "/login", forbiddenRoute: "/403" }); // returns an uninstall function
+// or, for the navigation check alone:
 router.beforeEach(createOwlRouterGuard(owl, { loginRoute: "/login", forbiddenRoute: "/403" }));
 ```
 
 Reads `meta.requiresAuth` and `meta.permission: { action, resource }` (`resource` may be a function
 of the target route) from every matched route record. Signed-out users are redirected to
 `loginRoute` with `?redirect=`; denied navigations go to `forbiddenRoute` or are cancelled, and
-are logged as `navigation.denied`.
+are logged as `navigation.denied`. `installOwlRouterGuard()` also re-checks the open page when the
+session changes (logout, token expiry, role change) and leaves it if it's no longer allowed.

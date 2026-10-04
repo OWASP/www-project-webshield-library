@@ -91,8 +91,8 @@ export class SecretsVault {
     this.dependencyScanner = new DependencyRiskScanner(new NpmAuditProvider({ cwd: REPO_ROOT }));
     this.componentPolicy = new ComponentPolicy({ denylist: [], minVersions: {} });
 
-    // A08 — CSRF token manager works for real here (Node has native crypto),
-    // unlike the browser example, which has to mock it.
+    // A08 — the CSRF token the vault's own outbound HTTPClient sends (the CLI
+    // walkthrough). The HTTP server (server.js) issues a separate token per session.
     this.csrfManager = new CSRFTokenManager();
     this.csrfManager.rotateToken();
     // `assertResolvedSafe()` does a real DNS lookup for non-literal hostnames
