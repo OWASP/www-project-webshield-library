@@ -7,6 +7,11 @@ import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 // evaluated. `generateSalt` only needs random bytes, which the Web Crypto API
 // provides natively, so it's reimplemented portably instead of stubbed. Only
 // `PBKDF2Adapter` (Node's synchronous `pbkdf2Sync`) has no browser equivalent.
+
+// Same value as KDFAdapters.js, so code shared between server and browser can
+// import it from either build (e.g. to show or validate the work factor).
+export const DEFAULT_PBKDF2_ITERATIONS = 600000;
+
 export class Argon2Adapter {
   /**
    * @param {{deriveFn: (password: string, salt: Buffer, options?: Record<string, unknown>) => Buffer}} options

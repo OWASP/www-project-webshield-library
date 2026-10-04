@@ -14,9 +14,12 @@ OWL takes security seriously. This document describes supported versions, how to
 
 | Version | Status | Security Support |
 |---|---|---|
-| `1.x` — latest | ✅ Stable | Full security fixes |
-| `1.x` — previous minor | ⚠️ Maintenance | Critical fixes only, best-effort |
+| `2.x` — latest | ✅ Stable | Full security fixes |
+| `2.x` — previous minor | ⚠️ Maintenance | Critical fixes only, best-effort |
+| `1.x` | ⚠️ Maintenance | Critical fixes only, for six months after the 2.0.0 release |
 | `0.x` | ❌ End of life | No support |
+
+All packages (`@owasp-webshield/core`, `react`, `vue`, `node` and `express`) are released together with the same version number, so this table applies to each of them.
 
 ---
 

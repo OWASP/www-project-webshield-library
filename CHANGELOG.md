@@ -23,11 +23,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Examples: **`owl-enabled-vue-express-incident-desk`**, a full-stack reference app (Vue 3 on `@owasp-webshield/vue`, Express 5 on `@owasp-webshield/express`) with every category A01–A10 enforced end to end: PBKDF2 sign-in with lockout, per-IP rate limits and no user enumeration, server-side sessions, per-session CSRF tokens delivered in the `XSRF-TOKEN` cookie, per-incident ACL locks, encrypted private notes, an SSRF-guarded webhook test, a redacted audit log and API tests for each control.
 - Examples: `owl-enabled-node-secrets-app`'s server uses `@owasp-webshield/node` for authentication, CSRF, security headers, error responses and the boot-time hardening check, instead of its own helpers.
 
-### Fixed
-
-- React: `withSecurityHeaders()` keeps headers passed as a `Headers` object or an array of `[name, value]` pairs. They were spread like a plain object, so a `Headers` object lost every header (including `Authorization`) and an array became numeric keys. Its TypeScript declaration now returns `RequestInit`.
-- Workspaces: `src/adapters/node` and `src/adapters/express` are registered as npm workspaces again. They were dropped from `package.json`, so a fresh `npm ci` didn't link `@owasp-webshield/node`, and `@owasp-webshield/express` couldn't resolve it outside Jest.
-
 ### Security
 
 - A03: `InputSanitizer` no longer re-encodes character references already present in text. `Tom &amp; Jerry` used to come out as `Tom &amp;amp; Jerry` (displayed as "Tom &amp; Jerry"), and sanitizing twice, on input and again on output, changed the result every time. Bare `&`, `<` and `>` are still encoded, and encoded markup such as `&lt;script&gt;` still renders as text. Output is now idempotent: sanitizing it again returns it unchanged.
@@ -65,6 +60,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- React: `withSecurityHeaders()` keeps headers passed as a `Headers` object or an array of `[name, value]` pairs. They were spread like a plain object, so a `Headers` object lost every header (including `Authorization`) and an array became numeric keys. Its TypeScript declaration now returns `RequestInit`.
+- Workspaces: `src/adapters/node` and `src/adapters/express` are registered as npm workspaces again. They were dropped from `package.json`, so a fresh `npm ci` didn't link `@owasp-webshield/node`, and `@owasp-webshield/express` couldn't resolve it outside Jest.
 - A07: `TokenManager.refreshIfNeeded()` shares one in-flight refresh between concurrent callers, so a rotating refresh token is presented once. It keeps the current refresh token when `onRefresh` doesn't return a new one.
 - A03: `InputSanitizer` output is always balanced: stray closing tags are dropped, non-void `<tag/>` opens the tag as browsers do, and unclosed tags are closed.
 - A03: `InputValidator.validateSchema()` gives stable results for patterns with the `g`/`y` flag.
@@ -75,10 +72,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Demos: the Netlify sites for both example apps send a strict Content-Security-Policy plus `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS and COOP. The docs site gets the same headers with a CSP that allows VitePress's inline scripts.
 - Docs: `PermissionGate`, `usePermission` and `AuthGate` are documented as UI-only; the server must authorize every request. The docs now explain where CSRF tokens have to come from.
 - Docs: the pinned `Agent` must be dedicated to untrusted URLs (pooled sockets skip the lookup), and the Node example warns that its `/login` route issues sessions without credentials.
-
 - A08: `HTTPClient` and `withSecurityHeaders()` no longer send `X-Frame-Options`/`X-Content-Type-Options` as *request* headers (they only apply to responses). `withSecurityHeaders()` now sets `credentials: "same-origin"` and `referrerPolicy: "strict-origin-when-cross-origin"`.
 - A08/A10: the default `fetch` is now called unbound, avoiding "Illegal invocation" errors in browsers.
 - Docs: removed links to non-existent deployment, CI-gate, and docs-site pages.
+- Types: `@owasp-webshield/node` and `@owasp-webshield/express` ship TypeScript declarations (`types` in `package.json`). TypeScript projects importing them previously failed with TS7016, even with `skipLibCheck`. The Express declarations also add `req.owl` (`session`, `outboundUrl`) to Express's `Request` type.
+- Types: `@owasp-webshield/react`'s declarations no longer import `../../core/...` paths that only exist inside this repository, and `useSecureHttpClient()` declares all of its options (`fetchImpl`, `allowedOrigins` and `outboundRequestPolicy` were missing) and returns `HTTPClient`.
+- A02: the browser build exports `DEFAULT_PBKDF2_ITERATIONS`, like the Node build, so shared client/server code can import it from the package root.
+- Packaging: `@owasp-webshield/core` no longer includes the adapters' declaration files (`dist/react`, `dist/vue`).
+- Packaging: `@owasp-webshield/node` and `@owasp-webshield/express` are ESM-only and now declare `engines: "^20.19.0 || >=22.12.0"`, the versions where `require()` can load them from CommonJS.
 
 ## [1.0.0] — 2026-09-21 (first release as `@owasp-webshield/core` / `@owasp-webshield/react`)
 

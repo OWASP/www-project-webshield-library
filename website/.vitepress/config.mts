@@ -33,7 +33,10 @@ export default defineConfig({
         text: "npm",
         items: [
           { text: "@owasp-webshield/core", link: "https://www.npmjs.com/package/@owasp-webshield/core" },
-          { text: "@owasp-webshield/react", link: "https://www.npmjs.com/package/@owasp-webshield/react" }
+          { text: "@owasp-webshield/react", link: "https://www.npmjs.com/package/@owasp-webshield/react" },
+          { text: "@owasp-webshield/vue", link: "https://www.npmjs.com/package/@owasp-webshield/vue" },
+          { text: "@owasp-webshield/express", link: "https://www.npmjs.com/package/@owasp-webshield/express" },
+          { text: "@owasp-webshield/node", link: "https://www.npmjs.com/package/@owasp-webshield/node" }
         ]
       }
     ],
@@ -45,7 +48,9 @@ export default defineConfig({
           items: [
             { text: "Getting Started", link: "/guide/getting-started" },
             { text: "Module Map", link: "/guide/module-map" },
-            { text: "React Adapter Setup", link: "/guide/react-setup" }
+            { text: "React Adapter Setup", link: "/guide/react-setup" },
+            { text: "Vue Adapter Setup", link: "/guide/vue-setup" },
+            { text: "Node & Express Setup", link: "/guide/server-setup" }
           ]
         }
       ],
