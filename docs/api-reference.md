@@ -681,3 +681,51 @@ export function RemoteConfigLoader() {
   return <button onClick={loadConfig}>Load config</button>;
 }
 ```
+
+## Vue Adapter API
+
+`@owasp-webshield/vue` mirrors the React adapter for Vue 3.3+. Composable arguments can be plain
+values, refs or getters; composables that build a core object return a `ComputedRef` that is
+rebuilt when a reactive argument changes. See [vue-adapter-usage.md](./vue-adapter-usage.md).
+
+### Setup
+
+| Export | Signature | Notes |
+|---|---|---|
+| `createOwl` | `createOwl({ client?, authManager?, aclManager?, rbacManager?, logger?, events? })` → plugin | `app.use(plugin)`; `plugin.context` holds the managers and reactive auth state |
+| `provideOwl` | `provideOwl(options)` → context | Call in `setup()` to give a subtree its own managers |
+| `useOwl` | `useOwl()` → context | Throws when OWL isn't installed |
+
+### Composables and components
+
+| Category | Export | Returns / renders |
+|---|---|---|
+| A01 | `usePermission(action, resource)` | `ComputedRef<{ allowed, reason }>` |
+| A01 | `useACL()` | `ACLManager` |
+| A01 | `<PermissionGate action resource>` | default slot or `#fallback` |
+| A02 | `useCryptoManager(options?)` | `ComputedRef<CryptoManager>` |
+| A03 | `useInputSanitizer(profile?, options?)` | `ComputedRef<InputSanitizer>` |
+| A03 | `<SanitizedText html profile allowedClasses>` | sanitized HTML in a `<span>` |
+| A03 | `vSafeHtml` | directive: `v-safe-html`, `v-safe-html:moderate`, or `{ html, profile, allowedClasses }` |
+| A04 | `useThreatModelGuard(config?)` | `ComputedRef<ThreatModelGuard>` |
+| A05 | `useHardeningReport(config?)` | `ComputedRef<Finding[]>` |
+| A06 | `useDependencyRiskScanner(provider)` | `{ loading, results, error, runScan, scanner }` |
+| A07 | `useAuth()` | `{ authManager, session, isAuthenticated }` |
+| A07 | `useAuthToken()` | `Ref<string | null>` |
+| A07 | `<AuthGate>` | default slot or `#fallback` |
+| A08 | `useSecureHttpClient(options?)` | `ComputedRef<HTTPClient>`; same options as the React hook |
+| A08 | `withSecurityHeaders(init?)` | `RequestInit` |
+| A09 | `useSecurityMonitoring()` | `{ logger, events }` |
+| A09 | `<SecurityAlert message level>` | `role="alert"` element |
+| A10 | `useSafeFetcher(config?, fetchImpl?)` | `ComputedRef<SafeFetcher>` |
+
+### Router guard
+
+```js
+router.beforeEach(createOwlRouterGuard(owl, { loginRoute: "/login", forbiddenRoute: "/403" }));
+```
+
+Reads `meta.requiresAuth` and `meta.permission: { action, resource }` (`resource` may be a function
+of the target route) from every matched route record. Signed-out users are redirected to
+`loginRoute` with `?redirect=`; denied navigations go to `forbiddenRoute` or are cancelled, and
+are logged as `navigation.denied`.

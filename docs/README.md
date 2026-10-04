@@ -15,6 +15,7 @@ Guides, references, and integration examples for OWL.
 
 - [Core JS usage](./core-js-usage.md)
 - [React adapter usage](./react-adapter-usage.md)
+- [Vue adapter usage](./vue-adapter-usage.md)
 - [OWL Enabled Node Secrets App (runnable)](../examples/owl-enabled-node-secrets-app/README.md)
 - [OWL Enabled React Todo App (runnable)](../examples/owl-enabled-react-todo-app/README.md)
 - [Node & Express integration](./node-api-integration.md)

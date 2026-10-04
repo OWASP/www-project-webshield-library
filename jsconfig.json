@@ -11,6 +11,9 @@
       ],
       "@owasp-webshield/react": [
         "src/adapters/react/index.js"
+      ],
+      "@owasp-webshield/vue": [
+        "src/adapters/vue/index.js"
       ]
     },
     "checkJs": false,

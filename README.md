@@ -24,7 +24,7 @@
 
 ---
 
-> **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package and a full React adapter — making security primitives as easy to use as any other NPM library.
+> **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package, full React and Vue adapters, and Node/Express server support — making security primitives as easy to use as any other NPM library.
 
 📖 **Full documentation and usage guide: [shimmering-parfait-3d0863.netlify.app](https://shimmering-parfait-3d0863.netlify.app/)**
 
@@ -37,6 +37,7 @@
 - [Module Map](#module-map-by-owasp-number)
 - [Core Usage](#core-usage)
 - [React Adapter](#react-adapter-usage)
+- [Vue Adapter](#vue-adapter-usage)
 - [Examples](#integration-examples)
 - [Scripts](#scripts)
 - [Project Docs](#project-docs)
@@ -57,6 +58,7 @@
 | Risky outbound requests | SSRF guard wired directly into `HTTPClient` |
 | Secrets leaking through logs | Redaction-first `SecurityLogger` |
 | React apps with no auth or permission guard | `AuthGate`, `PermissionGate`, and provider hooks |
+| Vue apps rendering user HTML with `v-html` | `v-safe-html`, a sanitizing drop-in replacement, plus guards and composables |
 
 ---
 
@@ -143,12 +145,39 @@ export function App() {
 
 `OwlProvider` composes `SecurityProvider`/`AuthProvider`/`ACLProvider`/`RBACProvider` for you — see [docs/react-adapter-usage.md](docs/react-adapter-usage.md) if you need to wire those managers individually instead.
 
+## Vue Adapter Usage
+
+```js
+// main.js
+import { createApp } from "vue";
+import { createOwlClient } from "@owasp-webshield/core";
+import { createOwl, vSafeHtml } from "@owasp-webshield/vue";
+
+const owl = createOwl({
+  client: createOwlClient({ roles: { viewer: { permissions: ["read:reports"] } } })
+});
+createApp(App).use(owl).directive("safe-html", vSafeHtml).mount("#app");
+```
+
+```vue
+<AuthGate>
+  <PermissionGate action="read" resource="reports">
+    <div v-safe-html="report.summary"></div>
+    <template #fallback>Forbidden</template>
+  </PermissionGate>
+  <template #fallback>Please sign in</template>
+</AuthGate>
+```
+
+See [docs/vue-adapter-usage.md](docs/vue-adapter-usage.md) for the composables, `v-safe-html` and the Vue Router guard.
+
 ## Integration Examples
 
 | Example | Description |
 |---|---|
 | [Core JS usage](docs/core-js-usage.md) | Full composition guide for `@owasp-webshield/core` |
 | [React adapter usage](docs/react-adapter-usage.md) | Provider + hook composition for `@owasp-webshield/react` |
+| [Vue adapter usage](docs/vue-adapter-usage.md) | Plugin, composables, `v-safe-html` and router guard for `@owasp-webshield/vue` |
 | [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-webshield/core` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
 | [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) ([live demo](https://owl-todo-demo.netlify.app/)) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
 | [Node & Express integration](docs/node-api-integration.md) | Express middleware (`@owasp-webshield/express`) and plain-Node functions (`@owasp-webshield/node`) for auth, access control, CSRF, validation, headers and SSRF checks |
