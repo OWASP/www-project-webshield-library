@@ -30,6 +30,10 @@ Use `localhost`, not `127.0.0.1`, in the browser: the session cookie is a `__Hos
 (`Secure`), which browsers accept over plain HTTP only on `localhost`. Safari doesn't make that
 exception, so use Chrome or Firefox locally, or serve over HTTPS.
 
+`npm run dev` and `npm start` only accept connections from this machine (`-H 127.0.0.1`), because the
+demo passwords are published below. To test from another device, change `-H` in `package.json`, and
+only behind HTTPS on a network you trust.
+
 Demo accounts (also listed on the sign-in page):
 
 | User | Password | Role · team | Can |

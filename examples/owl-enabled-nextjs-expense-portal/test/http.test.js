@@ -22,7 +22,7 @@ async function freePort() {
 before(async () => {
   const port = await freePort();
   base = `http://127.0.0.1:${port}`;
-  server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], {
+  server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-H", "127.0.0.1", "-p", String(port)], {
     cwd: appDir,
     // Fast password hashing for tests; production uses the 600,000-iteration default.
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1", OWL_KDF_ITERATIONS: "1000", OWL_SIGNIN_FAILURES_PER_MINUTE: "8" },
@@ -380,7 +380,7 @@ describe("Server Actions", () => {
 describe("A05: startup", () => {
   test("the server exits instead of starting with debug on", async () => {
     const port = await freePort();
-    const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], {
+    const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-H", "127.0.0.1", "-p", String(port)], {
       cwd: appDir,
       env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1", OWL_DEBUG: "true" },
       stdio: ["ignore", "pipe", "pipe"]

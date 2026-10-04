@@ -29,6 +29,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Examples: `owl-enabled-node-secrets-app`, `owl-enabled-vue-express-incident-desk` and `owl-enabled-nextjs-expense-portal` only accept connections from the local machine (`127.0.0.1`) by default. They listened on every network interface, so anyone on the same network could reach a demo whose login is password-free or whose passwords are published; set `HOST` (or `-H` for Next.js) to expose one deliberately.
+- Releases: `npm publish` runs with `--ignore-scripts`, so no lifecycle script (and no third-party dev dependency) runs while the npm token is in the environment. The release workflow runs the checks and the build in earlier steps without the token.
 - A03: `InputSanitizer` no longer re-encodes character references already present in text. `Tom &amp; Jerry` used to come out as `Tom &amp;amp; Jerry` (displayed as "Tom &amp; Jerry"), and sanitizing twice, on input and again on output, changed the result every time. Bare `&`, `<` and `>` are still encoded, and encoded markup such as `&lt;script&gt;` still renders as text. Output is now idempotent: sanitizing it again returns it unchanged.
 - Examples: `owl-enabled-node-secrets-app`'s API no longer lets the request body override the caller's role. `POST /secrets` spread the body after the session's role, so a `viewer` sending `"role": "admin"` could create secrets. It also kept one global session shared by every caller; each login now gets its own server-side session and CSRF token, with logout, expiry, a 64 KB body limit and URL-decoded route parameters, covered by `npm test`.
 - A10: `SSRFGuard.createSafeLookup()` validates resolved addresses at socket-connect time, and `SafeFetcher` accepts a `dispatcher` to pin connections to them. This closes the DNS-rebinding race between `assertResolvedSafe()` and `fetch`'s own lookup.
@@ -64,6 +66,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- A08: `HTTPClient` keeps request headers passed as a `Headers` object or an array of `[name, value]` pairs. They were spread like a plain object, so a `Headers` object lost every header (only the CSRF and `Authorization` headers OWL adds were sent) and pairs became numbered keys. Requests went out without the caller's `Content-Type` or custom auth headers.
 - React: `withSecurityHeaders()` keeps headers passed as a `Headers` object or an array of `[name, value]` pairs. They were spread like a plain object, so a `Headers` object lost every header (including `Authorization`) and an array became numeric keys. Its TypeScript declaration now returns `RequestInit`.
 - Workspaces: `src/adapters/node` and `src/adapters/express` are registered as npm workspaces again. They were dropped from `package.json`, so a fresh `npm ci` didn't link `@owasp-webshield/node`, and `@owasp-webshield/express` couldn't resolve it outside Jest.
 - A07: `TokenManager.refreshIfNeeded()` shares one in-flight refresh between concurrent callers, so a rotating refresh token is presented once. It keeps the current refresh token when `onRefresh` doesn't return a new one.

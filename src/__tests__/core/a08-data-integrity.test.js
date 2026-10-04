@@ -54,6 +54,31 @@ describe("A08 data integrity", () => {
     expect(res.data.headers["X-CSRF-Token"]).toBeTruthy();
   });
 
+  test.each([
+    ["a Headers instance", () => new Headers({ "Content-Type": "application/json", "X-Request-Id": "req-1" })],
+    ["[name, value] pairs", () => [["Content-Type", "application/json"], ["X-Request-Id", "req-1"]]],
+    ["a plain object", () => ({ "Content-Type": "application/json", "X-Request-Id": "req-1" })]
+  ])("keeps the caller's headers passed as %s, alongside the credentials", async (_shape, makeHeaders) => {
+    // Spreading a Headers instance yields {} and pairs yield numeric keys, so these
+    // headers used to be dropped silently.
+    const csrf = new CSRFTokenManager();
+    const token = csrf.rotateToken();
+    let sent;
+    const fetchImpl = async (_url, options) => {
+      sent = options.headers;
+      return { ok: true, status: 200, headers: new Headers(), clone: () => ({ json: async () => ({}) }), text: async () => "" };
+    };
+    const client = new HTTPClient({ csrfManager: csrf, tokenProvider: () => "access-token", fetchImpl });
+    await client.request("/x", { method: "POST", headers: makeHeaders(), body: "{}" });
+
+    const lower = Object.fromEntries(Object.entries(sent).map(([name, value]) => [name.toLowerCase(), value]));
+    expect(lower["content-type"]).toBe("application/json");
+    expect(lower["x-request-id"]).toBe("req-1");
+    expect(lower["x-csrf-token"]).toBe(token);
+    expect(lower.authorization).toBe("Bearer access-token");
+    expect(Object.keys(sent).some((name) => /^\d+$/.test(name))).toBe(false);
+  });
+
   test("supports async token providers and request interceptors", async () => {
     const calls = [];
     const fetchImpl = async (_url, options) => {

@@ -9,7 +9,9 @@
 //    installs) is rewritten to `^<version>`, after waiting until that version is
 //    visible on npm. The rewrite happens in the CI checkout only and is undone
 //    afterwards; nothing is committed.
-// 3. Runs `npm publish --access public --provenance` in the package folder.
+// 3. Runs `npm publish --access public --ignore-scripts --provenance` in the package
+//    folder. Lifecycle scripts are skipped so no third-party code runs with the npm
+//    token; core must already be built (the release workflow's `core` job does that).
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -71,7 +73,12 @@ try {
   }
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
-  const args = ["publish", "--access", "public", dryRun ? "--dry-run" : "--provenance"];
+  // --ignore-scripts: npm publish would otherwise run lifecycle scripts (core's
+  // prepublishOnly runs the whole test and build toolchain) with NODE_AUTH_TOKEN in
+  // the environment, so any dev dependency could read the token. The release
+  // workflow has already run those checks in `verify`, and builds core in its own
+  // step, before this runs.
+  const args = ["publish", "--access", "public", "--ignore-scripts", dryRun ? "--dry-run" : "--provenance"];
   // A prerelease (2.1.0-beta.1) must not become what `npm install` picks by default.
   if (manifest.version.includes("-")) args.push("--tag", "next");
   console.log(`${dryRun ? "Dry run: " : ""}npm ${args.join(" ")} (${label})`);
