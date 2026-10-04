@@ -1,5 +1,13 @@
 import http from "node:http";
 import { SecurityError, SecurityErrorCode } from "@owasp-webshield/core";
+import {
+  assertHardened,
+  authenticate,
+  logRequestError,
+  securityHeaders,
+  toErrorResponse,
+  verifyCsrf
+} from "@owasp-webshield/node";
 import { SecretsVault } from "./vault.js";
 
 // Single global session, same simplification the CLI walkthrough (index.js)
@@ -19,18 +27,25 @@ function issueSession(role) {
   return { accessToken, csrfToken: vault.csrfManager.getToken() };
 }
 
-function requireAuth(req) {
-  const header = req.headers.authorization || "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-  if (!token || token !== vault.tokenManager.getAccessToken()) {
-    throw new SecurityError(SecurityErrorCode.AUTH_REQUIRED, "Missing or invalid bearer token");
-  }
-  return vault.authManager.getSession().roles[0];
+// A05 — refuse to boot with an unsafe config (debug on, wildcard CORS, ...).
+assertHardened(vault.configManager, { logger: vault.logger });
+
+const SECURITY_HEADERS = securityHeaders();
+
+// `authenticate()` keeps no state itself; `verifyToken` decides which session a
+// token belongs to. A real service would look the token up in its session store
+// or verify a JWT here; this demo compares it with the one global session.
+async function requireAuth(req) {
+  const session = await authenticate(req, {
+    verifyToken: (token) => (token === vault.tokenManager.getAccessToken() ? vault.authManager.getSession() : null)
+  });
+  return session.roles[0];
 }
 
+// Synchronizer-token pattern: the expected token is the one stored server-side
+// for the session, not one supplied by the browser.
 function requireCsrf(req) {
-  const token = req.headers["x-csrf-token"];
-  vault.csrfManager.validate(token); // throws SecurityError(CSRF_INVALID) on mismatch
+  return verifyCsrf(req, { getExpectedToken: () => vault.csrfManager.getToken() });
 }
 
 async function readJsonBody(req) {
@@ -44,26 +59,15 @@ async function readJsonBody(req) {
   }
 }
 
-function send(res, status, body) {
+function send(res, status, body, headers = {}) {
   const payload = JSON.stringify(body, null, 2);
-  res.writeHead(status, { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) });
+  res.writeHead(status, {
+    ...SECURITY_HEADERS,
+    ...headers,
+    "Content-Type": "application/json",
+    "Content-Length": Buffer.byteLength(payload)
+  });
   res.end(payload);
-}
-
-function errorStatus(code) {
-  switch (code) {
-    case SecurityErrorCode.AUTH_REQUIRED:
-      return 401;
-    case SecurityErrorCode.ACCESS_DENIED:
-    case SecurityErrorCode.CSRF_INVALID:
-    case SecurityErrorCode.SSRF_BLOCKED:
-    case SecurityErrorCode.CREDENTIAL_LEAK_BLOCKED:
-      return 403;
-    case SecurityErrorCode.INVALID_INPUT:
-      return 400;
-    default:
-      return 500;
-  }
 }
 
 const routes = [
@@ -82,7 +86,7 @@ const routes = [
     method: "GET",
     pattern: /^\/secrets$/,
     handler: async (req, res) => {
-      const role = requireAuth(req);
+      const role = await requireAuth(req);
       send(res, 200, vault.listSecrets({ role }));
     }
   },
@@ -90,8 +94,8 @@ const routes = [
     method: "POST",
     pattern: /^\/secrets$/,
     handler: async (req, res) => {
-      const role = requireAuth(req);
-      requireCsrf(req);
+      const role = await requireAuth(req);
+      await requireCsrf(req);
       const body = await readJsonBody(req);
       send(res, 201, vault.createSecret({ role, ...body }));
     }
@@ -100,8 +104,8 @@ const routes = [
     method: "POST",
     pattern: /^\/secrets\/([^/]+)\/reveal$/,
     handler: async (req, res, [name]) => {
-      const role = requireAuth(req);
-      requireCsrf(req);
+      const role = await requireAuth(req);
+      await requireCsrf(req);
       send(res, 200, { name, value: vault.revealSecret({ role, name }) });
     }
   },
@@ -109,8 +113,8 @@ const routes = [
     method: "POST",
     pattern: /^\/secrets\/([^/]+)\/rotate$/,
     handler: async (req, res, [name]) => {
-      const role = requireAuth(req);
-      requireCsrf(req);
+      const role = await requireAuth(req);
+      await requireCsrf(req);
       const { newValue } = await readJsonBody(req);
       send(res, 200, vault.rotateSecret({ role, name, newValue }));
     }
@@ -119,8 +123,8 @@ const routes = [
     method: "POST",
     pattern: /^\/secrets\/([^/]+)\/freeze$/,
     handler: async (req, res, [name]) => {
-      const role = requireAuth(req);
-      requireCsrf(req);
+      const role = await requireAuth(req);
+      await requireCsrf(req);
       const { frozen } = await readJsonBody(req);
       vault.freezeSecret({ role, name, frozen: Boolean(frozen) });
       send(res, 200, { name, frozen: Boolean(frozen) });
@@ -130,8 +134,8 @@ const routes = [
     method: "DELETE",
     pattern: /^\/secrets\/([^/]+)$/,
     handler: async (req, res, [name]) => {
-      const role = requireAuth(req);
-      requireCsrf(req);
+      const role = await requireAuth(req);
+      await requireCsrf(req);
       vault.deleteSecret({ role, name });
       send(res, 200, { name, deleted: true });
     }
@@ -149,12 +153,11 @@ const server = http.createServer(async (req, res) => {
     const match = route.pattern.exec(pathname);
     await route.handler(req, res, match.slice(1));
   } catch (error) {
-    if (error instanceof SecurityError) {
-      send(res, errorStatus(error.code), { error: error.code, message: error.message });
-      return;
-    }
-    console.error(error);
-    send(res, 500, { error: "internal_error" });
+    // A09 — denials go to the vault's redacted audit trail as security.* events.
+    logRequestError(vault.logger, error, req);
+    if (!(error instanceof SecurityError)) console.error(error);
+    const { status, headers, body } = toErrorResponse(error);
+    send(res, status, body, headers);
   }
 });
 

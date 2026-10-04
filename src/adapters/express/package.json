@@ -1,0 +1,63 @@
+{
+  "name": "@owasp-webshield/express",
+  "version": "1.0.0",
+  "description": "Express adapter for OWL (OWASP Webshield Library): middleware for authentication, access control, CSRF, validation, security headers, SSRF checks and security error handling",
+  "private": false,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWASP/www-project-webshield-library.git",
+    "directory": "src/adapters/express"
+  },
+  "homepage": "https://owasp.org/www-project-webshield-library/",
+  "bugs": {
+    "url": "https://github.com/OWASP/www-project-webshield-library/issues"
+  },
+  "author": "OWASP Webshield Library Project",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "owasp",
+    "owasp-top10",
+    "security",
+    "express",
+    "express-middleware",
+    "middleware",
+    "webshield",
+    "rbac",
+    "csrf",
+    "ssrf",
+    "security-headers",
+    "authentication",
+    "authorization",
+    "input-validation",
+    "secure-coding"
+  ],
+  "sideEffects": false,
+  "license": "Apache-2.0",
+  "funding": {
+    "type": "individual",
+    "url": "https://owasp.org/donate/"
+  },
+  "peerDependencies": {
+    "express": ">=4.18"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@owasp-webshield/node": "file:../node"
+  }
+}

@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@owasp-webshield/core": "file:../.."
+    "@owasp-webshield/core": "file:../..",
+    "@owasp-webshield/node": "file:../../src/adapters/node"
   },
   "scripts": {
     "start": "node index.js",

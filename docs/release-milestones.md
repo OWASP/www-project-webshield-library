@@ -32,6 +32,22 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
   setup. Add a "Try it live" badge to the root README once the secrets are in place and a deploy
   succeeds.
 
+## Next: 2.0.0
+
+A major release: `CHANGELOG.md`'s `[Unreleased]` section already contains breaking changes
+(the PBKDF2 default work factor, `useSecureHttpClient()` CSRF handling). All four packages ship
+as `2.0.0`:
+
+- **Core** and **React adapter:** the `[Unreleased]` fixes and changes.
+- **Node server layer and Express adapter (first release):** `@owasp-webshield/node`
+  (`src/adapters/node`) and `@owasp-webshield/express` (`src/adapters/express`). They come before
+  Vue and Angular because most A01–A10 controls have to be enforced on the server, where a browser
+  adapter can't.
+
+Tag order: `core-v2.0.0`, then `react-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0`. Each
+adapter is published with a `^2.0.0` dependency on the package below it, so that package has to
+be on npm first.
+
 ### Not yet started
 
 - **TypeScript declaration files** — no `.d.ts` ships today despite `"typescript"` in `package.json` keywords.
