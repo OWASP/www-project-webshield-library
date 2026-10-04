@@ -11,4 +11,9 @@ execFileSync(process.execPath, [tsc, "--project", "tsconfig.react.types.json"], 
 	stdio: "inherit"
 });
 
+execFileSync(process.execPath, [tsc, "--project", "tsconfig.vue.types.json"], {
+	stdio: "inherit"
+});
+
 cpSync("dist/react", "src/adapters/react", { recursive: true });
+cpSync("dist/vue", "src/adapters/vue", { recursive: true });

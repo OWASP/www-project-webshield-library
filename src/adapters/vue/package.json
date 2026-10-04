@@ -1,0 +1,70 @@
+{
+  "name": "@owasp-webshield/vue",
+  "version": "1.0.0",
+  "description": "Vue 3 adapter for OWL (OWASP Webshield Library): a plugin, category-aligned composables, guard components, a sanitizing v-safe-html directive and a Vue Router guard for @owasp-webshield/core",
+  "private": false,
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json",
+    "./*": "./*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWASP/www-project-webshield-library.git",
+    "directory": "src/adapters/vue"
+  },
+  "homepage": "https://owasp.org/www-project-webshield-library/",
+  "bugs": {
+    "url": "https://github.com/OWASP/www-project-webshield-library/issues"
+  },
+  "author": "OWASP Webshield Library Project",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "owasp",
+    "owasp-top10",
+    "security",
+    "vue",
+    "vue-composables",
+    "webshield",
+    "rbac",
+    "acl",
+    "csrf",
+    "ssrf",
+    "authentication",
+    "authorization",
+    "input-sanitization",
+    "secure-coding",
+    "vue3",
+    "vue-router"
+  ],
+  "sideEffects": false,
+  "license": "Apache-2.0",
+  "funding": {
+    "type": "individual",
+    "url": "https://owasp.org/donate/"
+  },
+  "peerDependencies": {
+    "vue": ">=3.3",
+    "vue-router": ">=4"
+  },
+  "dependencies": {
+    "@owasp-webshield/core": "file:../../.."
+  },
+  "peerDependenciesMeta": {
+    "vue-router": {
+      "optional": true
+    }
+  }
+}

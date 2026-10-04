@@ -7,13 +7,15 @@ export default {
     "^@owasp-webshield/core$": "<rootDir>/src/index.js",
     "^@owasp-webshield/react$": "<rootDir>/src/adapters/react/index.js",
     "^@owasp-webshield/node$": "<rootDir>/src/adapters/node/index.js",
-    "^@owasp-webshield/express$": "<rootDir>/src/adapters/express/index.js"
+    "^@owasp-webshield/express$": "<rootDir>/src/adapters/express/index.js",
+    "^@owasp-webshield/vue$": "<rootDir>/src/adapters/vue/index.js"
   },
   collectCoverageFrom: [
     "src/core/**/*.js",
     "src/adapters/react/**/*.js",
     "src/adapters/node/**/*.js",
     "src/adapters/express/**/*.js",
+    "src/adapters/vue/**/*.js",
     "!src/**/*.test.js",
     "!src/**/index.js"
   ],

@@ -35,7 +35,7 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 ## Next: 2.0.0
 
 A major release: `CHANGELOG.md`'s `[Unreleased]` section already contains breaking changes
-(the PBKDF2 default work factor, `useSecureHttpClient()` CSRF handling). All four packages ship
+(the PBKDF2 default work factor, `useSecureHttpClient()` CSRF handling). All five packages ship
 as `2.0.0`:
 
 - **Core** and **React adapter:** the `[Unreleased]` fixes and changes.
@@ -43,15 +43,17 @@ as `2.0.0`:
   (`src/adapters/node`) and `@owasp-webshield/express` (`src/adapters/express`). They come before
   Vue and Angular because most A01–A10 controls have to be enforced on the server, where a browser
   adapter can't.
+- **Vue adapter (first release):** `@owasp-webshield/vue` (`src/adapters/vue`), the first of the
+  two framework adapters named in the original roadmap.
 
-Tag order: `core-v2.0.0`, then `react-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0`. Each
+Tag order: `core-v2.0.0`, then `react-v2.0.0`, `vue-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0`. Each
 adapter is published with a `^2.0.0` dependency on the package below it, so that package has to
 be on npm first.
 
 ### Not yet started
 
 - **TypeScript declaration files** — no `.d.ts` ships today despite `"typescript"` in `package.json` keywords.
-- **Vue and Angular adapters** — named as goals in the original project roadmap; only the React adapter exists. Would become `@owasp-webshield/vue`/`@owasp-webshield/angular` under the current naming scheme.
+- **Angular adapter** — named as a goal in the original project roadmap. Would become `@owasp-webshield/angular` under the current naming scheme. (The Vue adapter ships with 2.0.0.)
 - **A browser-safe package `.` root for real encryption** — today `CryptoManager` is a throwing stub in the browser build
 
 - **A real, shipped CI security-gate GitHub Action** — no reusable action exists yet; `owl-enabled-node-secrets-app`'s `NpmAuditProvider` (a real `npm audit`-backed `DependencyRiskScanner` provider) is a candidate to upstream into the core package, since today `DependencyRiskScanner` ships with no built-in provider at all.
