@@ -63,7 +63,7 @@ Auth state is reactive. Logging in, logging out, a token refresh or a token expi
 | A09 Logging Monitoring | `useSecurityMonitoring`, `SecurityAlert` |
 | A10 SSRF Defense | `useSafeFetcher` |
 | Setup | `createOwl`, `provideOwl`, `useOwl` |
-| Routing | `createOwlRouterGuard` |
+| Routing | `installOwlRouterGuard`, `createOwlRouterGuard` |
 
 Composable arguments can be plain values, refs or getters. Composables that build a core object (`useSecureHttpClient`, `useSafeFetcher`, `useInputSanitizer`, ...) return a `ComputedRef` that is rebuilt when a reactive argument changes.
 
@@ -82,7 +82,7 @@ Turn on `eslint-plugin-vue`'s `vue/no-v-html` rule so that new `v-html` uses get
 ## Router guard
 
 ```js
-import { createOwlRouterGuard } from "@owasp-webshield/vue";
+import { installOwlRouterGuard } from "@owasp-webshield/vue";
 
 const routes = [
   { path: "/account", component: Account, meta: { requiresAuth: true } },
@@ -90,8 +90,10 @@ const routes = [
     meta: { permission: { action: "read", resource: (to) => `report:${to.params.id}` } } }
 ];
 
-router.beforeEach(createOwlRouterGuard(owl, { loginRoute: "/login", forbiddenRoute: "/403" }));
+installOwlRouterGuard(router, owl, { loginRoute: "/login", forbiddenRoute: "/403" });
 ```
+
+`installOwlRouterGuard()` checks every navigation, and also re-checks the open page when the session changes: a logout or an expired token redirects to the login page, and losing the permission redirects to the forbidden route. Use `router.beforeEach(createOwlRouterGuard(owl, options))` if you only want the navigation check.
 
 ## Security notes
 

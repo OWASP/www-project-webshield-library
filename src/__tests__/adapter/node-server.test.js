@@ -255,6 +255,11 @@ describe("A08 CSRF", () => {
 describe("A10 outbound URL", () => {
   const guard = new SSRFGuard({ resolveHost: async (host) => (host === "hooks.example.com" ? ["203.0.113.10"] : ["10.0.0.5"]) });
 
+  test("uses a default SSRFGuard when none is passed", async () => {
+    expect(await codeOf(assertSafeOutboundUrl("http://127.0.0.1:8080/admin"))).toBe(SecurityErrorCode.SSRF_BLOCKED);
+    expect(await codeOf(assertSafeOutboundUrl("file:///etc/passwd"))).toBe(SecurityErrorCode.SSRF_BLOCKED);
+  });
+
   test("allows a public target and blocks private ones", async () => {
     const url = await assertSafeOutboundUrl("https://hooks.example.com/x", { guard });
     expect(url.hostname).toBe("hooks.example.com");

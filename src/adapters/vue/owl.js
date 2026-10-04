@@ -65,12 +65,32 @@ function createAuthState(authManager) {
 }
 
 /**
+ * Wraps `stop` so other parts of the adapter (the router integration) can
+ * register cleanup that runs when the app unmounts.
+ */
+function withDisposers(auth) {
+  const disposers = new Set();
+  return {
+    ...auth,
+    onStop(dispose) {
+      disposers.add(dispose);
+      return () => disposers.delete(dispose);
+    },
+    stop() {
+      auth.stop();
+      for (const dispose of [...disposers]) dispose();
+      disposers.clear();
+    }
+  };
+}
+
+/**
  * Accepts the object `createOwlClient()` returns and/or individual managers,
  * like the React adapter's `<OwlProvider>`; individual managers win.
  */
 function createContext({ client = {}, authManager, aclManager, rbacManager, logger, events } = {}) {
   const resolvedAuthManager = authManager ?? client.authManager ?? null;
-  const auth = createAuthState(resolvedAuthManager);
+  const auth = withDisposers(createAuthState(resolvedAuthManager));
   return {
     authManager: resolvedAuthManager,
     aclManager: aclManager ?? client.aclManager ?? null,
