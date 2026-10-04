@@ -1,0 +1,55 @@
+{
+  "name": "@owasp-webshield/node",
+  "version": "0.1.0",
+  "description": "Framework-neutral server layer for OWL (OWASP Webshield Library): per-request auth, access control, CSRF, validation, security headers, SSRF checks and error mapping on top of @owasp-webshield/core",
+  "private": false,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./*": "./*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWASP/www-project-webshield-library.git",
+    "directory": "src/adapters/node"
+  },
+  "homepage": "https://owasp.org/www-project-webshield-library/",
+  "bugs": {
+    "url": "https://github.com/OWASP/www-project-webshield-library/issues"
+  },
+  "author": "OWASP Webshield Library Project",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "owasp",
+    "owasp-top10",
+    "security",
+    "nodejs",
+    "server",
+    "webshield",
+    "rbac",
+    "csrf",
+    "ssrf",
+    "security-headers",
+    "authentication",
+    "authorization",
+    "input-validation",
+    "secure-coding"
+  ],
+  "sideEffects": false,
+  "license": "Apache-2.0",
+  "funding": {
+    "type": "individual",
+    "url": "https://owasp.org/donate/"
+  },
+  "dependencies": {
+    "@owasp-webshield/core": "file:../../.."
+  }
+}
