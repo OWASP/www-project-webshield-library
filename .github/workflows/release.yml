@@ -25,6 +25,18 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
+          fetch-depth: 0 # full history, so the next step can see origin/main
+
+      # Only reviewed code is released: a tag on a branch commit that never reached
+      # main (or on an unmerged PR) stops here, before anything is published.
+      - name: The tagged commit is on main
+        run: |
+          TAGGED="$(git rev-parse "${GITHUB_REF_NAME}^{commit}")"
+          if ! git merge-base --is-ancestor "$TAGGED" origin/main; then
+            echo "::error::${GITHUB_REF_NAME} points at ${TAGGED}, which is not on main. Merge the release PR, then tag a commit on main."
+            exit 1
+          fi
+          echo "${GITHUB_REF_NAME} (${TAGGED}) is on main."
 
       - name: Setup Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5

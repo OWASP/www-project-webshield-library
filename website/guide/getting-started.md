@@ -1,6 +1,6 @@
 # Getting Started
 
-OWL ships as five packages, all released together with the same version number:
+OWL ships as six packages, all released together with the same version number:
 
 | Package | Purpose |
 |---|---|
@@ -9,6 +9,7 @@ OWL ships as five packages, all released together with the same version number:
 | [`@owasp-webshield/vue`](https://www.npmjs.com/package/@owasp-webshield/vue) | Vue 3 adapter — a plugin, composables, guard components, `v-safe-html` and a Vue Router guard. |
 | [`@owasp-webshield/express`](https://www.npmjs.com/package/@owasp-webshield/express) | Express 4/5 middleware — auth, access control, CSRF, validation, security headers, SSRF checks, error handling. |
 | [`@owasp-webshield/node`](https://www.npmjs.com/package/@owasp-webshield/node) | The framework-neutral server functions the Express middleware is built on, for plain `node:http` or other frameworks. |
+| [`@owasp-webshield/next`](https://www.npmjs.com/package/@owasp-webshield/next) | Next.js App Router adapter — route handler guards, middleware CSRF, `next.config.js` security headers, sessions for Server Components and Server Actions. See [Next.js Setup](./nextjs-setup). |
 
 ## Installation
 

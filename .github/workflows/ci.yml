@@ -49,3 +49,61 @@ jobs:
 
       - name: Package Dry Run
         run: npm pack --dry-run
+
+      # Packs all six packages and installs them into an empty project with React,
+      # Vue, Express and Next.js: imports, one copy of core, real requests, and
+      # tsc --strict over every entry. The release workflow runs it too, but here a
+      # broken package or type export is caught on the PR instead of at release time.
+      - name: Install the packages as a user would
+        if: matrix.node == 22
+        run: node scripts/release-gate/consumer-check.mjs
+
+  examples:
+    name: Example (${{ matrix.example }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - example: owl-enabled-node-secrets-app
+            run: npm test
+          - example: owl-enabled-vue-express-incident-desk
+            run: npm test && npm run build
+          - example: owl-enabled-react-todo-app
+            run: npm run build
+          - example: owl-enabled-react-banking-dashboard
+            run: npm run build
+          - example: owl-enabled-nextjs-expense-portal
+            run: npm test # service tests, next build, then HTTP tests against next start
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            examples/${{ matrix.example }}/package-lock.json
+
+      # The examples link the packages from this checkout (file:../..) and load
+      # core from dist/, so build it first.
+      - name: Install and build the packages
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install the example
+        working-directory: examples/${{ matrix.example }}
+        run: npm ci
+
+      - name: Test and build the example
+        working-directory: examples/${{ matrix.example }}
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: ${{ matrix.run }}

@@ -84,17 +84,25 @@ for p in core react vue node express next; do node scripts/release/publish-packa
 - `consumer-check` ends with `Release gate consumer check passed`.
 - Each dry run shows `file:… -> ^X.Y.Z` for its dependencies. No package contains tests, and core contains no `dist/<adapter>` folders.
 
-Optional: the example apps, which link the packages from this checkout:
+Optional: the example apps. They link the packages from this checkout and load core from `dist/`,
+so run this after the `npm run build` above. Every app runs even if one fails, and the summary at the
+end names the ones that failed:
 
 ```bash
-(cd examples/owl-enabled-node-secrets-app && npm ci && npm test)
-(cd examples/owl-enabled-vue-express-incident-desk && npm ci && npm test && npm run build)
-(cd examples/owl-enabled-react-todo-app && npm ci && npm run build)
-(cd examples/owl-enabled-react-banking-dashboard && npm ci && npm run build)
-(cd examples/owl-enabled-nextjs-expense-portal && npm ci && npm test)
+failed=""
+check() { echo "== $1: $2"; (cd "examples/$1" && npm ci --no-audit --no-fund && bash -c "$2") || failed="$failed $1"; }
+check owl-enabled-node-secrets-app          "npm test"
+check owl-enabled-vue-express-incident-desk "npm test && npm run build"
+check owl-enabled-react-todo-app            "npm run build"
+check owl-enabled-react-banking-dashboard   "npm run build"
+check owl-enabled-nextjs-expense-portal     "npm test"
+if [ -z "$failed" ]; then echo "All example apps passed."; else echo "FAILED:$failed"; false; fi
 ```
 
-**Expect:** every test run passes and every build succeeds.
+**Expect:** `All example apps passed.` These lines are expected and don't mean a failure:
+- The React builds warn that `node:dns/promises` was externalized.
+- The Next.js HTTP tests log `Invalid Server Actions request` twice, from a deliberately
+  cross-origin call.
 
 ## 5. Commit the version bump and push
 
@@ -137,22 +145,6 @@ gh run watch $(gh run list --workflow release.yml --limit 1 --json databaseId --
 
 **Expect:** `verify` → `core` → `react`/`vue`/`node` → `express`/`next` → `github-release`, all green.
 
-### If something fails here
-
-```bash
-# A publish job failed because of npm, the token or a registry delay: fix the cause, then re-run.
-# Packages that already published are skipped.
-gh run rerun $(gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-
-# "verify" failed: nothing was published. Delete the tag, fix through a PR, and tag again.
-git tag -d "v$VERSION"
-git push origin --delete "v$VERSION"
-
-# A published version turns out to be broken: it can't be republished. Deprecate it and release
-# the next patch version for all six.
-NEXT=X.Y.Z+1   # the fixed version, e.g. 2.1.1
-for p in core react vue node express next; do npm deprecate @owasp-webshield/$p@$VERSION "Broken release, use $NEXT"; done
-```
 
 ## 8. Check what was published
 
@@ -197,3 +189,22 @@ Also open each package's npm page and check for the provenance badge.
   git switch -c release/1.x <last-1.x-release-tag>   # e.g. core-v1.0.0, or v1.2.3 for later releases
   git push -u origin release/1.x
   ```
+
+
+
+### If something fails here
+
+```bash
+# A publish job failed because of npm, the token or a registry delay: fix the cause, then re-run.
+# Packages that already published are skipped.
+gh run rerun $(gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+
+# "verify" failed: nothing was published. Delete the tag, fix through a PR, and tag again.
+git tag -d "v$VERSION"
+git push origin --delete "v$VERSION"
+
+# A published version turns out to be broken: it can't be republished. Deprecate it and release
+# the next patch version for all six.
+NEXT=X.Y.Z+1   # the fixed version, e.g. 2.1.1
+for p in core react vue node express next; do npm deprecate @owasp-webshield/$p@$VERSION "Broken release, use $NEXT"; done
+```
