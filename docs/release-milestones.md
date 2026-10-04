@@ -49,7 +49,7 @@ as `2.0.0`:
   route handler guards, middleware CSRF, `next.config.js` security headers, server-side sessions
   for Server Components and Server Actions, and the React adapter as a `"use client"` module.
 
-Tag order: `core-v2.0.0`, then `react-v2.0.0`, `vue-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0` and `next-v2.0.0`. Each
+One tag, `v2.0.0`, releases all six: the release workflow publishes core, then React, Vue and Node, then Express and Next.js. Each
 adapter is published with a `^2.0.0` dependency on the package below it, so that package has to
 be on npm first.
 
