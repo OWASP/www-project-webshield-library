@@ -459,10 +459,14 @@ describe("installOwlRouterGuard (re-checks the open page)", () => {
   });
 
   test("token expiry on a protected page redirects to login", async () => {
-    const { router } = await setup({ ttlMs: 30 });
+    // Shorten the token only after the navigation has finished, so a slow
+    // machine can't expire it before the page is reached.
+    const { client, router } = await setup();
     await router.push("/account");
     expect(router.currentRoute.value.path).toBe("/account");
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    client.tokenManager.setTokens({ accessToken: "t1", expiresAt: Date.now() + 50 });
+    expect(router.currentRoute.value.path).toBe("/account");
+    await new Promise((resolve) => setTimeout(resolve, 150));
     await settle();
     expect(router.currentRoute.value.path).toBe("/login");
   });
