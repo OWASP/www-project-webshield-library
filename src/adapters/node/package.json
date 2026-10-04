@@ -1,6 +1,6 @@
 {
   "name": "@owasp-webshield/node",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework-neutral server layer for OWL (OWASP Webshield Library): per-request auth, access control, CSRF, validation, security headers, SSRF checks and error mapping on top of @owasp-webshield/core",
   "private": false,
   "type": "module",

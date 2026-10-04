@@ -15,6 +15,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **`@owasp-webshield/node` (new package, first release):** framework-neutral server functions for a Node `IncomingMessage` or a Fetch `Request`: per-request `authenticate()` (the app's `verifyToken` looks up the session), `assertPermission()` (any role, with ACL deny-overrides), `verifyCsrf()` (synchronizer token, or a double-submit cookie that is rejected when sent twice), `assertValidInput()` (with an optional unknown-field check against mass assignment), `sanitizeFields()`, `securityHeaders()`, the `assertHardened()` startup gate, `assertSafeOutboundUrl()`, `toErrorResponse()` (5xx messages are never exposed) and `logRequestError()`.
+- **`@owasp-webshield/express` (new package, first release):** Express 4/5 middleware over `@owasp-webshield/node`: `securityHeaders`, `requireAuth`, `requirePermission`, `csrfProtection`/`issueCsrfToken`, `validate`, `sanitizeBody`, `guardOutboundUrl` and `errorHandler`. Async failures reach `errorHandler` on Express 4 too.
+- Examples: `owl-enabled-node-secrets-app`'s server uses `@owasp-webshield/node` for authentication, CSRF, security headers, error responses and the boot-time hardening check, instead of its own helpers.
+
 ### Security
 
 - A10: `SSRFGuard.createSafeLookup()` validates resolved addresses at socket-connect time, and `SafeFetcher` accepts a `dispatcher` to pin connections to them. This closes the DNS-rebinding race between `assertResolvedSafe()` and `fetch`'s own lookup.
