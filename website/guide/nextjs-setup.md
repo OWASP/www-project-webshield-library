@@ -12,6 +12,21 @@
 npm install @owasp-webshield/core @owasp-webshield/next
 ```
 
+## Why a separate adapter
+
+The React and Node packages alone leave gaps in an App Router app:
+
+- The React adapter can't be imported into Server Components (no `"use client"`).
+- Every route handler has to repeat the same checks, error mapping and headers.
+- A plain `try`/`catch` turns `redirect()` into a 500.
+- Route handlers have no body limit.
+- `params` is a Promise, so `params.id` is `undefined` in a permission check.
+- OWL's JSON API CSP breaks pages, and `next.config.js` headers replace route-handler headers.
+- `NextResponse` drops a cookie header appended before `cookies.set()`.
+- Server Actions have no request object, yet are public endpoints.
+
+This package closes each of these. The [integration guide](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/nextjs-integration.md#why-a-dedicated-nextjs-adapter) has the full list.
+
 ## Route handlers
 
 ```js

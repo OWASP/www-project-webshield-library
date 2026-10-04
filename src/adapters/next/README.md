@@ -2,6 +2,21 @@
 
 Next.js adapter for [OWL (OWASP Webshield Library)](https://owasp.org/www-project-webshield-library/). It guards App Router route handlers (authentication, access control, CSRF, input validation, SSRF checks, security headers and safe error responses), checks CSRF in middleware, sets security headers from `next.config.js`, reads the session in Server Components and Server Actions, and makes the React adapter usable from them. It is built on [`@owasp-webshield/node`](https://www.npmjs.com/package/@owasp-webshield/node) and [`@owasp-webshield/react`](https://www.npmjs.com/package/@owasp-webshield/react), and supports Next.js 14 and later (tested with 16).
 
+## Why it exists
+
+`@owasp-webshield/react` and `@owasp-webshield/node` alone leave gaps in an App Router app, each easy to miss in review:
+
+- The React adapter can't be imported into Server Components (no `"use client"`).
+- Every route handler has to repeat the same steps: authenticate, check CSRF and the permission, validate, map errors, add headers. A route that skips one has a hole.
+- A plain `try`/`catch` turns `redirect()` and `notFound()` into 500s.
+- Route handlers don't limit request bodies.
+- `params` is a Promise since Next.js 15, so `params.id` in a permission check is `undefined`.
+- OWL's JSON API CSP breaks pages, and `next.config.js` headers replace route-handler headers.
+- `NextResponse` drops a `Set-Cookie` header appended before `cookies.set()`.
+- Server Components and Server Actions have no request to authenticate.
+
+This package closes each of these. The [Next.js integration guide](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/nextjs-integration.md#why-a-dedicated-nextjs-adapter) lists them with what the adapter does about each.
+
 ## Installation
 
 ```bash

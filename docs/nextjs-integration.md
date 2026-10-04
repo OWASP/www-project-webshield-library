@@ -5,6 +5,53 @@
 Apply OWL controls across a Next.js App Router app: route handlers, middleware, pages, Server
 Actions and client components, using one session model and one CSRF scheme throughout.
 
+## Why a dedicated Next.js adapter
+
+Before 2.0.0, a Next.js app could already use OWL in two ways: the React adapter for its
+components, and `@owasp-webshield/node` for its server code, since those functions accept a
+Fetch `Request`. Building the [example app](../examples/owl-enabled-nextjs-expense-portal/README.md)
+that way, and testing it against a real Next.js 16 server, showed where that stops working. Each
+problem below is either a security hole or a broken page, and each one is easy to miss in review.
+
+| Problem without the adapter | Effect | What the adapter does |
+|---|---|---|
+| The React adapter has no `"use client"` directive | Importing `OwlProvider`, `AuthGate` or a hook into an App Router layout or page fails to build | `@owasp-webshield/next/client` re-exports every component and hook from a `"use client"` module. It uses named exports, because Next.js rejects `export *` in a client module |
+| Route handlers get a Fetch `Request` and return a `Response`; Express-style middleware doesn't apply | Each route repeats the same glue: authenticate, check CSRF and the permission, validate, `try`/`catch`, map `SecurityError` to a status code, add headers, log. A route that leaves one step out has a hole | `withOwl(handler, options)` runs every check in a fixed order and turns any failure into a safe JSON response, logged through `SecurityLogger`. A 500 never includes the error's message |
+| Next.js implements `redirect()`, `notFound()` and its dynamic-rendering bailouts by throwing errors | A plain `try`/`catch` around the handler turns a redirect into a 500 | `withOwl` passes these errors through, using the same checks as Next.js's `unstable_rethrow()` |
+| Route handlers don't limit or check the request body; `request.json()` reads whatever arrives | Memory exhaustion from large uploads; form posts parsed as JSON | `body` reads the stream with a byte limit (100 KB by default, 413 when exceeded), requires a JSON content type (415 otherwise), validates against a schema, rejects unknown fields (mass assignment) and can sanitize fields |
+| `params` became a Promise in Next.js 15 | `params.id` is `undefined` on the Promise (Next.js 16 passes a plain one), so a permission check like `` `report:${params.id}` `` silently checks `report:undefined` | `withOwl` awaits `params` before any check runs and passes the result to the permission's resource function and to the handler |
+| OWL's default headers are made for a JSON API (`default-src 'none'`) | Used on pages, the CSP blocks Next.js's own inline bootstrap scripts, and the page doesn't load | `securityHeadersConfig()` gives `next.config.js` a page CSP (the one the Next.js security guide recommends without nonces, with `'unsafe-eval'` in development only), while `withOwl` keeps the strict policy on API routes |
+| Headers from `next.config.js` **replace** headers with the same name set by a route handler (verified on Next.js 16) | A site-wide header rule quietly overrides the API's stricter CSP and any header a route sets itself | The documented `source: "/((?!api/).*)"` leaves API routes to `withOwl` (see [section 4](#4-security-headers-for-pages)) |
+| `NextResponse` keeps its own cookie list and rewrites `Set-Cookie` from it on every `cookies.set()` | A CSRF cookie appended as a header is silently dropped once the route sets any other cookie (verified on Next.js 16) | `issueCsrfToken()` and `ensureCsrfCookie()` go through `response.cookies` when it exists, with the same secure defaults as `serializeCookie()` |
+| Server Components and Server Actions have no request object | No natural place to call `authenticate(req)`; apps end up trusting what the page already rendered | `createServerAuth()` in `@owasp-webshield/next/server` reads the current request through `headers()`, with `getSession()`, `requireSession()` and `requirePermission()` |
+| Server Actions are public POST endpoints | Checking the session only in the page that shows the form leaves the action open to direct calls | The guide and example check the session and permission inside each action. The example's tests replay one user's action form as another user to prove it |
+| Browsers authenticate page loads and actions with cookies, not bearer tokens | `authenticate()` reads only `Authorization: Bearer` by default | `cookieToken(name)` reads the session from a cookie, and treats a cookie sent twice (cookie tossing) as no session |
+| CSRF in middleware has to work on the Edge runtime and must not break Server Actions | Server Actions send no CSRF header, and a global check rejects them | `guardCsrf()` uses only the Fetch API and Web Crypto (verified in Edge middleware), and is meant for `/api` routes. Next.js protects Server Actions itself by checking `Origin` |
+
+The adapter doesn't import Next.js in its main entry, so route handlers and middleware stay
+testable with plain `Request` objects. It adds no security logic of its own: every check is
+`@owasp-webshield/node` or core underneath, so a Next.js route enforces the same rules as an
+Express route.
+
+### Found while building the example app
+
+These are app-level issues rather than adapter features. They're handled in the example and
+documented there:
+
+- **Client IP for rate limiting:** Next.js only sets `X-Forwarded-For` when the request doesn't
+  already have one, so a client talking to `next start` directly can choose its "IP". Per-IP
+  limits are only trustworthy behind a proxy that appends the real address. The example takes
+  the entry added by a configurable number of trusted proxies, and its per-account lockout
+  doesn't depend on the IP.
+- **Startup hardening check:** if `assertHardened()` throws inside `instrumentation.js`, Next.js
+  stays up and answers every request with a 500. The example exits the process instead, so a
+  deploy fails visibly. Put Node-only code in a separate file imported under
+  `NEXT_RUNTIME === "nodejs"`, or the Edge build warns.
+- **`__Host-` cookies** have to be cleared with the attributes they were set with.
+  `cookies().delete()` sends no `Secure` attribute, and browsers ignore any `__Host-` cookie
+  without it, so the old cookie stays. The example sets it to an empty value with `maxAge: 0`
+  instead.
+
 ## Packages
 
 | Import | Use it in |
