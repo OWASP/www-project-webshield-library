@@ -39,10 +39,36 @@ describe("React adapter A02-A10 hooks", () => {
   });
 
   test("A04 useThreatModelGuard keeps its instance when called with no arguments", () => {
-    const { result, rerender } = renderHook(() => A04InsecureDesignGuard.useThreatModelGuard());
+    const { result, rerender } = renderHook(() => A04InsecureDesignGuard.useThreatModelGuard(), {
+      initialProps: { tick: 0 }
+    });
     const first = result.current;
-    rerender();
+    rerender({ tick: 1 });
     expect(result.current).toBe(first);
+  });
+
+  test("A04 useThreatModelGuard keeps its instance for structurally equal inline configs", () => {
+    const { result, rerender } = renderHook(() =>
+      A04InsecureDesignGuard.useThreatModelGuard({ transitions: { draft: ["approved"] } }), {
+      initialProps: { tick: 0 }
+    });
+    const first = result.current;
+    rerender({ tick: 1 });
+    expect(result.current).toBe(first);
+  });
+
+  test("A04 useThreatModelGuard rebuilds and applies new rules when the config changes", () => {
+    const { result, rerender } = renderHook(({ transitions }) =>
+      A04InsecureDesignGuard.useThreatModelGuard({ transitions }), {
+      initialProps: { transitions: { draft: ["approved"] } }
+    });
+    const first = result.current;
+    expect(first.validateTransition("draft", "rejected").valid).toBe(false);
+
+    rerender({ transitions: { draft: ["rejected"] } });
+    expect(result.current).not.toBe(first);
+    expect(result.current.validateTransition("draft", "rejected").valid).toBe(true);
+    expect(result.current.validateTransition("draft", "approved").valid).toBe(false);
   });
 
   test("A05 useHardeningReport returns findings for unsafe config", () => {
