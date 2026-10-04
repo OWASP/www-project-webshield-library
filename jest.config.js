@@ -29,7 +29,8 @@ export default {
     "!src/core/**/index.js",
     "!src/core/**/index.browser.js",
     "!src/adapters/*/index.js",
-    "!src/adapters/*/index.browser.js"
+    "!src/adapters/*/index.browser.js",
+    "!src/adapters/*/index.shared.js"
   ],
   // Enforced only when coverage is collected (npm run test:coverage, PR review workflow).
   // Set just below the measured baseline (92.0 / 85.8 / 92.1 / 93.5) so coverage can't

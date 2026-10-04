@@ -5,6 +5,9 @@
 
 export { withOwl } from "./route-handler.js";
 
+/** @typedef {import("./route-handler.js").OwlRouteState} OwlRouteState */
+/** @typedef {import("./route-handler.js").WithOwlOptions} WithOwlOptions */
+
 export { guardCsrf } from "./middleware.js";
 
 export { applySecurityHeaders, ensureCsrfCookie, errorResponse, issueCsrfToken, securityHeadersConfig } from "./response.js";

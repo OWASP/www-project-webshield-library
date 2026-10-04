@@ -6,6 +6,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import * as nodeBuild from "../../index.js";
 import * as browserBuild from "../../index.browser.js";
+import * as reactNodeEntry from "../../adapters/react/index.js";
+import * as reactBrowserEntry from "../../adapters/react/index.browser.js";
 
 const ROOT = process.cwd();
 const ADAPTERS = ["react", "vue", "node", "express", "next"];
@@ -26,6 +28,12 @@ describe("published package shape", () => {
     // Shared client/server code imports from the package root; a name missing
     // from one build breaks that bundle (e.g. DEFAULT_PBKDF2_ITERATIONS).
     expect(Object.keys(browserBuild).sort()).toEqual(Object.keys(nodeBuild).sort());
+  });
+
+  test("the React adapter's browser entry exports the same names as its Node entry", () => {
+    // Bundlers pick one or the other by export condition, so a name missing from
+    // one entry only breaks apps built for that target.
+    expect(Object.keys(reactBrowserEntry).sort()).toEqual(Object.keys(reactNodeEntry).sort());
   });
 
   test.each(ADAPTERS)("@owasp-webshield/%s declares TypeScript types that exist", (adapter) => {

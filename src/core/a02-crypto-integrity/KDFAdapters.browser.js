@@ -1,35 +1,12 @@
 import { SecurityError, SecurityErrorCode } from "../error/SecurityError.js";
 
 // Browser build of KDFAdapters (see package.json's "browser" export condition).
-// `Argon2Adapter` never touched node:crypto (callers inject their own `deriveFn`) —
-// duplicated here verbatim rather than re-exported from KDFAdapters.js, since that
-// file's top-level node:crypto import (for PBKDF2Adapter) would otherwise still be
-// evaluated. `generateSalt` only needs random bytes, which the Web Crypto API
-// provides natively, so it's reimplemented portably instead of stubbed. Only
-// `PBKDF2Adapter` (Node's synchronous `pbkdf2Sync`) has no browser equivalent.
-
-// Same value as KDFAdapters.js, so code shared between server and browser can
-// import it from either build (e.g. to show or validate the work factor).
-export const DEFAULT_PBKDF2_ITERATIONS = 600000;
-
-export class Argon2Adapter {
-  /**
-   * @param {{deriveFn: (password: string, salt: Buffer, options?: Record<string, unknown>) => Buffer}} options
-   */
-  constructor(options = {}) {
-    this.deriveFn = options.deriveFn || null;
-  }
-
-  deriveKey(password, salt, options = {}) {
-    if (!this.deriveFn) {
-      throw new SecurityError(
-        SecurityErrorCode.CRYPTO_ERROR,
-        "Argon2 deriveFn is required. Provide a plugin implementation."
-      );
-    }
-    return this.deriveFn(password, salt, options);
-  }
-}
+// `Argon2Adapter` and `DEFAULT_PBKDF2_ITERATIONS` come from KDFAdapters.shared.js,
+// like in the Node build, so both builds export the same ones. `generateSalt` only
+// needs random bytes, which the Web Crypto API provides natively, so it's
+// reimplemented portably instead of stubbed. Only `PBKDF2Adapter` (Node's
+// synchronous `pbkdf2Sync`) has no browser equivalent.
+export { Argon2Adapter, DEFAULT_PBKDF2_ITERATIONS } from "./KDFAdapters.shared.js";
 
 export class PBKDF2Adapter {
   constructor() {}

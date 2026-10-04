@@ -42,6 +42,7 @@
   "files": [
     "dist",
     "src/core",
+    "!src/core/**/*.d.ts",
     "README.md",
     "CHANGELOG.md",
     "SECURITY.md",
