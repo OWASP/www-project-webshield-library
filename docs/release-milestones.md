@@ -44,8 +44,9 @@ as `2.0.0`:
   Vue and Angular because most A01–A10 controls have to be enforced on the server, where a browser
   adapter can't.
 
-Tag order: `core-v2.0.0`, then `react-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0` (see
-[release-process.md](./release-process.md)).
+Tag order: `core-v2.0.0`, then `react-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0`. Each
+adapter is published with a `^2.0.0` dependency on the package below it, so that package has to
+be on npm first.
 
 ### Not yet started
 
