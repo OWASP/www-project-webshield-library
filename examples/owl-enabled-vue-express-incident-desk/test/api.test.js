@@ -289,3 +289,39 @@ describe("A05 and A06 reports, headers and limits", () => {
     assert.equal(malformed.json.error, "bad_request");
   });
 });
+
+describe("rate limiting", () => {
+  async function withApp(rateLimits, run) {
+    const limited = createIncidentDeskApp({ kdfIterations: 1000, rateLimits, auditProvider: { scan: async () => [] } });
+    const instance = limited.app.listen(0);
+    await new Promise((resolve) => instance.once("listening", resolve));
+    const url = `http://127.0.0.1:${instance.address().port}`;
+    try {
+      await run(url, limited);
+    } finally {
+      instance.close();
+    }
+  }
+  const signIn = (url, password) =>
+    fetch(`${url}/api/session`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: "riley", password }) });
+
+  test("failed sign-ins from one client are limited; successful ones don't count", async () => {
+    await withApp({ windowMs: 60_000, requests: 1000, failedSignIns: 3 }, async (url, limited) => {
+      for (let i = 0; i < 5; i++) assert.equal((await signIn(url, "owl-demo-responder")).status, 201);
+      for (let i = 0; i < 3; i++) assert.equal((await signIn(url, `wrong-${i}`)).status, 401);
+      const blocked = await signIn(url, "owl-demo-responder");
+      assert.equal(blocked.status, 429);
+      assert.equal((await blocked.json()).error, "rate_limited");
+      assert.ok(blocked.headers.get("ratelimit"));
+      assert.ok(limited.logs.some((entry) => entry.event === "security.rate_limited" && entry.details.path === "/api/session"));
+    });
+  });
+
+  test("every request counts towards the per-client limit, including the app's pages", async () => {
+    await withApp({ windowMs: 60_000, requests: 5, failedSignIns: 100 }, async (url) => {
+      for (let i = 0; i < 5; i++) assert.equal((await fetch(`${url}/api/incidents`)).status, 401);
+      assert.equal((await fetch(`${url}/api/incidents`)).status, 429);
+      assert.equal((await fetch(`${url}/`)).status, 429);
+    });
+  });
+});

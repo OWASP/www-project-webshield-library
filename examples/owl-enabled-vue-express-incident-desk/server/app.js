@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import { Agent, fetch as undiciFetch } from "undici";
 import {
   createOwlClient,
@@ -94,7 +95,9 @@ export function createIncidentDeskApp(options = {}) {
     guard = new SSRFGuard(),
     fetchImpl = undiciFetch,
     auditProvider = new NpmAuditProvider({ cwd: process.cwd() }),
-    echoLogs = false
+    echoLogs = false,
+    // Per client IP: every request, and failed sign-ins. Tests raise these.
+    rateLimits = { windowMs: 60_000, requests: 300, failedSignIns: 10 }
   } = options;
 
   // A09: redaction-first logging into an in-memory ring buffer the admin page reads.
@@ -127,15 +130,38 @@ export function createIncidentDeskApp(options = {}) {
     dispatcher: new Agent({ connect: { lookup: guard.createSafeLookup() } })
   });
 
+  // A04/A07: per-IP rate limits. Requests over the limit get a 429 and a
+  // security.rate_limited audit entry. Behind a reverse proxy, set
+  // app.set("trust proxy", ...) so the limit applies to the real client address.
+  const limiter = (limit, extra = {}) =>
+    rateLimit({
+      windowMs: rateLimits.windowMs,
+      limit,
+      standardHeaders: "draft-8",
+      legacyHeaders: false,
+      handler: (req, res) => {
+        // Full path without the query string (which can carry tokens).
+        logger.warn("security.rate_limited", { method: req.method, path: req.originalUrl.split("?")[0], ip: req.ip });
+        res.status(429).json({ error: "rate_limited", message: "Too many requests. Try again in a minute." });
+      },
+      ...extra
+    });
+  const requestLimiter = limiter(rateLimits.requests);
+  // Counts failed attempts only, so signing in successfully doesn't use up the
+  // budget. Complements the per-username lockout in users.js: that one stops
+  // guessing against one account, this one stops one client spraying many.
+  const signInLimiter = limiter(rateLimits.failedSignIns, { skipSuccessfulRequests: true });
+
   const app = express();
   app.disable("x-powered-by");
   app.use(securityHeaders({ "Content-Security-Policy": APP_CSP }));
+  app.use(requestLimiter);
   app.use(express.json({ limit: "32kb" }));
 
   const api = express.Router();
 
   // ---- Public: sign in -------------------------------------------------------
-  api.post("/session", validate(LOGIN_SCHEMA, { allowUnknownFields: false }), (req, res) => {
+  api.post("/session", signInLimiter, validate(LOGIN_SCHEMA, { allowUnknownFields: false }), (req, res) => {
     const user = users.verify(req.body.username, req.body.password);
     // A08: the CSRF token goes to the browser in the XSRF-TOKEN cookie (which
     // @owasp-webshield/vue's useSecureHttpClient sends back as X-CSRF-Token) and
