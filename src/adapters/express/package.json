@@ -1,12 +1,16 @@
 {
   "name": "@owasp-webshield/express",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Express adapter for OWL (OWASP Webshield Library): middleware for authentication, access control, CSRF, validation, security headers, SSRF checks and security error handling",
   "private": false,
   "type": "module",
   "main": "./index.js",
+  "types": "./index.d.ts",
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
     "./package.json": "./package.json"
   },
   "repository": {
@@ -20,7 +24,7 @@
   },
   "author": "OWASP Webshield Library Project",
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "publishConfig": {
     "access": "public",

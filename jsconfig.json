@@ -14,6 +14,15 @@
       ],
       "@owasp-webshield/vue": [
         "src/adapters/vue/index.js"
+      ],
+      "@owasp-webshield/node": [
+        "src/adapters/node/index.js"
+      ],
+      "@owasp-webshield/express": [
+        "src/adapters/express/index.js"
+      ],
+      "@owasp-webshield/next": [
+        "src/adapters/next/index.js"
       ]
     },
     "checkJs": false,

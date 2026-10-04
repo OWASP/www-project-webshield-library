@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "OWL"
   text: "OWASP Webshield Library"
-  tagline: Practical, reusable OWASP Top 10 security controls for modern JavaScript applications — a framework-agnostic core plus a full React adapter.
+  tagline: Practical, reusable OWASP Top 10 security controls for modern JavaScript applications — a framework-agnostic core, React and Vue adapters, and Express/Node server middleware.
   actions:
     - theme: brand
       text: Get Started
@@ -29,9 +29,12 @@ features:
   - icon: 🪪
     title: Redaction-first logging
     details: SecurityLogger redacts secrets by field name and by value pattern (JWT-shaped strings) before anything reaches a sink.
-  - icon: ⚛️
-    title: First-class React adapter
-    details: AuthGate, PermissionGate, and a full set of hooks and providers bring every core module into React with the same OWASP-numbered API.
+  - icon: 🧩
+    title: React and Vue adapters
+    details: AuthGate, PermissionGate, hooks and composables bring every core module into React and Vue. Vue adds v-safe-html, a sanitizing replacement for v-html, and a Vue Router guard.
+  - icon: 🛡️
+    title: Server-side enforcement
+    details: Express middleware (and framework-neutral Node functions) for per-request auth, RBAC/ACL, CSRF, validation, security headers, SSRF checks and safe error responses.
   - icon: ✅
     title: Typed, testable errors
     details: SecurityError / SecurityErrorCode gives every module a consistent, typed error surface across the whole library.

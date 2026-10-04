@@ -10,11 +10,11 @@
  *
  * @param {{
  *   client?: {authManager?, aclManager?, rbacManager?, logger?, events?},
- *   authManager?: import("../../core/a07-auth-session/AuthManager.js").AuthManager,
- *   aclManager?: import("../../core/a01-access-control/ACLManager.js").ACLManager,
- *   rbacManager?: import("../../core/a01-access-control/RBACManager.js").RBACManager,
- *   logger?: import("../../core/a09-logging-monitoring/SecurityLogger.js").SecurityLogger,
- *   events?: import("../../core/a09-logging-monitoring/EventEmitter.js").EventEmitter,
+ *   authManager?: import("@owasp-webshield/core").AuthManager,
+ *   aclManager?: import("@owasp-webshield/core").ACLManager,
+ *   rbacManager?: import("@owasp-webshield/core").RBACManager,
+ *   logger?: import("@owasp-webshield/core").SecurityLogger,
+ *   events?: import("@owasp-webshield/core").EventEmitter,
  *   children?: React.ReactNode
  * }} props
  */
@@ -26,11 +26,11 @@ export function OwlProvider({ client, authManager, aclManager, rbacManager, logg
         logger?: any;
         events?: any;
     };
-    authManager?: import("../../core/a07-auth-session/AuthManager.js").AuthManager;
-    aclManager?: import("../../core/a01-access-control/ACLManager.js").ACLManager;
-    rbacManager?: import("../../core/a01-access-control/RBACManager.js").RBACManager;
-    logger?: import("../../core/a09-logging-monitoring/SecurityLogger.js").SecurityLogger;
-    events?: import("../../core/a09-logging-monitoring/EventEmitter.js").EventEmitter;
+    authManager?: import("@owasp-webshield/core").AuthManager;
+    aclManager?: import("@owasp-webshield/core").ACLManager;
+    rbacManager?: import("@owasp-webshield/core").RBACManager;
+    logger?: import("@owasp-webshield/core").SecurityLogger;
+    events?: import("@owasp-webshield/core").EventEmitter;
     children?: React.ReactNode;
 }): any;
 import React from "react";

@@ -3,7 +3,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["**/dist/**", "**/node_modules/**"]
+    ignores: ["**/dist/**", "**/node_modules/**", "**/.next/**"]
   },
   js.configs.recommended,
   {
@@ -36,7 +36,9 @@ export default [
     }
   },
   {
-    files: ["src/**/*.jsx", "examples/**/*.jsx"],
+    // No JSX plugin here, so a component used only in JSX looks unused. Next.js
+    // apps write JSX in .js files, hence the example's app/ folder too.
+    files: ["src/**/*.jsx", "examples/**/*.jsx", "examples/owl-enabled-nextjs-expense-portal/app/**/*.js"],
     rules: {
       "no-unused-vars": "off"
     }

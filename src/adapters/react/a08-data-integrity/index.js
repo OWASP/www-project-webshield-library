@@ -10,6 +10,17 @@ import { useStableValue } from "../useStableValue.js";
  *   (double-submit cookie pattern; set `csrfCookieName` for another name), or
  * - pass a `csrfManager` holding a server-issued token (`csrfManager.setToken(token)`).
  * Pass `csrfCookieName: null` and no `csrfManager` to send no CSRF header.
+ *
+ * @param {{
+ *   baseUrl?: string,
+ *   tokenProvider?: (() => string | null | Promise<string | null>) | null,
+ *   fetchImpl?: typeof fetch,
+ *   csrfManager?: import("@owasp-webshield/core").CSRFTokenManager | null,
+ *   csrfCookieName?: string | null,
+ *   allowedOrigins?: string[],
+ *   outboundRequestPolicy?: import("@owasp-webshield/core").SSRFGuard
+ * }} [options]
+ * @returns {import("@owasp-webshield/core").HTTPClient}
  */
 export function useSecureHttpClient({
   baseUrl = "",

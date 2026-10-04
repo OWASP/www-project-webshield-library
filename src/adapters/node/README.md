@@ -10,6 +10,8 @@ Using Express? Install [`@owasp-webshield/express`](https://www.npmjs.com/packag
 npm install @owasp-webshield/core @owasp-webshield/node
 ```
 
+An ES module with TypeScript declarations. It needs Node.js 20.19+ or 22.12+, which can also load it from CommonJS with `require()`.
+
 ## Usage
 
 Every function takes a Node `IncomingMessage` (plain `node:http`, Express, Connect) or a Fetch API `Request`, and throws a `SecurityError` on failure. `toErrorResponse()` turns any error into a safe response.

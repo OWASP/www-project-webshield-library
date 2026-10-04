@@ -732,3 +732,41 @@ of the target route) from every matched route record. Signed-out users are redir
 `loginRoute` with `?redirect=`; denied navigations go to `forbiddenRoute` or are cancelled, and
 are logged as `navigation.denied`. `installOwlRouterGuard()` also re-checks the open page when the
 session changes (logout, token expiry, role change) and leaves it if it's no longer allowed.
+
+## Next.js Adapter API
+
+`@owasp-webshield/next` covers the App Router. See [nextjs-integration.md](./nextjs-integration.md)
+for the full setup.
+
+### `@owasp-webshield/next` (route handlers, middleware, next.config.js)
+
+| Category | Export | Returns / does |
+|---|---|---|
+| A01/A03/A07/A08/A10 | `withOwl(handler, { auth, csrf, permission, query, body, outboundUrl, securityHeaders, logger, exposeMessages })` | Route handler; runs the checks in that order and calls `handler(request, context, { params, session, query, body, outboundUrl })` |
+| A07 | `cookieToken(name)` | `getToken` that reads the token from a cookie (`null` if sent twice) |
+| A08 | `guardCsrf(request, options?)` | `Promise<Response \| null>`: a 403 response, or `null` to continue (middleware) |
+| A08 | `issueCsrfToken(response, options?)` | Sets a fresh `XSRF-TOKEN` cookie (through `NextResponse.cookies` when present), returns the token |
+| A08 | `ensureCsrfCookie(request, response, options?)` | The request's token, issuing one when it has none |
+| A03 | `readJsonBody(request, { limit? })` | Parsed JSON or `undefined`; 413 / 415 / 400 errors |
+| A05 | `securityHeadersConfig(overrides?, { source?, dev? })` | `headers()` entries for `next.config.js`, with a CSP that Next.js pages can run under |
+| A05 | `applySecurityHeaders(response, overrides?)` | Adds the missing `DEFAULT_SECURITY_HEADERS` (copies a response with immutable headers) |
+| A09 | `errorResponse(error, { request?, logger?, exposeMessages?, securityHeaders? })` | JSON `Response` for any thrown value; 5xx messages are never sent |
+
+Also re-exported from `@owasp-webshield/node`: `authenticate`, `assertPermission`,
+`checkPermission`, `verifyCsrf`, `generateCsrfToken`, `assertValidInput`, `sanitizeFields`,
+`assertSafeOutboundUrl`, `assertHardened`, `toErrorResponse`, `statusForSecurityError` and
+`DEFAULT_SECURITY_HEADERS`.
+
+### `@owasp-webshield/next/server`
+
+| Export | Returns |
+|---|---|
+| `createServerAuth({ verifyToken, getToken?, checker? })` | `{ getSession(), requireSession(), requirePermission(action, resource) }`, reading the current request through `headers()` |
+
+`getSession()` resolves to the session or `null`; `requireSession()` throws `AUTH_REQUIRED`;
+`requirePermission()` also throws `ACCESS_DENIED` and resolves to the session.
+
+### `@owasp-webshield/next/client`
+
+Every component and hook of the [React adapter](#react-adapter-api), re-exported from a
+`"use client"` module. The `A01AccessControl` … `A10SSRFDefense` namespaces are left out.

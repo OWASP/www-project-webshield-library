@@ -6,6 +6,8 @@ const BEARER_PATTERN = /^Bearer +([A-Za-z0-9\-._~+/]+=*) *$/i;
 
 /**
  * The token from an `Authorization: Bearer <token>` header, or null.
+ * @param {any} req
+ * @returns {string | null}
  */
 export function extractBearerToken(req) {
   const header = getHeader(req, "authorization");
@@ -34,12 +36,12 @@ function normalizeSession(session) {
  * call here is independent, so concurrent requests from different users never
  * share state.
  *
- * @param {object} req
+ * @param {any} req a Node IncomingMessage, an Express request or a Fetch Request
  * @param {{
- *   verifyToken: (token: string, req: object) => ({userId: string|number, roles?: string[], metadata?: object} | null | Promise<{userId: string|number, roles?: string[], metadata?: object} | null>),
- *   getToken?: (req: object) => string|null
+ *   verifyToken: (token: string, req: any) => ({userId: string|number, roles?: string[], metadata?: Record<string, any>} | null | Promise<{userId: string|number, roles?: string[], metadata?: Record<string, any>} | null>),
+ *   getToken?: (req: any) => string|null
  * }} options
- * @returns {Promise<{userId: string, roles: string[], metadata: object}>}
+ * @returns {Promise<{userId: string, roles: string[], metadata: Record<string, any>}>}
  */
 export async function authenticate(req, { verifyToken, getToken = extractBearerToken } = {}) {
   if (typeof verifyToken !== "function") {
