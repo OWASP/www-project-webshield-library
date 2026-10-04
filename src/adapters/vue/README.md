@@ -105,6 +105,7 @@ installOwlRouterGuard(router, owl, { loginRoute: "/login", forbiddenRoute: "/403
 
 - [Full Vue adapter usage guide](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/vue-adapter-usage.md)
 - [API reference](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/api-reference.md)
+- [Runnable example (owl-enabled-vue-express-incident-desk)](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-vue-express-incident-desk)
 - [FAQ](https://owasp.org/www-project-webshield-library/faq)
 
 ## License

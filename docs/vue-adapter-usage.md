@@ -253,3 +253,9 @@ export function createAppRouter(owl) {
   `@owasp-webshield/express`, so the two work together without configuration.
 - Real encryption (`useCryptoManager`) needs Node. In a browser bundle its methods throw.
 - Supported versions: Vue 3.3+, and Vue Router 4+ for the guard.
+
+## Runnable Example
+
+[OWL Enabled Vue + Express Incident Desk](../examples/owl-enabled-vue-express-incident-desk/README.md)
+is a full-stack app built this way: the plugin, gates, `v-safe-html`, `installOwlRouterGuard` and
+`useSecureHttpClient` in the front end, against an Express API that enforces the same roles.

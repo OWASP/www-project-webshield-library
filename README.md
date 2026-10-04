@@ -178,7 +178,8 @@ See [docs/vue-adapter-usage.md](docs/vue-adapter-usage.md) for the composables, 
 | [Core JS usage](docs/core-js-usage.md) | Full composition guide for `@owasp-webshield/core` |
 | [React adapter usage](docs/react-adapter-usage.md) | Provider + hook composition for `@owasp-webshield/react` |
 | [Vue adapter usage](docs/vue-adapter-usage.md) | Plugin, composables, `v-safe-html` and router guard for `@owasp-webshield/vue` |
-| [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on plain `@owasp-webshield/core` — every OWASP category (A01–A10), plus a real `CryptoManager`/`CSRFTokenManager`/`npm audit` that only work in Node |
+| [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on `@owasp-webshield/core` with a plain-Node API on `@owasp-webshield/node` — every OWASP category (A01–A10), plus real AES-256-GCM encryption (`CryptoManager`) and a real `npm audit` |
+| [OWL Enabled Vue + Express Incident Desk ▶](examples/owl-enabled-vue-express-incident-desk/README.md) | Full-stack reference app: Vue 3 on `@owasp-webshield/vue` and an Express 5 API on `@owasp-webshield/express`, with every category (A01–A10) enforced end to end and covered by tests |
 | [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) ([live demo](https://owl-todo-demo.netlify.app/)) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
 | [Node & Express integration](docs/node-api-integration.md) | Express middleware (`@owasp-webshield/express`) and plain-Node functions (`@owasp-webshield/node`) for auth, access control, CSRF, validation, headers and SSRF checks |
 

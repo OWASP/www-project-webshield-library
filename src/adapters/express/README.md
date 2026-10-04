@@ -63,6 +63,7 @@ Security failures become JSON responses (`400`/`401`/`403`, with the `SecurityEr
 
 - [Node & Express integration guide](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/node-api-integration.md)
 - [API reference](https://github.com/OWASP/www-project-webshield-library/blob/main/docs/api-reference.md)
+- [Runnable example (owl-enabled-vue-express-incident-desk)](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-vue-express-incident-desk)
 
 ## License
 

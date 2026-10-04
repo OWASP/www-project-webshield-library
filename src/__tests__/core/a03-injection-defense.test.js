@@ -138,3 +138,35 @@ describe("A03 injection defense", () => {
     expect(performance.now() - start).toBeLessThan(500);
   });
 });
+
+describe("A03 sanitizer: character references in text", () => {
+  const inputs = [
+    "Tom & Jerry <b>bold</b>",
+    "&lt;script&gt;alert(1)&lt;/script&gt;",
+    "a &amp; b &nbsp; &#60;img src=x onerror=alert(1)&#62; &#x3c;svg onload=1&#x3e;",
+    "<a href=\"https://x.example/?a=1&b=2\">link</a> &copy; 2026",
+    "&amp without semicolon & < > \" '"
+  ];
+
+  test.each(["strict", "moderate"])("%s output is idempotent: sanitizing twice gives the same result", (profile) => {
+    const sanitizer = new InputSanitizer(profile);
+    for (const input of inputs) {
+      const once = sanitizer.sanitizeHTML(input);
+      expect(sanitizer.sanitizeHTML(once)).toBe(once);
+    }
+  });
+
+  test("keeps existing character references and encodes bare & < >", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    expect(sanitizer.sanitizeHTML("Tom &amp; Jerry &nbsp; &#38; &#x26;")).toBe("Tom &amp; Jerry &nbsp; &#38; &#x26;");
+    expect(sanitizer.sanitizeHTML("Tom & Jerry")).toBe("Tom &amp; Jerry");
+    expect(sanitizer.sanitizeHTML("&amp")).toBe("&amp;amp");
+  });
+
+  test("encoded markup in text stays text", () => {
+    const sanitizer = new InputSanitizer("moderate");
+    const result = sanitizer.sanitizeHTML("&lt;img src=x onerror=alert(1)&gt; &#60;script&#62;");
+    expect(result).not.toMatch(/<img|<script/i);
+    expect(result).toBe("&lt;img src=x onerror=alert(1)&gt; &#60;script&#62;");
+  });
+});

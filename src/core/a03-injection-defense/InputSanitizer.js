@@ -55,8 +55,14 @@ function decodeEntities(value) {
   });
 }
 
+// Character references already in the text (&amp; &#38; &#x26; &nbsp;) are kept as
+// they are: in text they can only produce characters, never markup. Encoding their
+// "&" again would show "&amp;" instead of "&", and would make sanitizing twice (on
+// input and again on output) change the result every time.
+const CHARACTER_REFERENCE = /&(?!(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);)/gi;
+
 function encodeText(value) {
-  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(value).replace(CHARACTER_REFERENCE, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function encodeAttrValue(value) {
