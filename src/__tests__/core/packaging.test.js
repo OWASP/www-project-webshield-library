@@ -8,7 +8,7 @@ import * as nodeBuild from "../../index.js";
 import * as browserBuild from "../../index.browser.js";
 
 const ROOT = process.cwd();
-const ADAPTERS = ["react", "vue", "node", "express"];
+const ADAPTERS = ["react", "vue", "node", "express", "next"];
 
 function listFiles(dir, suffix) {
   const out = [];

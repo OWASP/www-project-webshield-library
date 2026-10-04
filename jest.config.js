@@ -8,7 +8,11 @@ export default {
     "^@owasp-webshield/react$": "<rootDir>/src/adapters/react/index.js",
     "^@owasp-webshield/node$": "<rootDir>/src/adapters/node/index.js",
     "^@owasp-webshield/express$": "<rootDir>/src/adapters/express/index.js",
-    "^@owasp-webshield/vue$": "<rootDir>/src/adapters/vue/index.js"
+    "^@owasp-webshield/vue$": "<rootDir>/src/adapters/vue/index.js",
+    "^@owasp-webshield/next$": "<rootDir>/src/adapters/next/index.js",
+    "^@owasp-webshield/next/(client|server)$": "<rootDir>/src/adapters/next/$1.js",
+    // next/headers needs a live request; the Next.js tests swap in a settable stub.
+    "^next/headers$": "<rootDir>/src/__tests__/adapter/stubs/next-headers.js"
   },
   collectCoverageFrom: [
     "src/core/**/*.js",
@@ -16,6 +20,7 @@ export default {
     "src/adapters/node/**/*.js",
     "src/adapters/express/**/*.js",
     "src/adapters/vue/**/*.js",
+    "src/adapters/next/**/*.js",
     "!src/**/*.test.js",
     // Barrel files only. The adapters keep each category's code in its own
     // index.js (src/adapters/<name>/a0X-*/index.js), so those are measured.

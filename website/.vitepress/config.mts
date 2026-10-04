@@ -36,7 +36,8 @@ export default defineConfig({
           { text: "@owasp-webshield/react", link: "https://www.npmjs.com/package/@owasp-webshield/react" },
           { text: "@owasp-webshield/vue", link: "https://www.npmjs.com/package/@owasp-webshield/vue" },
           { text: "@owasp-webshield/express", link: "https://www.npmjs.com/package/@owasp-webshield/express" },
-          { text: "@owasp-webshield/node", link: "https://www.npmjs.com/package/@owasp-webshield/node" }
+          { text: "@owasp-webshield/node", link: "https://www.npmjs.com/package/@owasp-webshield/node" },
+          { text: "@owasp-webshield/next", link: "https://www.npmjs.com/package/@owasp-webshield/next" }
         ]
       }
     ],
@@ -50,7 +51,8 @@ export default defineConfig({
             { text: "Module Map", link: "/guide/module-map" },
             { text: "React Adapter Setup", link: "/guide/react-setup" },
             { text: "Vue Adapter Setup", link: "/guide/vue-setup" },
-            { text: "Node & Express Setup", link: "/guide/server-setup" }
+            { text: "Node & Express Setup", link: "/guide/server-setup" },
+            { text: "Next.js Setup", link: "/guide/nextjs-setup" }
           ]
         }
       ],

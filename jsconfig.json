@@ -20,6 +20,9 @@
       ],
       "@owasp-webshield/express": [
         "src/adapters/express/index.js"
+      ],
+      "@owasp-webshield/next": [
+        "src/adapters/next/index.js"
       ]
     },
     "checkJs": false,

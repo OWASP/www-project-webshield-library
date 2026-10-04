@@ -10,8 +10,9 @@ run("tsconfig.types.json");
 
 // Each adapter's declarations are generated into dist/<adapter> and copied next
 // to its source, which is what that adapter's package publishes. Order matters:
-// express's declarations import @owasp-webshield/node, so node's must exist first.
-for (const adapter of ["react", "vue", "node", "express"]) {
+// express's and next's declarations import @owasp-webshield/node (next's also
+// @owasp-webshield/react), so those must exist first.
+for (const adapter of ["react", "vue", "node", "express", "next"]) {
   run(`tsconfig.${adapter}.types.json`);
   cpSync(`dist/${adapter}`, `src/adapters/${adapter}`, { recursive: true });
   // Core publishes all of dist/, so the adapter copies must not stay there.

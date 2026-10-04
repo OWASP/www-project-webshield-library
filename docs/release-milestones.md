@@ -35,7 +35,7 @@ Full contents are in `CHANGELOG.md`'s `[1.0.0]` entry; in short:
 ## Next: 2.0.0
 
 A major release: `CHANGELOG.md`'s `[Unreleased]` section already contains breaking changes
-(the PBKDF2 default work factor, `useSecureHttpClient()` CSRF handling). All five packages ship
+(the PBKDF2 default work factor, `useSecureHttpClient()` CSRF handling). All six packages ship
 as `2.0.0`:
 
 - **Core** and **React adapter:** the `[Unreleased]` fixes and changes.
@@ -45,8 +45,11 @@ as `2.0.0`:
   adapter can't.
 - **Vue adapter (first release):** `@owasp-webshield/vue` (`src/adapters/vue`), the first of the
   two framework adapters named in the original roadmap.
+- **Next.js adapter (first release):** `@owasp-webshield/next` (`src/adapters/next`): App Router
+  route handler guards, middleware CSRF, `next.config.js` security headers, server-side sessions
+  for Server Components and Server Actions, and the React adapter as a `"use client"` module.
 
-Tag order: `core-v2.0.0`, then `react-v2.0.0`, `vue-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0`. Each
+Tag order: `core-v2.0.0`, then `react-v2.0.0`, `vue-v2.0.0` and `node-v2.0.0`, then `express-v2.0.0` and `next-v2.0.0`. Each
 adapter is published with a `^2.0.0` dependency on the package below it, so that package has to
 be on npm first.
 

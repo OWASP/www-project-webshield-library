@@ -1,0 +1,26 @@
+{
+  "name": "owl-enabled-nextjs-expense-portal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "test": "node --test test/claims.test.js && next build && node --test test/http.test.js",
+    "test:unit": "node --test test/claims.test.js"
+  },
+  "dependencies": {
+    "@owasp-webshield/core": "file:../..",
+    "@owasp-webshield/next": "file:../../src/adapters/next",
+    "@owasp-webshield/node": "file:../../src/adapters/node",
+    "@owasp-webshield/react": "file:../../src/adapters/react",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "undici": "^7.30.0"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}
