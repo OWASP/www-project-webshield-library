@@ -38,6 +38,13 @@ describe("React adapter A02-A10 hooks", () => {
     expect(result.current.validateTransition("draft", "approved").valid).toBe(true);
   });
 
+  test("A04 useThreatModelGuard keeps its instance when called with no arguments", () => {
+    const { result, rerender } = renderHook(() => A04InsecureDesignGuard.useThreatModelGuard());
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+
   test("A05 useHardeningReport returns findings for unsafe config", () => {
     const { result } = renderHook(() =>
       A05SecurityMisconfiguration.useHardeningReport({ debug: true, cors: { origin: "*" } })
