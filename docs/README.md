@@ -8,6 +8,8 @@ Guides, references, and integration examples for OWL.
 - [API Reference](./api-reference.md)
 - [Troubleshooting](./troubleshooting.md)
 - [Benchmark traceability matrix (all benchmarks)](./benchmarks/traceability-matrix.md)
+- [Runtime security benchmark (Juice Shop & NodeGoat weakness replicas)](./benchmarks/runtime-verification.md)
+- [Runtime security benchmark against the actual pinned apps (issue #54)](./benchmarks/upstream-verification.md)
 - [Benchmark: OWL vs OWASP NodeGoat (traceability matrix)](./benchmarks/nodegoat.md)
 - [Benchmark: OWL vs OWASP Juice Shop (traceability matrix)](./benchmarks/juice-shop.md)
 

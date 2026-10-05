@@ -10,8 +10,10 @@ This page consolidates the OWL benchmark reviews into one matrix, traced in thre
 |---|---|---|---|
 | NodeGoat | OWASP NodeGoat `c5cb68a` | 22 documented weaknesses | [nodegoat.md](./nodegoat.md) (row IDs `#1`–`#22`) |
 | Juice Shop | OWASP Juice Shop v20.2.0 `1618a61` | 116 challenges in 35 weakness classes | [juice-shop.md](./juice-shop.md) (class IDs `J01`–`J35`) |
+| Runtime benchmark | Local replicas of both targets, baseline vs OWL | 16 attack scenarios | [runtime-verification.md](./runtime-verification.md) (IDs `JS-01`–`JS-06`, `NG-01`–`NG-10`) |
+| Actual-app benchmark | OWASP Juice Shop v20.2.0 `1618a61` and OWASP NodeGoat `c5cb68a`, as shipped vs through OWL wiring preloads | the same 16 attack scenarios, 32 checks | [upstream-verification.md](./upstream-verification.md) (same IDs) |
 
-**Method:** static review of OWL 1.0.0 `src/core`, not yet runtime-verified; last reviewed 2026-09-30. The two benchmarks count different units (weaknesses vs. challenges), so their numbers are shown side by side and never summed.
+**Method:** static review of OWL 1.0.0 `src/core`, not yet runtime-verified; last reviewed 2026-09-30. The two benchmarks count different units (weaknesses vs. challenges), so their numbers are shown side by side and never summed. Sixteen of those weaknesses are additionally **runtime-verified**, twice over: against local baseline replicas of the documented routes with the same route under OWL ([runtime-verification.md](./runtime-verification.md), run 2026-10-04, part of `npm test`), and against the actual pinned applications with the same scenarios in baseline and OWL modes ([upstream-verification.md](./upstream-verification.md), run 2026-10-04, `npm run benchmark:apps`). Both runs record 13 blocked and 3 gaps (SQL injection, IDOR, brute force).
 
 **Legend:** ✅ Covered — an OWL API implements the control · 🟡 Partial — OWL provides part of it · ❌ Gap — no OWL API today · ⚪ Out of scope — not addressable by a library.
 
