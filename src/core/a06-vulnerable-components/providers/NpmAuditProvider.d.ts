@@ -19,8 +19,9 @@ export class NpmAuditProvider {
     exec: NpmAuditExec | undefined;
     scan(): Promise<{
         name: string;
-        severity: string;
+        severity: string | null;
         currentVersion: string | null;
+        range: string | null;
         fixedVersion: string | null;
     }[]>;
 }

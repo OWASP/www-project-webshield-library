@@ -219,8 +219,8 @@ console.log(findings, report);
 import { ComponentPolicy, DependencyRiskScanner, NpmAuditProvider } from "@owasp-webshield/core";
 
 // Shipped provider: runs `npm audit --json` in `cwd` (defaults to process.cwd())
-// and normalizes the report into { name, severity, fixedVersion, currentVersion }
-// findings, so it drops straight into the scanner and passesPolicy().
+// and normalizes the report into { name, severity, currentVersion, range,
+// fixedVersion } findings, so it drops straight into the scanner and passesPolicy().
 const scanner = new DependencyRiskScanner(new NpmAuditProvider({ cwd: process.cwd() }));
 
 const results = await scanner.scan();

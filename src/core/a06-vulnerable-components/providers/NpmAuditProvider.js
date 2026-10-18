@@ -34,11 +34,18 @@ function malformed(output) {
   });
 }
 
-// npm reports the vulnerable *range*, not the installed version, so the range
-// is what the finding carries when npm names no version (ComponentPolicy fails
-// closed on a value it cannot parse, so a range is never mistaken for a version).
+// npm reports the installed version in `version` and the affected *range*
+// separately. `currentVersion` must stay an installed version (or null when npm
+// names none): a range there would be read as a real version by every consumer.
 function currentVersion(entry) {
   if (typeof entry.version === "string" && entry.version) return entry.version;
+  return null;
+}
+
+// The vulnerable range is still worth carrying, just under its own key so it
+// can never be confused with an installed version (ComponentPolicy fails closed
+// on a value it cannot parse, but a finding should not have to rely on that).
+function vulnerableRange(entry) {
   if (typeof entry.range === "string" && entry.range) return entry.range;
   return null;
 }
@@ -74,10 +81,12 @@ function normalizeReport(stdout) {
     if (!isPlainObject(entry)) throw malformed(text);
     return {
       name: typeof entry.name === "string" && entry.name ? entry.name : key,
-      // An unrecognized severity is left as-is on purpose: DependencyRiskScanner
-      // fails closed on severities it does not know.
-      severity: String(entry.severity ?? ""),
+      // A severity the report does not provide stays null rather than a
+      // placeholder string: DependencyRiskScanner fails closed on severities it
+      // does not know, and null can never read as a real (weaker) severity.
+      severity: typeof entry.severity === "string" && entry.severity ? entry.severity : null,
       currentVersion: currentVersion(entry),
+      range: vulnerableRange(entry),
       fixedVersion: fixedVersion(entry)
     };
   });
@@ -99,7 +108,7 @@ export class NpmAuditProvider {
   }
 
   /**
-   * @returns {Promise<Array<{name: string, severity: string, currentVersion: string|null, fixedVersion: string|null}>>}
+   * @returns {Promise<Array<{name: string, severity: string|null, currentVersion: string|null, range: string|null, fixedVersion: string|null}>>}
    */
   async scan() {
     const exec = this.exec || (await loadExecFile());
@@ -108,7 +117,11 @@ export class NpmAuditProvider {
     try {
       ({ stdout } = await exec("npm", ["audit", "--json"], {
         cwd: this.cwd,
-        shell: true, // npm ships as a .cmd shim on Windows; execFile needs a shell to resolve it
+        // npm ships as a .cmd shim on Windows, which execFile can only resolve
+        // through a shell; everywhere else npm is spawned directly so no shell
+        // interprets the arguments. Guarded like defaultCwd() so an injected
+        // exec still runs where `process` is absent.
+        shell: typeof process !== "undefined" && process.platform === "win32",
         maxBuffer: MAX_BUFFER
       }));
     } catch (error) {

@@ -128,13 +128,13 @@ describe("A06 npm audit provider", () => {
 
     expect(exec).toHaveBeenCalledWith("npm", ["audit", "--json"], {
       cwd: "/srv/app",
-      shell: true,
+      shell: process.platform === "win32",
       maxBuffer: 10 * 1024 * 1024
     });
     expect(findings).toEqual([
-      { name: "lodash", severity: "high", currentVersion: "<4.17.21", fixedVersion: "4.17.21" },
-      { name: "minimist", severity: "moderate", currentVersion: "<1.2.6", fixedVersion: null },
-      { name: "legacy", severity: "info", currentVersion: "0.9.0", fixedVersion: null }
+      { name: "lodash", severity: "high", currentVersion: null, range: "<4.17.21", fixedVersion: "4.17.21" },
+      { name: "minimist", severity: "moderate", currentVersion: null, range: "<1.2.6", fixedVersion: null },
+      { name: "legacy", severity: "info", currentVersion: "0.9.0", range: null, fixedVersion: null }
     ]);
   });
 
@@ -147,7 +147,11 @@ describe("A06 npm audit provider", () => {
     const provider = new NpmAuditProvider({ exec });
 
     expect(await provider.scan()).toHaveLength(3);
-    expect(exec).toHaveBeenCalledWith("npm", ["audit", "--json"], expect.objectContaining({ shell: true }));
+    expect(exec).toHaveBeenCalledWith(
+      "npm",
+      ["audit", "--json"],
+      expect.objectContaining({ shell: process.platform === "win32" })
+    );
   });
 
   test("drops straight into DependencyRiskScanner.passesPolicy", async () => {
@@ -175,14 +179,14 @@ describe("A06 npm audit provider", () => {
     expect(gate).toEqual({ pass: true, blocked: [], results: [] });
   });
 
-  test("fails closed on findings whose severity the report does not provide", async () => {
+  test("normalizes a missing severity to null (never an empty string) and keeps the gate shut", async () => {
     const provider = new NpmAuditProvider({
       exec: execReturning('{"vulnerabilities":{"ghost":{"range":"<1.0.0"},"bare":{}}}')
     });
 
     expect(await provider.scan()).toEqual([
-      { name: "ghost", severity: "", currentVersion: "<1.0.0", fixedVersion: null },
-      { name: "bare", severity: "", currentVersion: null, fixedVersion: null }
+      { name: "ghost", severity: null, currentVersion: null, range: "<1.0.0", fixedVersion: null },
+      { name: "bare", severity: null, currentVersion: null, range: null, fixedVersion: null }
     ]);
     expect((await new DependencyRiskScanner(provider).passesPolicy("critical")).pass).toBe(false);
   });
