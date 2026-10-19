@@ -4,7 +4,7 @@ import {
   DependencyRiskScanner,
   NpmAuditProvider
 } from "../../core/a06-vulnerable-components/index.js";
-import { SecurityError } from "../../core/error/index.js";
+import { SecurityError, SecurityErrorCode } from "../../core/error/index.js";
 
 describe("A06 vulnerable components", () => {
   test("normalizes dependency risk and fails threshold", async () => {
@@ -221,6 +221,46 @@ describe("A06 npm audit provider", () => {
     const provider = new NpmAuditProvider({ cwd: "/srv/app", exec });
 
     await expect(provider.scan()).rejects.toThrow("npm audit failed to run");
+  });
+
+  test("fails closed with MISCONFIGURATION when npm is unavailable (ENOENT)", async () => {
+    const enoentError = Object.assign(new Error("spawn npm ENOENT"), {
+      code: "ENOENT",
+      syscall: "spawn npm"
+    });
+    const exec = jest.fn(async () => {
+      throw enoentError;
+    });
+    const provider = new NpmAuditProvider({ cwd: "/srv/app", exec });
+
+    await expect(provider.scan()).rejects.toMatchObject({
+      name: "SecurityError",
+      code: SecurityErrorCode.MISCONFIGURATION,
+      message: "npm audit failed to run"
+    });
+  });
+
+  test("includes exit code in error message when npm fails without stdout", async () => {
+    const exitError = Object.assign(new Error("Command failed: npm audit --json\nsecret-auth-token"), {
+      code: 1
+    });
+    const exec = jest.fn(async () => {
+      throw exitError;
+    });
+    const provider = new NpmAuditProvider({ cwd: "/srv/app", exec });
+
+    await expect(provider.scan()).rejects.toMatchObject({
+      name: "SecurityError",
+      code: SecurityErrorCode.MISCONFIGURATION,
+      message: "npm audit failed to run (exit code 1)",
+      details: { cwd: "/srv/app", exitCode: 1 }
+    });
+
+    try {
+      await provider.scan();
+    } catch (err) {
+      expect(JSON.stringify(err.details)).not.toContain("secret-auth-token");
+    }
   });
 
   test("runs npm audit through Node's child_process when no exec is injected", async () => {

@@ -93,11 +93,15 @@ function normalizeReport(stdout) {
 }
 
 /**
+ * @typedef {(command: string, args: string[], options: {cwd?: string, shell?: boolean, maxBuffer?: number}) => Promise<{stdout: string}>} NpmAuditExec
+ */
+
+/**
  * A DependencyRiskScanner provider backed by a real `npm audit --json` run.
  */
 export class NpmAuditProvider {
   /**
-   * @param {{cwd?: string, exec?: (command: string, args: string[], options: {cwd?: string, shell?: boolean, maxBuffer?: number}) => Promise<{stdout: string}>}} [options]
+   * @param {{cwd?: string, exec?: NpmAuditExec}} [options]
    *   `cwd` is the project to audit (defaults to the current working directory);
    *   `exec` is injectable for tests, and defaults to a promisified
    *   `child_process.execFile`.
@@ -117,10 +121,10 @@ export class NpmAuditProvider {
     try {
       ({ stdout } = await exec("npm", ["audit", "--json"], {
         cwd: this.cwd,
-        // npm ships as a .cmd shim on Windows, which execFile can only resolve
-        // through a shell; everywhere else npm is spawned directly so no shell
-        // interprets the arguments. Guarded like defaultCwd() so an injected
-        // exec still runs where `process` is absent.
+        // On Windows, npm is installed as a `.cmd` shim which child_process.execFile
+        // cannot execute directly without invoking a shell. On non-Windows platforms,
+        // npm is spawned directly without a shell to avoid unnecessary shell
+        // interpretation. Guarded so an injected exec still runs where process is absent.
         shell: typeof process !== "undefined" && process.platform === "win32",
         maxBuffer: MAX_BUFFER
       }));
@@ -128,10 +132,23 @@ export class NpmAuditProvider {
       // `npm audit` exits non-zero when it finds vulnerabilities, so a rejected
       // exec still carries the full JSON report on error.stdout.
       if (!error?.stdout) {
-        throw new SecurityError(SecurityErrorCode.MISCONFIGURATION, "npm audit failed to run", {
-          cwd: this.cwd,
-          message: error?.message
-        });
+        const exitCode =
+          typeof error?.exitCode === "number"
+            ? error.exitCode
+            : typeof error?.code === "number"
+              ? error.code
+              : typeof error?.status === "number"
+                ? error.status
+                : undefined;
+        const message =
+          exitCode !== undefined
+            ? `npm audit failed to run (exit code ${exitCode})`
+            : "npm audit failed to run";
+        const details = { cwd: this.cwd };
+        if (exitCode !== undefined) {
+          details.exitCode = exitCode;
+        }
+        throw new SecurityError(SecurityErrorCode.MISCONFIGURATION, message, details);
       }
       stdout = error.stdout;
     }

@@ -220,9 +220,12 @@ import { ComponentPolicy, DependencyRiskScanner, NpmAuditProvider } from "@owasp
 
 // Shipped provider: runs `npm audit --json` in `cwd` (defaults to process.cwd())
 // and normalizes the report into { name, severity, currentVersion, range,
-// fixedVersion } findings, so it drops straight into the scanner and passesPolicy().
-const scanner = new DependencyRiskScanner(new NpmAuditProvider({ cwd: process.cwd() }));
+// fixedVersion } findings.
+const provider = new NpmAuditProvider();
+const findings = await provider.scan();
 
+// Drops straight into DependencyRiskScanner and passesPolicy().
+const scanner = new DependencyRiskScanner(provider);
 const results = await scanner.scan();
 const gate = await scanner.passesPolicy("high");
 
@@ -233,7 +236,7 @@ const policy = new ComponentPolicy({
 });
 
 policy.evaluate({ name: "react", version: "18.3.1" });
-console.log(results, gate.pass);
+console.log(findings, results, gate.pass);
 ```
 
 `NpmAuditProvider` is Node-only (it shells out to `npm`). Any object with an async
