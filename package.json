@@ -64,6 +64,8 @@
     "lint": "eslint .",
     "check": "npm run lint && npm run test && npm run typecheck",
     "lint:docs": "node scripts/ci/check-doc-links.mjs",
+    "benchmark:apps": "node scripts/benchmark-apps/run.mjs",
+    "benchmark:apps:setup": "node scripts/benchmark-apps/setup.mjs",
     "prepublishOnly": "npm run check && npm run build && npm pack --dry-run"
   },
   "keywords": [
