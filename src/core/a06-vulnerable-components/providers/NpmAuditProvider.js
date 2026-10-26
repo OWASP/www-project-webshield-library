@@ -50,11 +50,22 @@ function vulnerableRange(entry) {
   return null;
 }
 
-function fixedVersion(entry) {
+function fixedVersion(entry, affectedPackageName = (typeof entry?.name === "string" && entry.name ? entry.name : null)) {
   // `fixAvailable: true` means a fix exists but npm named no version; reporting
   // a non-version placeholder here would break semver comparisons downstream.
-  const fix = entry.fixAvailable;
-  if (isPlainObject(fix) && typeof fix.version === "string" && fix.version) return fix.version;
+  // In transitive vulnerabilities, npm may report a fix on a dependent package
+  // instead of the affected dependency; only use fixAvailable.version when
+  // fixAvailable.name exactly matches the affected package name, returning null otherwise.
+  const fix = entry?.fixAvailable;
+  if (
+    isPlainObject(fix) &&
+    affectedPackageName &&
+    fix.name === affectedPackageName &&
+    typeof fix.version === "string" &&
+    fix.version
+  ) {
+    return fix.version;
+  }
   return null;
 }
 
@@ -79,15 +90,16 @@ function normalizeReport(stdout) {
 
   return Object.entries(vulnerabilities).map(([key, entry]) => {
     if (!isPlainObject(entry)) throw malformed(text);
+    const name = typeof entry.name === "string" && entry.name ? entry.name : key;
     return {
-      name: typeof entry.name === "string" && entry.name ? entry.name : key,
+      name,
       // A severity the report does not provide stays null rather than a
       // placeholder string: DependencyRiskScanner fails closed on severities it
       // does not know, and null can never read as a real (weaker) severity.
       severity: typeof entry.severity === "string" && entry.severity ? entry.severity : null,
       currentVersion: currentVersion(entry),
       range: vulnerableRange(entry),
-      fixedVersion: fixedVersion(entry)
+      fixedVersion: fixedVersion(entry, name)
     };
   });
 }

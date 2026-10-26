@@ -220,7 +220,8 @@ import { ComponentPolicy, DependencyRiskScanner, NpmAuditProvider } from "@owasp
 
 // Shipped provider: runs `npm audit --json` in `cwd` (defaults to process.cwd())
 // and normalizes the report into { name, severity, currentVersion, range,
-// fixedVersion } findings.
+// fixedVersion } findings. Note: npm audit output does not reliably provide the
+// installed package version, so currentVersion may be null.
 const provider = new NpmAuditProvider();
 const findings = await provider.scan();
 
@@ -239,7 +240,7 @@ policy.evaluate({ name: "react", version: "18.3.1" });
 console.log(findings, results, gate.pass);
 ```
 
-`NpmAuditProvider` is Node-only (it shells out to `npm`). Any object with an async
+`NpmAuditProvider` is Node-only (it shells out to `npm`). Because npm audit output does not reliably provide the installed package version, `currentVersion` may be `null`. Any object with an async
 `scan()` returning that same finding shape still works as a custom provider — for a
 vulnerability feed, an SBOM, or a browser app that cannot spawn a subprocess.
 

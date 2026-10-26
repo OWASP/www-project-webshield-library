@@ -138,6 +138,78 @@ describe("A06 npm audit provider", () => {
     ]);
   });
 
+  test("normalizes realistic npm audit --json output without invented fields and ignores fix-version mismatch", async () => {
+    const realisticAuditReport = {
+      auditReportVersion: 2,
+      vulnerabilities: {
+        minimist: {
+          name: "minimist",
+          severity: "critical",
+          isDirect: false,
+          via: [
+            {
+              source: 1096515,
+              name: "minimist",
+              dependency: "minimist",
+              title: "Prototype Pollution in minimist",
+              url: "https://github.com/advisories/GHSA-vh95-rmgr-6w4m",
+              severity: "critical",
+              cwe: ["CWE-1321"],
+              cvss: { score: 9.8, vectorString: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" },
+              range: "<0.2.4"
+            }
+          ],
+          effects: ["mkdirp"],
+          range: "<0.2.4",
+          nodes: ["node_modules/mkdirp/node_modules/minimist"],
+          fixAvailable: {
+            name: "mkdirp",
+            version: "1.0.4",
+            isSemVerMajor: true
+          }
+        },
+        mkdirp: {
+          name: "mkdirp",
+          severity: "critical",
+          isDirect: true,
+          via: ["minimist"],
+          effects: [],
+          range: "0.4.1 - 0.5.1",
+          nodes: ["node_modules/mkdirp"],
+          fixAvailable: {
+            name: "mkdirp",
+            version: "1.0.4",
+            isSemVerMajor: true
+          }
+        }
+      },
+      metadata: {
+        vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 2, total: 2 },
+        dependencies: { prod: 2, dev: 0, optional: 0, peer: 0, peerOptional: 0, total: 2 }
+      }
+    };
+
+    const provider = new NpmAuditProvider({ exec: execReturning(JSON.stringify(realisticAuditReport)) });
+    const findings = await provider.scan();
+
+    expect(findings).toEqual([
+      {
+        name: "minimist",
+        severity: "critical",
+        currentVersion: null,
+        range: "<0.2.4",
+        fixedVersion: null
+      },
+      {
+        name: "mkdirp",
+        severity: "critical",
+        currentVersion: null,
+        range: "0.4.1 - 0.5.1",
+        fixedVersion: "1.0.4"
+      }
+    ]);
+  });
+
   test("reads the report from a rejected run, since npm audit exits non-zero when it finds vulnerabilities", async () => {
     const exec = jest.fn(async () => {
       throw Object.assign(new Error("Command failed: npm audit --json"), {
