@@ -8,6 +8,8 @@ Express adapter for [OWL (OWASP Webshield Library)](https://owasp.org/www-projec
 npm install @owasp-webshield/core @owasp-webshield/express
 ```
 
+An ES module with TypeScript declarations. It needs Node.js 20.19+ or 22.12+, which can also load it from CommonJS with `require()`. In TypeScript, the declarations add `req.owl` (`session`, `outboundUrl`) to Express's `Request` type.
+
 ## Quick start
 
 ```js

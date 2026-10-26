@@ -14,6 +14,9 @@ import {
 import { SecretsVault } from "./vault.js";
 
 const PORT = process.env.PORT || 8787;
+// Loopback only by default: the demo login hands out any role without a password,
+// so the server must not be reachable from the network. Set HOST=0.0.0.0 to expose it.
+const HOST = process.env.HOST || "127.0.0.1";
 const SESSION_TTL_MS = 30 * 60 * 1000;
 const MAX_BODY_BYTES = 64 * 1024;
 const ROLES = ["viewer", "contributor", "admin"];
@@ -212,8 +215,8 @@ export function createServer({ vault = new SecretsVault(), sessionTtlMs = SESSIO
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { server } = createServer();
-  server.listen(PORT, () => {
-    console.log(`OWL Enabled Node Secrets App listening on http://localhost:${PORT}`);
+  server.listen(PORT, HOST, () => {
+    console.log(`OWL Enabled Node Secrets App listening on http://${HOST}:${PORT}`);
     console.log("See README.md for curl examples (login, create, reveal, freeze, rotate, delete).");
   });
 }

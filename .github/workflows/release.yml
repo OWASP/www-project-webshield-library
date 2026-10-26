@@ -1,19 +1,73 @@
 name: owl-release
 
+# One tag releases every package: push `vX.Y.Z` after bumping all six packages to
+# X.Y.Z (they're versioned in lockstep). The jobs publish in dependency order, and
+# each one skips a package that is already on npm, so after a failure, "Re-run
+# all jobs" (or "Re-run failed jobs") picks up where it stopped.
 on:
   push:
     tags:
-      - "core-v*.*.*"
+      - "v*.*.*"
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
+
+concurrency:
+  group: owl-release
+  cancel-in-progress: false
 
 jobs:
-  release:
-    name: Publish Release
+  verify:
+    name: Verify ${{ github.ref_name }}
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # full history, so the next step can see origin/main
 
+      # Only reviewed code is released: a tag on a branch commit that never reached
+      # main (or on an unmerged PR) stops here, before anything is published.
+      - name: The tagged commit is on main
+        run: |
+          TAGGED="$(git rev-parse "${GITHUB_REF_NAME}^{commit}")"
+          if ! git merge-base --is-ancestor "$TAGGED" origin/main; then
+            echo "::error::${GITHUB_REF_NAME} points at ${TAGGED}, which is not on main. Merge the release PR, then tag a commit on main."
+            exit 1
+          fi
+          echo "${GITHUB_REF_NAME} (${TAGGED}) is on main."
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          # No dependency cache when publishing: a cache written by a PR run could feed
+          # tampered packages into the release build.
+          package-manager-cache: false
+
+      - name: Install
+        run: npm ci
+
+      - name: Every package is at the tag's version, and CHANGELOG.md has its section
+        run: node scripts/release/check-versions.mjs "${GITHUB_REF_NAME#v}"
+
+      - name: Lint, test and typecheck
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Install the packages as a user would (release gate 4)
+        run: node scripts/release-gate/consumer-check.mjs
+
+  core:
+    name: Publish @owasp-webshield/core
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm provenance
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -24,37 +78,107 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 22
-          # No dependency cache when publishing: a cache written by a PR run could feed
-          # tampered packages into the release build.
           package-manager-cache: false
           registry-url: https://registry.npmjs.org
 
       - name: Install
         run: npm ci
 
-      - name: Validate tag matches package version
-        shell: bash
-        run: |
-          TAG_VERSION="${GITHUB_REF_NAME#core-v}"
-          PKG_VERSION="$(node -p "require('./package.json').version")"
-          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "Tag version core-v$TAG_VERSION does not match package.json version $PKG_VERSION"
-            exit 1
-          fi
-
-      - name: Lint and test
-        run: npm run check
-
       - name: Build
         run: npm run build
 
-      - name: Publish to npm
+      - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public --provenance
+        run: node scripts/release/publish-package.mjs core
+
+  # Depend only on core.
+  adapters:
+    name: Publish @owasp-webshield/${{ matrix.package }}
+    needs: core
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [react, vue, node]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+
+      # Adapters ship their sources and committed declarations as they are: no
+      # install or build step, so no third-party code runs with the npm token.
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/release/publish-package.mjs ${{ matrix.package }}
+
+  # express depends on node; next on node and react.
+  server-adapters:
+    name: Publish @owasp-webshield/${{ matrix.package }}
+    needs: adapters
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [express, next]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/release/publish-package.mjs ${{ matrix.package }}
+
+  github-release:
+    name: GitHub release ${{ github.ref_name }}
+    needs: server-adapters
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Release notes from CHANGELOG.md
+        run: node scripts/release/changelog-section.mjs "${GITHUB_REF_NAME#v}" > "$RUNNER_TEMP/release-notes.md"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
+          name: OWL ${{ github.ref_name }}
+          body_path: ${{ runner.temp }}/release-notes.md
           generate_release_notes: true
-          body_path: CHANGELOG.md
+          prerelease: ${{ contains(github.ref_name, '-') }}

@@ -14,6 +14,8 @@ export function isSafeMethod(req) {
 
 /**
  * A new random CSRF token (base64url, 32 bytes of entropy by default).
+ * @param {{tokenLength?: number}} [options]
+ * @returns {string}
  */
 export function generateCsrfToken({ tokenLength } = {}) {
   return new CSRFTokenManager({ tokenLength }).generateToken();
@@ -45,9 +47,9 @@ export function issueCsrfToken({ cookieName = DEFAULT_CSRF_COOKIE, cookie = {}, 
  *   planting its own copy (cookie tossing) looks like. A `__Host-` cookie name
  *   blocks that at the browser too.
  *
- * @param {object} req
+ * @param {any} req a Node IncomingMessage, an Express request or a Fetch Request
  * @param {{
- *   getExpectedToken?: (req: object) => string|null|undefined|Promise<string|null|undefined>,
+ *   getExpectedToken?: (req: any) => string|null|undefined|Promise<string|null|undefined>,
  *   cookieName?: string,
  *   headerName?: string
  * }} [options]

@@ -1,6 +1,6 @@
 {
   "name": "@owasp-webshield/vue",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Vue 3 adapter for OWL (OWASP Webshield Library): a plugin, category-aligned composables, guard components, a sanitizing v-safe-html directive and a Vue Router guard for @owasp-webshield/core",
   "private": false,
   "type": "module",

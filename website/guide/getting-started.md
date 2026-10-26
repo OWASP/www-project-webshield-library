@@ -1,11 +1,15 @@
 # Getting Started
 
-OWL ships as two packages:
+OWL ships as six packages, all released together with the same version number:
 
 | Package | Purpose |
 |---|---|
 | [`@owasp-webshield/core`](https://www.npmjs.com/package/@owasp-webshield/core) | Framework-agnostic core — every A01–A10 module, usable from plain Node.js or any framework. |
 | [`@owasp-webshield/react`](https://www.npmjs.com/package/@owasp-webshield/react) | React adapter — providers, hooks, and guard components built on top of the core. |
+| [`@owasp-webshield/vue`](https://www.npmjs.com/package/@owasp-webshield/vue) | Vue 3 adapter — a plugin, composables, guard components, `v-safe-html` and a Vue Router guard. |
+| [`@owasp-webshield/express`](https://www.npmjs.com/package/@owasp-webshield/express) | Express 4/5 middleware — auth, access control, CSRF, validation, security headers, SSRF checks, error handling. |
+| [`@owasp-webshield/node`](https://www.npmjs.com/package/@owasp-webshield/node) | The framework-neutral server functions the Express middleware is built on, for plain `node:http` or other frameworks. |
+| [`@owasp-webshield/next`](https://www.npmjs.com/package/@owasp-webshield/next) | Next.js App Router adapter — route handler guards, middleware CSRF, `next.config.js` security headers, sessions for Server Components and Server Actions. See [Next.js Setup](./nextjs-setup). |
 
 ## Installation
 
@@ -25,14 +29,16 @@ yarn add @owasp-webshield/core
 
 :::
 
-If you're building a React app, also install the adapter:
+Then add the adapter for your stack:
 
 ```bash
-npm install @owasp-webshield/react
+npm install @owasp-webshield/react     # React app
+npm install @owasp-webshield/vue       # Vue 3 app
+npm install @owasp-webshield/express   # Express API (also installs @owasp-webshield/node)
 ```
 
-::: warning Browser bundling
-`@owasp-webshield/core`'s crypto and SSRF modules (`CryptoManager`, `SSRFGuard`, `SafeFetcher`) use Node's built-in `node:crypto` and `node:dns/promises`. Bundling them into a browser app with Vite/webpack requires polyfilling those built-ins, or avoiding those specific modules client-side. See the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle) for details.
+::: tip Browser bundling
+Bundlers (Vite, webpack 5+, Rollup) pick core's browser build automatically. Everything works there except `CryptoManager`'s encryption, which needs Node and throws a clear `SecurityError` in a browser. Vite may warn that `node:dns/promises` was externalized; that import only runs under Node, so the warning is harmless. See the [FAQ](/faq#can-i-use-owl-in-a-browser-bundle).
 :::
 
 ## Quick Start
@@ -67,6 +73,8 @@ console.log(permissions.check({ role: "admin", action: "read", resource: "invoic
 From here:
 
 - Building a React app? Continue to [React Adapter Setup](/guide/react-setup).
+- Building a Vue app? Continue to [Vue Adapter Setup](/guide/vue-setup).
+- Building an API? Continue to [Node & Express Setup](/guide/server-setup). UI gates are a convenience; the server must enforce every rule.
 - Want the full picture of which module covers which OWASP category? See the [Module Map](/guide/module-map).
 - Looking for a specific class or hook? Jump straight into the [API Reference](/reference/a01-access-control).
 
@@ -76,5 +84,6 @@ The repository ships several runnable examples you can clone and run directly:
 
 | Example | Description |
 |---|---|
-| [OWL Enabled Node Secrets App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app) | Team credential vault on plain `@owasp-webshield/core`, covering every OWASP category (A01–A10) |
+| [OWL Enabled Node Secrets App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app) | Team credential vault on `@owasp-webshield/core` with a plain-Node API on `@owasp-webshield/node`, covering every OWASP category (A01–A10) |
 | [OWL Enabled React Todo App](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-react-todo-app) | Full-featured Todo app on the React adapter, covering every OWASP category (A01–A10) in one product |
+| [OWL Enabled Vue + Express Incident Desk](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-vue-express-incident-desk) | Full-stack reference app: Vue 3 front end and Express 5 API, with every category enforced end to end and covered by tests |

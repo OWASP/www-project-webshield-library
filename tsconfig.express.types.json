@@ -1,0 +1,15 @@
+{
+  "extends": "./jsconfig.json",
+  "compilerOptions": {
+    "ignoreDeprecations": "5.0",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "noEmitOnError": true,
+    "outDir": "dist/express",
+    "rootDir": "src/adapters/express"
+  },
+  "include": [
+    "src/adapters/express/**/*.js"
+  ]
+}

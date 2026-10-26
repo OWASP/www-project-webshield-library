@@ -26,19 +26,19 @@ This is verified against real published tarballs (not monorepo-relative paths) f
 
 Node apps (see the [`owl-enabled-node-secrets-app` example](https://github.com/OWASP/www-project-webshield-library/tree/main/examples/owl-enabled-node-secrets-app)) are fully unaffected either way — Node has `node:crypto` natively, so they always get the real `CryptoManager`.
 
-A browser-safe `.` entry point (so the package root itself works without the `./modules/*` subpath) is tracked as follow-up work — it would need either a breaking async `CryptoManager` API or a separate throwing-stub browser build.
+`@owasp-webshield/vue` uses the same browser build.
 
 ## Why is the package called `@owasp-webshield/core` and not `@owl/core`?
 
-The library's own acronym has always been **OWL** (OWASP Webshield Library) — that hasn't changed. The npm *scope* changed several times for availability reasons, not naming preference: `@owl/*` → `@owsl/*` → `@owl/*` → `@owasp-core/*` (actually published, versions `0.1.0`–`1.0.4`) → `@owasp-js/*` (renamed in-repo, never published) → `@owasp-webshield/*` (current). `@owasp-webshield` was free to claim as an npm org/scope, so the package settled on `@owasp-webshield/core` and `@owasp-webshield/react` (React adapter). See [CHANGELOG](/changelog) for the full history.
+The library's own acronym has always been **OWL** (OWASP Webshield Library) — that hasn't changed. The npm *scope* changed several times for availability reasons, not naming preference: `@owl/*` → `@owsl/*` → `@owl/*` → `@owasp-core/*` (actually published, versions `0.1.0`–`1.0.4`) → `@owasp-js/*` (renamed in-repo, never published) → `@owasp-webshield/*` (current). `@owasp-webshield` was free to claim as an npm org/scope, so the packages settled on `@owasp-webshield/core`, with `@owasp-webshield/react`, `@owasp-webshield/vue`, `@owasp-webshield/express` and `@owasp-webshield/node` alongside it. See [CHANGELOG](/changelog) for the full history.
 
 ## Does OWL require React?
 
-No. `@owasp-webshield/core` is framework-agnostic and has zero required dependencies. `@owasp-webshield/react` is a separate, optional package — install it only if you're building a React app. See [Getting Started](/guide/getting-started).
+No. `@owasp-webshield/core` is framework-agnostic and has zero required dependencies. The adapters are separate, optional packages: `@owasp-webshield/react` for React, `@owasp-webshield/vue` for Vue 3, and `@owasp-webshield/express` (with `@owasp-webshield/node`) for Express and other Node servers. Install only the ones your stack uses. See [Getting Started](/guide/getting-started).
 
 ## What Node.js version does OWL require?
 
-Node.js 20 or later (`engines.node: ">=20"` in `package.json`).
+Node.js 20 or later for `@owasp-webshield/core`, which ships both ESM and CommonJS builds. `@owasp-webshield/node` and `@owasp-webshield/express` are ESM-only and need Node.js 20.19+ or 22.12+, the versions where `require()` can load an ES module, so CommonJS apps can use them too.
 
 ## How does OWL handle secrets in logs?
 
@@ -50,7 +50,7 @@ Do not open a public GitHub issue. Follow the private disclosure process describ
 
 ## Where do I find the full list of exports?
 
-Every OWASP category's [reference page](/reference/a01-access-control) lists its exports with runnable examples for both the core API and the React adapter. The sidebar under **Reference** covers A01 through A10 plus [Typed Errors](/reference/errors).
+Every OWASP category's [reference page](/reference/a01-access-control) lists its exports with runnable examples for the core API and the React adapter. The Vue adapter and the Express/Node packages are covered in their setup guides. The sidebar under **Reference** covers A01 through A10 plus [Typed Errors](/reference/errors).
 
 ## How is OWL versioned?
 

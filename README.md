@@ -24,7 +24,7 @@
 
 ---
 
-> **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package, full React and Vue adapters, and Node/Express server support — making security primitives as easy to use as any other NPM library.
+> **OWL** is a production-focused JavaScript security toolkit that maps security controls directly to OWASP Top 10 categories (A01–A10). It ships a framework-agnostic core package, full React and Vue adapters, a Next.js adapter, and Node/Express server support — making security primitives as easy to use as any other NPM library.
 
 📖 **Full documentation and usage guide: [shimmering-parfait-3d0863.netlify.app](https://shimmering-parfait-3d0863.netlify.app/)**
 
@@ -38,6 +38,7 @@
 - [Core Usage](#core-usage)
 - [React Adapter](#react-adapter-usage)
 - [Vue Adapter](#vue-adapter-usage)
+- [Next.js Adapter](#nextjs-adapter-usage)
 - [Examples](#integration-examples)
 - [Scripts](#scripts)
 - [Project Docs](#project-docs)
@@ -59,6 +60,7 @@
 | Secrets leaking through logs | Redaction-first `SecurityLogger` |
 | React apps with no auth or permission guard | `AuthGate`, `PermissionGate`, and provider hooks |
 | Vue apps rendering user HTML with `v-html` | `v-safe-html`, a sanitizing drop-in replacement, plus guards and composables |
+| Next.js route handlers each re-implementing auth, CSRF and validation | `withOwl()`, one wrapper that runs every check and maps failures to safe JSON errors |
 
 ---
 
@@ -171,6 +173,25 @@ createApp(App).use(owl).directive("safe-html", vSafeHtml).mount("#app");
 
 See [docs/vue-adapter-usage.md](docs/vue-adapter-usage.md) for the composables, `v-safe-html` and the Vue Router guard.
 
+## Next.js Adapter Usage
+
+```js
+// app/api/reports/route.js
+import { withOwl } from "@owasp-webshield/next";
+
+export const POST = withOwl(
+  async (request, context, { session, body }) => Response.json(await reports.create(session.userId, body), { status: 201 }),
+  {
+    auth: { verifyToken: (token) => sessionStore.lookup(token) },
+    csrf: true,
+    permission: { action: "write", resource: "reports", checker: owl },
+    body: { schema: { title: { required: true, type: "string", maxLength: 120 } }, allowUnknownFields: false }
+  }
+);
+```
+
+`@owasp-webshield/next/server` reads the session in Server Components and Server Actions, and `@owasp-webshield/next/client` is the React adapter marked `"use client"`. See [docs/nextjs-integration.md](docs/nextjs-integration.md) for middleware, security headers and the full setup.
+
 ## Integration Examples
 
 | Example | Description |
@@ -180,7 +201,9 @@ See [docs/vue-adapter-usage.md](docs/vue-adapter-usage.md) for the composables, 
 | [Vue adapter usage](docs/vue-adapter-usage.md) | Plugin, composables, `v-safe-html` and router guard for `@owasp-webshield/vue` |
 | [OWL Enabled Node Secrets App ▶](examples/owl-enabled-node-secrets-app/README.md) | Team credential vault on `@owasp-webshield/core` with a plain-Node API on `@owasp-webshield/node` — every OWASP category (A01–A10), plus real AES-256-GCM encryption (`CryptoManager`) and a real `npm audit` |
 | [OWL Enabled Vue + Express Incident Desk ▶](examples/owl-enabled-vue-express-incident-desk/README.md) | Full-stack reference app: Vue 3 on `@owasp-webshield/vue` and an Express 5 API on `@owasp-webshield/express`, with every category (A01–A10) enforced end to end and covered by tests |
+| [OWL Enabled Next.js Expense Portal ▶](examples/owl-enabled-nextjs-expense-portal/README.md) | Expense claims on the Next.js App Router with `@owasp-webshield/next`: IDOR-safe claim scopes, segregation of duties and approval limits, login CSRF, session-bound CSRF tokens, Server Actions that check their caller, encrypted IBANs and an SSRF-guarded receipt import, with HTTP tests against the production build |
 | [OWL Enabled React Todo App ▶](examples/owl-enabled-react-todo-app/README.md) ([live demo](https://owl-todo-demo.netlify.app/)) | Full-featured Todo app on the React adapter — every OWASP category (A01–A10) doing real work in one product instead of ten tutorial pages |
+| [Next.js integration](docs/nextjs-integration.md) | Route handler guards, middleware CSRF, `next.config.js` security headers, Server Component/Action sessions and client components for `@owasp-webshield/next` |
 | [Node & Express integration](docs/node-api-integration.md) | Express middleware (`@owasp-webshield/express`) and plain-Node functions (`@owasp-webshield/node`) for auth, access control, CSRF, validation, headers and SSRF checks |
 
 ## Scripts

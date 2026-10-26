@@ -24,7 +24,7 @@ export function requestLogContext(req) {
  *
  * @param {{warn: Function, error: Function}} logger
  * @param {unknown} error
- * @param {object} [req]
+ * @param {any} [req]
  */
 export function logRequestError(logger, error, req) {
   if (!logger) return;

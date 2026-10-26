@@ -7,6 +7,25 @@ const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
 // placeholder stands in for "the page's own origin".
 const NO_PAGE_BASE = "http://owl.invalid/";
 
+/**
+ * The caller's headers as a plain object, whichever shape fetch() accepts: a plain
+ * object, [name, value] pairs or a Headers instance. Spreading the last two (the
+ * obvious `{ ...headers }`) silently loses every header: a Headers instance has no
+ * own properties, and pairs become numeric keys.
+ */
+function toHeaderObject(headers) {
+  if (!headers) return {};
+  if (typeof headers.forEach === "function" && typeof headers.get === "function") {
+    const plain = {};
+    headers.forEach((value, name) => {
+      plain[name] = value;
+    });
+    return plain;
+  }
+  if (Array.isArray(headers)) return Object.fromEntries(headers);
+  return { ...headers };
+}
+
 // fetch() resolves relative URLs against the document base URL in browsers.
 function pageContext() {
   return {
@@ -66,7 +85,7 @@ export class HTTPClient {
   async request(url, options = {}) {
     let config = {
       ...options,
-      headers: { ...(options.headers || {}) }
+      headers: toHeaderObject(options.headers)
     };
 
     const requestUrl = ABSOLUTE_URL_PATTERN.test(url) ? url : `${this.baseUrl}${url}`;

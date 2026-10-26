@@ -1,0 +1,11 @@
+import { createOwlClient, SecurityError, Argon2Adapter, DEFAULT_PBKDF2_ITERATIONS } from "@owasp-webshield/core";
+import { OwlProvider, useAuth } from "@owasp-webshield/react";
+import { createOwl, vSafeHtml } from "@owasp-webshield/vue";
+import { authenticate, verifyCsrf } from "@owasp-webshield/node";
+import { requireAuth, errorHandler } from "@owasp-webshield/express";
+import { withOwl, guardCsrf, securityHeadersConfig, type OwlRouteState } from "@owasp-webshield/next";
+import { SanitizedText } from "@owasp-webshield/next/client";
+import { createServerAuth } from "@owasp-webshield/next/server";
+const iterations: 600000 = DEFAULT_PBKDF2_ITERATIONS;
+const handler = withOwl(async (_req: Request, _ctx: unknown, owl: OwlRouteState) => Response.json(owl.session?.userId ?? null), { csrf: true });
+void [createOwlClient, SecurityError, Argon2Adapter, OwlProvider, useAuth, createOwl, vSafeHtml, authenticate, verifyCsrf, requireAuth, errorHandler, guardCsrf, securityHeadersConfig, SanitizedText, createServerAuth, iterations, handler];

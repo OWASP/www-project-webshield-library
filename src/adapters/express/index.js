@@ -59,7 +59,7 @@ export function requireAuth(options) {
  * `resource` (RBAC, with ACL deny-overrides). Mount after `requireAuth()`.
  *
  * @param {string} action
- * @param {string | ((req: object) => string)} resource a function can scope it
+ * @param {string | ((req: any) => string)} resource a function can scope it
  *   to the request, e.g. `(req) => \`report:${req.params.id}\``
  * @param {object} checkerSource a `PermissionChecker`, or the object returned by
  *   `createOwlClient()` (anything with an `rbacManager`, optionally an `aclManager`)
@@ -132,7 +132,7 @@ export function sanitizeBody(fields, options) {
  * Checks a caller-supplied URL before the route requests it, and stores the
  * parsed result on `req.owl.outboundUrl`. Still make the request through
  * `SafeFetcher` so redirects and DNS rebinding are covered too.
- * @param {(req: object) => unknown} getUrl e.g. `(req) => req.body.webhookUrl`
+ * @param {(req: any) => unknown} getUrl e.g. `(req) => req.body.webhookUrl`
  * @param {Parameters<typeof assertSafeOutboundUrl>[1]} [options]
  */
 export function guardOutboundUrl(getUrl, options) {

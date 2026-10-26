@@ -6,13 +6,27 @@
  *   (double-submit cookie pattern; set `csrfCookieName` for another name), or
  * - pass a `csrfManager` holding a server-issued token (`csrfManager.setToken(token)`).
  * Pass `csrfCookieName: null` and no `csrfManager` to send no CSRF header.
+ *
+ * @param {{
+ *   baseUrl?: string,
+ *   tokenProvider?: (() => string | null | Promise<string | null>) | null,
+ *   fetchImpl?: typeof fetch,
+ *   csrfManager?: import("@owasp-webshield/core").CSRFTokenManager | null,
+ *   csrfCookieName?: string | null,
+ *   allowedOrigins?: string[],
+ *   outboundRequestPolicy?: import("@owasp-webshield/core").SSRFGuard
+ * }} [options]
+ * @returns {import("@owasp-webshield/core").HTTPClient}
  */
 export function useSecureHttpClient({ baseUrl, tokenProvider, fetchImpl, csrfManager, csrfCookieName, allowedOrigins, outboundRequestPolicy }?: {
     baseUrl?: string;
-    tokenProvider?: any;
-    csrfManager?: any;
-    csrfCookieName?: string;
-}): any;
+    tokenProvider?: (() => string | null | Promise<string | null>) | null;
+    fetchImpl?: typeof fetch;
+    csrfManager?: import("@owasp-webshield/core").CSRFTokenManager | null;
+    csrfCookieName?: string | null;
+    allowedOrigins?: string[];
+    outboundRequestPolicy?: import("@owasp-webshield/core").SSRFGuard;
+}): import("@owasp-webshield/core").HTTPClient;
 /**
  * Request-side hardening only: X-Frame-Options/nosniff are response headers and must be set by the server.
  * @param {RequestInit} [init]

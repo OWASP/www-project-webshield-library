@@ -1,6 +1,6 @@
 {
   "name": "@owasp-webshield/react",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "React adapter for OWL (OWASP Webshield Library): category-aligned providers, hooks, and guard components for @owasp-webshield/core",
   "private": false,
   "type": "module",

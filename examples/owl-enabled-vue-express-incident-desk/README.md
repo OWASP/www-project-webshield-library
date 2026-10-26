@@ -22,6 +22,10 @@ npm run build    # production build of the Vue app into dist/
 npm start        # Express serves the API and dist/ on http://localhost:8080
 ```
 
+The API only accepts connections from this machine (`127.0.0.1`), because the demo accounts
+and their passwords are published below. To reach it from another device, set `HOST=0.0.0.0`,
+and only behind HTTPS on a network you trust.
+
 Demo accounts (also listed on the sign-in page):
 
 | User | Password | Role |

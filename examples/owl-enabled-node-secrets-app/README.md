@@ -43,6 +43,9 @@ npm test            # HTTP-level tests for the API (Node's built-in test runner)
 > whichever role the request body names, with no credentials, so anyone who can reach the
 > server can become `admin`. A real service must authenticate the user (password, SSO,
 > passkey, ...) and take roles from its own user store, never from the request.
+>
+> For the same reason the server only accepts connections from this machine (`127.0.0.1`).
+> `HOST=0.0.0.0 npm run serve` exposes it to your network; don't, on a network you don't control.
 
 Every `/login` creates its own server-side session (a random bearer token and CSRF
 token, valid for 30 minutes), so several users can be signed in at once with different
