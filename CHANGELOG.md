@@ -15,6 +15,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- A10: `SSRFGuard` accepts an `allowHosts` option supporting exact and single-level wildcard host matching (`*.domain.com`), and enforces HTTPS by default.
+- A10: public `isAllowedUrl(url, options)` utility for synchronous SSRF policy checks with hostname normalization (case, trailing dots, IDN/IDNA).
+- A10: `SSRFGuard.createPinnedLookup()` and `createSafeLookup(pinned)` support pinning connections to validated IP addresses to prevent DNS rebinding while preserving TLS SNI and hostname verification.
+
 ## [2.0.0] — 2026-10-04
 
 ### Added

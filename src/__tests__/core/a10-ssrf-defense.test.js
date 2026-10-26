@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from "@jest/globals";
-import { SSRFGuard, SafeFetcher } from "../../core/a10-ssrf-defense/index.js";
+import { SSRFGuard, SafeFetcher, isAllowedUrl, matchHostAllowlist, normalizeHostname } from "../../core/a10-ssrf-defense/index.js";
 
 describe("A10 ssrf defense", () => {
   test("blocks private targets and validates redirect chain", () => {
@@ -180,5 +180,350 @@ describe("A10 ssrf defense", () => {
     guard.isPrivateHost("a" + ".".repeat(200000) + "b");
     expect(() => guard.validateUrl("http://a" + ".".repeat(200000) + "b/")).not.toThrow();
     expect(performance.now() - start).toBeLessThan(500);
+  });
+
+  describe("issue #93: allowHosts and isAllowedUrl", () => {
+    test("allowHosts allows exact matching host and denies non-matching hosts", () => {
+      const guard = new SSRFGuard({ allowHosts: ["hooks.example.com"] });
+      expect(guard.validateUrl("https://hooks.example.com/webhook")).toBeInstanceOf(URL);
+      expect(() => guard.validateUrl("https://evil.example.com/")).toThrow();
+      expect(() => guard.validateUrl("https://example.com/")).toThrow();
+
+      expect(isAllowedUrl("https://hooks.example.com/webhook", { allowHosts: ["hooks.example.com"] })).toBe(true);
+      expect(isAllowedUrl("https://other.example.com/", { allowHosts: ["hooks.example.com"] })).toBe(false);
+    });
+
+    test("allowHosts with multiple allowed hosts", () => {
+      const guard = new SSRFGuard({ allowHosts: ["api.example.com", "service.example.org"] });
+      expect(guard.validateUrl("https://api.example.com/v1")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://service.example.org/v2")).toBeInstanceOf(URL);
+      expect(() => guard.validateUrl("https://unrelated.com/")).toThrow();
+    });
+
+    test("empty allowHosts denies all hosts", () => {
+      const guard = new SSRFGuard({ allowHosts: [] });
+      expect(() => guard.validateUrl("https://example.com/")).toThrow();
+      expect(() => guard.validateUrl("https://google.com/")).toThrow();
+      expect(isAllowedUrl("https://example.com/", { allowHosts: [] })).toBe(false);
+      expect(isAllowedUrl("https://example.com/", [])).toBe(false);
+    });
+
+    test("omitted allowHosts preserves existing behavior exactly", () => {
+      const guard = new SSRFGuard();
+      expect(guard.validateUrl("https://example.com/")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("http://example.com/")).toBeInstanceOf(URL);
+      expect(() => guard.validateUrl("http://127.0.0.1/")).toThrow();
+      expect(isAllowedUrl("https://example.com/")).toBe(true);
+      expect(isAllowedUrl("http://127.0.0.1/")).toBe(false);
+    });
+
+    test("handles URL object and string interchangeably in isAllowedUrl", () => {
+      expect(isAllowedUrl(new URL("https://api.example.com/"), { allowHosts: ["api.example.com"] })).toBe(true);
+      expect(isAllowedUrl("https://api.example.com/", { allowHosts: ["api.example.com"] })).toBe(true);
+    });
+
+    test("public helpers normalizeHostname and matchHostAllowlist work directly", () => {
+      expect(normalizeHostname("  I.IMGUR.COM.  ")).toBe("i.imgur.com");
+      expect(normalizeHostname("[::1]")).toBe("::1");
+      expect(matchHostAllowlist("i.imgur.com", ["*.imgur.com"])).toBe(true);
+      expect(matchHostAllowlist("imgur.com", ["*.imgur.com"])).toBe(false);
+      expect(matchHostAllowlist("example.com", [])).toBe(false);
+    });
+  });
+
+  describe("issue #93: wildcard boundaries and deceptive URLs", () => {
+    const allowHosts = ["*.imgur.com"];
+    const guard = new SSRFGuard({ allowHosts });
+
+    test("*.imgur.com matches exactly one subdomain level", () => {
+      expect(guard.validateUrl("https://i.imgur.com/pic.png")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://api.imgur.com/data")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://foo-bar.imgur.com/")).toBeInstanceOf(URL);
+
+      expect(isAllowedUrl("https://i.imgur.com/pic.png", { allowHosts })).toBe(true);
+      expect(isAllowedUrl("https://api.imgur.com/data", { allowHosts })).toBe(true);
+    });
+
+    test("*.imgur.com NEVER matches apex domain", () => {
+      expect(() => guard.validateUrl("https://imgur.com/")).toThrow();
+      expect(isAllowedUrl("https://imgur.com/", { allowHosts })).toBe(false);
+    });
+
+    test("*.imgur.com NEVER matches nested subdomains", () => {
+      expect(() => guard.validateUrl("https://sub.i.imgur.com/")).toThrow();
+      expect(() => guard.validateUrl("https://a.b.c.imgur.com/")).toThrow();
+      expect(isAllowedUrl("https://sub.i.imgur.com/", { allowHosts })).toBe(false);
+      expect(isAllowedUrl("https://a.b.c.imgur.com/", { allowHosts })).toBe(false);
+    });
+
+    test("*.imgur.com NEVER matches lookalikes or deceptive domains", () => {
+      expect(() => guard.validateUrl("https://evilimgur.com/")).toThrow();
+      expect(() => guard.validateUrl("https://imgur.com.evil.example/")).toThrow();
+      expect(() => guard.validateUrl("https://i.imgur.com@evil.example/")).toThrow();
+      expect(() => guard.validateUrl("https://i.imgur.com:secret@evil.example/")).toThrow();
+
+      expect(isAllowedUrl("https://evilimgur.com/", { allowHosts })).toBe(false);
+      expect(isAllowedUrl("https://imgur.com.evil.example/", { allowHosts })).toBe(false);
+      expect(isAllowedUrl("https://i.imgur.com@evil.example/", { allowHosts })).toBe(false);
+      expect(isAllowedUrl("https://i.imgur.com:secret@evil.example/", { allowHosts })).toBe(false);
+    });
+
+    test("allows both apex and subdomain when both explicitly configured", () => {
+      const dualGuard = new SSRFGuard({ allowHosts: ["imgur.com", "*.imgur.com"] });
+      expect(dualGuard.validateUrl("https://imgur.com/")).toBeInstanceOf(URL);
+      expect(dualGuard.validateUrl("https://i.imgur.com/")).toBeInstanceOf(URL);
+      expect(() => dualGuard.validateUrl("https://sub.i.imgur.com/")).toThrow();
+      expect(() => dualGuard.validateUrl("https://evilimgur.com/")).toThrow();
+    });
+
+    test("rejects malformed URLs in isAllowedUrl without throwing", () => {
+      for (const bad of [
+        "not-a-url",
+        "",
+        null,
+        undefined,
+        12345,
+        {},
+        "javascript:alert(1)",
+        "data:text/html,test",
+        "file:///etc/passwd",
+        "https://",
+        "http:///"
+      ]) {
+        expect(isAllowedUrl(bad, { allowHosts: ["example.com"] })).toBe(false);
+      }
+    });
+  });
+
+  describe("issue #93: hostname normalization (case, trailing dots, IDN/IDNA)", () => {
+    test("normalizes hostname case", () => {
+      const guard = new SSRFGuard({ allowHosts: ["*.imgur.com", "example.com"] });
+      expect(guard.validateUrl("https://I.IMGUR.COM/pic")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://EXAMPLE.COM/page")).toBeInstanceOf(URL);
+      expect(isAllowedUrl("https://I.IMGUR.COM/pic", { allowHosts: ["*.imgur.com"] })).toBe(true);
+
+      const upperPatternGuard = new SSRFGuard({ allowHosts: ["*.IMGUR.COM", "EXAMPLE.COM"] });
+      expect(upperPatternGuard.validateUrl("https://i.imgur.com/pic")).toBeInstanceOf(URL);
+      expect(upperPatternGuard.validateUrl("https://example.com/page")).toBeInstanceOf(URL);
+      expect(isAllowedUrl("https://i.imgur.com/pic", { allowHosts: ["*.IMGUR.COM"] })).toBe(true);
+    });
+
+    test("normalizes trailing dots safely in host and pattern", () => {
+      const guard = new SSRFGuard({ allowHosts: ["*.imgur.com.", "example.com."] });
+      expect(guard.validateUrl("https://i.imgur.com./pic")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://i.imgur.com/pic")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://example.com./")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://example.com/")).toBeInstanceOf(URL);
+
+      expect(isAllowedUrl("https://i.imgur.com./pic", { allowHosts: ["*.imgur.com"] })).toBe(true);
+      expect(isAllowedUrl("https://i.imgur.com/pic", { allowHosts: ["*.imgur.com."] })).toBe(true);
+    });
+
+    test("normalizes IDN/IDNA Unicode and Punycode representations", () => {
+      const idnGuard = new SSRFGuard({ allowHosts: ["*.münchen.de", "zürich.ch"] });
+      expect(idnGuard.validateUrl("https://stadt.münchen.de/")).toBeInstanceOf(URL);
+      expect(idnGuard.validateUrl("https://stadt.xn--mnchen-3ya.de/")).toBeInstanceOf(URL);
+      expect(idnGuard.validateUrl("https://STADT.MÜNCHEN.DE./")).toBeInstanceOf(URL);
+      expect(idnGuard.validateUrl("https://zürich.ch/")).toBeInstanceOf(URL);
+      expect(idnGuard.validateUrl("https://xn--zrich-kva.ch/")).toBeInstanceOf(URL);
+
+      // Apex and nested subdomains must not match wildcard
+      expect(() => idnGuard.validateUrl("https://münchen.de/")).toThrow();
+      expect(() => idnGuard.validateUrl("https://sub.stadt.münchen.de/")).toThrow();
+
+      // Reverse pattern configuration (Punycode pattern matches Unicode URL)
+      const punycodeGuard = new SSRFGuard({ allowHosts: ["*.xn--mnchen-3ya.de"] });
+      expect(punycodeGuard.validateUrl("https://stadt.münchen.de/")).toBeInstanceOf(URL);
+      expect(punycodeGuard.validateUrl("https://stadt.xn--mnchen-3ya.de/")).toBeInstanceOf(URL);
+
+      expect(isAllowedUrl("https://stadt.münchen.de/", { allowHosts: ["*.münchen.de"] })).toBe(true);
+      expect(isAllowedUrl("https://stadt.xn--mnchen-3ya.de/", { allowHosts: ["*.münchen.de"] })).toBe(true);
+      expect(isAllowedUrl("https://münchen.de/", { allowHosts: ["*.münchen.de"] })).toBe(false);
+      expect(isAllowedUrl("https://sub.stadt.münchen.de/", { allowHosts: ["*.münchen.de"] })).toBe(false);
+    });
+  });
+
+  describe("issue #93: schemes and default HTTPS enforcement", () => {
+    test("enforces HTTPS by default when allowHosts is configured", () => {
+      const guard = new SSRFGuard({ allowHosts: ["*.imgur.com"] });
+      expect(guard.validateUrl("https://i.imgur.com/test")).toBeInstanceOf(URL);
+      expect(() => guard.validateUrl("http://i.imgur.com/test")).toThrow();
+      expect(() => guard.validateUrl("ftp://i.imgur.com/test")).toThrow();
+
+      expect(isAllowedUrl("https://i.imgur.com/test", { allowHosts: ["*.imgur.com"] })).toBe(true);
+      expect(isAllowedUrl("http://i.imgur.com/test", { allowHosts: ["*.imgur.com"] })).toBe(false);
+      expect(isAllowedUrl("ftp://i.imgur.com/test", { allowHosts: ["*.imgur.com"] })).toBe(false);
+    });
+
+    test("permits other schemes only via explicit opt-in", () => {
+      const guard = new SSRFGuard({ allowHosts: ["*.imgur.com"], allowProtocols: ["http:", "https:"] });
+      expect(guard.validateUrl("http://i.imgur.com/test")).toBeInstanceOf(URL);
+      expect(guard.validateUrl("https://i.imgur.com/test")).toBeInstanceOf(URL);
+
+      expect(isAllowedUrl("http://i.imgur.com/test", { allowHosts: ["*.imgur.com"], allowProtocols: ["http:", "https:"] })).toBe(true);
+      expect(isAllowedUrl("http://i.imgur.com/test", { allowHosts: ["*.imgur.com"], allowProtocols: ["http", "https"] })).toBe(true);
+      expect(isAllowedUrl("http://i.imgur.com/test", { allowHosts: ["*.imgur.com"], allowSchemes: ["http", "https"] })).toBe(true);
+    });
+  });
+
+  describe("issue #93: internal-IP protections retained with allowHosts", () => {
+    test("rejects private/loopback/metadata addresses even if added to allowHosts", () => {
+      for (const ip of ["127.0.0.1", "localhost", "169.254.169.254", "10.0.0.1", "[::1]", "::ffff:127.0.0.1"]) {
+        const guard = new SSRFGuard({ allowHosts: [ip] });
+        expect(() => guard.validateUrl(`https://${ip}/`)).toThrow();
+        expect(isAllowedUrl(`https://${ip}/`, { allowHosts: [ip] })).toBe(false);
+      }
+    });
+
+    test("assertResolvedSafe rejects allowed hostnames that resolve to private addresses", async () => {
+      const guard = new SSRFGuard({
+        allowHosts: ["hooks.example.com"],
+        resolveHost: async () => ["127.0.0.1"]
+      });
+      await expect(guard.assertResolvedSafe("https://hooks.example.com/hook")).rejects.toMatchObject({
+        code: "SSRF_BLOCKED"
+      });
+    });
+
+    test("assertResolvedSafe allows allowed hostnames resolving to public addresses", async () => {
+      const guard = new SSRFGuard({
+        allowHosts: ["hooks.example.com"],
+        resolveHost: async () => ["93.184.216.34"]
+      });
+      await expect(guard.assertResolvedSafe("https://hooks.example.com/hook")).resolves.toBeInstanceOf(URL);
+    });
+  });
+
+  describe("issue #93: DNS pinning in lookup", () => {
+    const lookupAsync = (lookup, host, options = {}) =>
+      new Promise((resolve, reject) => {
+        lookup(host, options, (err, address, family) => (err ? reject(err) : resolve({ address, family })));
+      });
+
+    test("pins connection to validated public IP without calling resolver", async () => {
+      let resolverCalled = false;
+      const guard = new SSRFGuard({
+        allowHosts: ["example.com"],
+        resolveHost: async () => {
+          resolverCalled = true;
+          return ["1.2.3.4"];
+        }
+      });
+
+      const pinnedLookup = guard.createSafeLookup({ "example.com": "93.184.216.34" });
+      const result = await lookupAsync(pinnedLookup, "example.com", {});
+      expect(result).toEqual({ address: "93.184.216.34", family: 4 });
+      expect(resolverCalled).toBe(false);
+    });
+
+    test("createPinnedLookup helper pins address for specific host", async () => {
+      const guard = new SSRFGuard({ allowHosts: ["api.example.com"] });
+      const pinnedLookup = guard.createPinnedLookup("api.example.com", "93.184.216.34");
+      const result = await lookupAsync(pinnedLookup, "api.example.com", {});
+      expect(result).toEqual({ address: "93.184.216.34", family: 4 });
+    });
+
+    test("rejects pinned address if it is private or loopback", async () => {
+      const guard = new SSRFGuard({ allowHosts: ["example.com"] });
+      const pinnedLookup = guard.createSafeLookup({ "example.com": "10.0.0.1" });
+      await expect(lookupAsync(pinnedLookup, "example.com", {})).rejects.toMatchObject({
+        code: "SSRF_BLOCKED"
+      });
+    });
+
+    test("rejects lookup if host is not in allowHosts", async () => {
+      const guard = new SSRFGuard({ allowHosts: ["example.com"] });
+      const pinnedLookup = guard.createSafeLookup({ "evil.example": "93.184.216.34" });
+      await expect(lookupAsync(pinnedLookup, "evil.example", {})).rejects.toMatchObject({
+        code: "SSRF_BLOCKED"
+      });
+    });
+  });
+
+  describe("issue #93: redirect allowlist bypass prevention & redirect limits", () => {
+    test("validateRedirectChain rejects hops outside allowlist", () => {
+      const guard = new SSRFGuard({ allowHosts: ["*.example.com"], maxRedirectHops: 3 });
+      expect(() =>
+        guard.validateRedirectChain(["https://a.example.com/1", "https://b.example.com/2", "https://evil.org/3"])
+      ).toThrow();
+      expect(
+        guard.validateRedirectChain(["https://a.example.com/1", "https://b.example.com/2"])
+      ).toBe(true);
+    });
+
+    test("SafeFetcher prevents redirect allowlist bypass", async () => {
+      const guard = new SSRFGuard({
+        allowHosts: ["api.example.com"],
+        resolveHost: async () => ["93.184.216.34"]
+      });
+      const fetchImpl = jest.fn(async () => ({
+        status: 302,
+        headers: { get: (key) => (key === "location" ? "https://evil.attacker.com/steal" : null) },
+        ok: false
+      }));
+      const safeFetcher = new SafeFetcher({ guard, fetchImpl });
+
+      await expect(safeFetcher.fetch("https://api.example.com/start")).rejects.toMatchObject({
+        code: "SSRF_BLOCKED"
+      });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    });
+
+    test("SafeFetcher follows redirect when destination is in allowlist", async () => {
+      const guard = new SSRFGuard({
+        allowHosts: ["api.example.com", "auth.example.com"],
+        resolveHost: async () => ["93.184.216.34"]
+      });
+      let step = 0;
+      const fetchImpl = jest.fn(async () => {
+        step++;
+        if (step === 1) {
+          return {
+            status: 302,
+            headers: { get: (key) => (key === "location" ? "https://auth.example.com/login" : null) },
+            ok: false
+          };
+        }
+        return { status: 200, ok: true, headers: { get: () => null } };
+      });
+      const safeFetcher = new SafeFetcher({ guard, fetchImpl });
+      const res = await safeFetcher.fetch("https://api.example.com/start");
+      expect(res.status).toBe(200);
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+    });
+
+    test("SafeFetcher blocks redirect to non-HTTPS scheme when HTTPS is enforced", async () => {
+      const guard = new SSRFGuard({
+        allowHosts: ["api.example.com"],
+        resolveHost: async () => ["93.184.216.34"]
+      });
+      const fetchImpl = jest.fn(async () => ({
+        status: 302,
+        headers: { get: (key) => (key === "location" ? "http://api.example.com/unencrypted" : null) },
+        ok: false
+      }));
+      const safeFetcher = new SafeFetcher({ guard, fetchImpl });
+      await expect(safeFetcher.fetch("https://api.example.com/start")).rejects.toMatchObject({
+        code: "SSRF_BLOCKED"
+      });
+    });
+
+    test("SafeFetcher enforces redirect hop limit with allowlist", async () => {
+      const guard = new SSRFGuard({
+        allowHosts: ["api.example.com"],
+        maxRedirectHops: 2,
+        resolveHost: async () => ["93.184.216.34"]
+      });
+      const fetchImpl = jest.fn(async () => ({
+        status: 302,
+        headers: { get: (key) => (key === "location" ? "https://api.example.com/loop" : null) },
+        ok: false
+      }));
+      const safeFetcher = new SafeFetcher({ guard, fetchImpl });
+      await expect(safeFetcher.fetch("https://api.example.com/loop")).rejects.toMatchObject({
+        code: "SSRF_BLOCKED"
+      });
+      expect(fetchImpl).toHaveBeenCalledTimes(3); // hop 0, 1, 2
+    });
   });
 });

@@ -110,6 +110,99 @@ function stripBrackets(hostname) {
   return hostname.replace(/^\[/, "").replace(/\]$/, "");
 }
 
+function normalizeProtocol(protocol) {
+  if (typeof protocol !== "string") return "";
+  const trimmed = protocol.trim().toLowerCase();
+  return trimmed.endsWith(":") ? trimmed : `${trimmed}:`;
+}
+
+/**
+ * Normalizes a hostname: trims, lowercases, strips brackets and trailing dots,
+ * and canonicalizes IDN/IDNA representations via the standard URL parser.
+ *
+ * @param {string} hostname
+ * @returns {string}
+ */
+export function normalizeHostname(hostname) {
+  if (typeof hostname !== "string") return "";
+  const bare = stripTrailingDots(stripBrackets(hostname.trim()).toLowerCase());
+  if (!bare) return "";
+  try {
+    const parsed = new URL(`https://${bare}`).hostname;
+    return stripTrailingDots(stripBrackets(parsed).toLowerCase());
+  } catch {
+    return bare;
+  }
+}
+
+function normalizePattern(pattern) {
+  if (typeof pattern !== "string") return null;
+  const trimmed = pattern.trim().toLowerCase();
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith("*.")) {
+    const rawSuffix = trimmed.slice(2);
+    const suffix = stripTrailingDots(stripBrackets(rawSuffix));
+    if (!suffix) return null;
+    let normalizedSuffix = suffix;
+    try {
+      normalizedSuffix = stripTrailingDots(stripBrackets(new URL(`https://${suffix}`).hostname.toLowerCase()));
+    } catch {
+      // fallback
+    }
+    return `*.${normalizedSuffix}`;
+  }
+
+  const exact = stripTrailingDots(stripBrackets(trimmed));
+  if (!exact) return null;
+  let normalizedExact = exact;
+  try {
+    normalizedExact = stripTrailingDots(stripBrackets(new URL(`https://${exact}`).hostname.toLowerCase()));
+  } catch {
+    // fallback
+  }
+  return normalizedExact;
+}
+
+function matchesPattern(normalizedHost, normalizedPattern) {
+  if (!normalizedHost || !normalizedPattern) return false;
+
+  if (normalizedPattern.startsWith("*.")) {
+    const suffix = normalizedPattern.slice(2);
+    if (!normalizedHost.endsWith(`.${suffix}`)) {
+      return false;
+    }
+    const prefix = normalizedHost.slice(0, -(suffix.length + 1));
+    return prefix.length > 0 && !prefix.includes(".");
+  }
+
+  return normalizedHost === normalizedPattern;
+}
+
+/**
+ * Checks whether a hostname matches an allowlist of exact and wildcard host patterns.
+ *
+ * @param {string} hostname
+ * @param {string[] | Iterable<string>} allowHosts
+ * @returns {boolean}
+ */
+export function matchHostAllowlist(hostname, allowHosts) {
+  if (!allowHosts) return false;
+  const list = Array.isArray(allowHosts) ? allowHosts : Array.from(allowHosts);
+  if (list.length === 0) return false;
+
+  const normalizedHost = normalizeHostname(hostname);
+  if (!normalizedHost) return false;
+
+  for (const pattern of list) {
+    const normalizedPattern = normalizePattern(pattern);
+    if (matchesPattern(normalizedHost, normalizedPattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Returns true/false for a literal IP address, or null when hostname is a DNS name.
 // Implemented without node:net's isIP() so this module stays safe to bundle for browsers.
 function isBlockedIPLiteral(hostname) {
@@ -125,12 +218,22 @@ function isBlockedIPLiteral(hostname) {
 
 export class SSRFGuard {
   /**
-   * @param {{allowProtocols?: string[], maxRedirectHops?: number, resolveHost?: (hostname: string) => Promise<string[]>}} [options]
+   * @param {{allowHosts?: string[] | Iterable<string>, allowProtocols?: string[] | Iterable<string>, maxRedirectHops?: number, resolveHost?: (hostname: string) => Promise<string[]>}} [options]
    */
-  constructor({ allowProtocols = ["https:", "http:"], maxRedirectHops = 3, resolveHost = null } = {}) {
-    this.allowProtocols = new Set(allowProtocols);
+  constructor({ allowHosts, allowProtocols, maxRedirectHops = 3, resolveHost = null } = {}) {
+    this.allowHosts = allowHosts !== undefined ? Array.from(allowHosts) : null;
+    const defaultProtocols = allowHosts !== undefined ? ["https:"] : ["https:", "http:"];
+    const protocols = allowProtocols !== undefined ? allowProtocols : defaultProtocols;
+    this.allowProtocols = new Set(Array.from(protocols).map(normalizeProtocol));
     this.maxRedirectHops = maxRedirectHops;
     this.resolveHost = resolveHost || defaultResolveHost;
+  }
+
+  isHostAllowed(hostname) {
+    if (this.allowHosts === null) {
+      return true;
+    }
+    return matchHostAllowlist(hostname, this.allowHosts);
   }
 
   isPrivateHost(hostname) {
@@ -151,9 +254,12 @@ export class SSRFGuard {
    * Prefer `assertResolvedSafe()` before making the actual outbound request.
    */
   validateUrl(input) {
-    const url = new URL(input);
+    const url = input instanceof URL ? input : new URL(input);
     if (!this.allowProtocols.has(url.protocol)) {
       throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Protocol not allowed", { protocol: url.protocol });
+    }
+    if (this.allowHosts !== null && !this.isHostAllowed(url.hostname)) {
+      throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Host not allowed", { host: url.hostname });
     }
     if (this.isPrivateHost(url.hostname)) {
       throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Private or loopback target blocked", { host: url.hostname });
@@ -169,7 +275,7 @@ export class SSRFGuard {
    */
   async assertResolvedSafe(input) {
     const url = this.validateUrl(input);
-    const bareHost = stripBrackets(url.hostname);
+    const bareHost = stripTrailingDots(stripBrackets(url.hostname));
 
     if (isBlockedIPLiteral(bareHost) === null) {
       let addresses;
@@ -209,8 +315,10 @@ export class SSRFGuard {
    * address validated here, this closes the resolve-then-connect (TOCTOU) window
    * that `assertResolvedSafe()` alone cannot. Use it with an undici dispatcher:
    * `new Agent({ connect: { lookup: guard.createSafeLookup() } })`.
+   * Accepts optional `pinned` address or host-to-address mapping to pin the connection
+   * to the exact validated IP while preserving TLS SNI and hostname verification.
    */
-  createSafeLookup() {
+  createSafeLookup(pinned = null) {
     return (hostname, options, callback) => {
       if (typeof options === "function") {
         callback = options;
@@ -218,8 +326,29 @@ export class SSRFGuard {
       }
       const opts = typeof options === "number" ? { family: options } : options || {};
 
+      const resolveAddresses = async () => {
+        if (this.allowHosts !== null && !this.isHostAllowed(hostname)) {
+          throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Host not allowed", { host: hostname });
+        }
+
+        let pinnedTarget = null;
+        if (typeof pinned === "string") {
+          pinnedTarget = [pinned];
+        } else if (pinned && typeof pinned === "object") {
+          const val = pinned instanceof Map ? pinned.get(hostname) : pinned[hostname];
+          if (val) {
+            pinnedTarget = Array.isArray(val) ? val : [val];
+          }
+        }
+
+        if (pinnedTarget) {
+          return pinnedTarget;
+        }
+        return this.resolveHost(hostname);
+      };
+
       const resolved = Promise.resolve()
-        .then(() => this.resolveHost(hostname))
+        .then(() => resolveAddresses())
         .then((addresses) => {
           const records = (Array.isArray(addresses) ? addresses : [])
             .map((address) => ({ address, family: address.includes(":") ? 6 : 4 }))
@@ -244,6 +373,18 @@ export class SSRFGuard {
     };
   }
 
+  /**
+   * Returns a lookup function pinned to the exact validated IP address(es).
+   * @param {string | Record<string, string | string[]> | Map<string, string | string[]>} hostnameOrMap
+   * @param {string} [ip]
+   */
+  createPinnedLookup(hostnameOrMap, ip) {
+    if (typeof hostnameOrMap === "string" && ip) {
+      return this.createSafeLookup({ [hostnameOrMap]: ip });
+    }
+    return this.createSafeLookup(hostnameOrMap);
+  }
+
   validateRedirectChain(chain) {
     if (chain.length > this.maxRedirectHops) {
       throw new SecurityError(SecurityErrorCode.SSRF_BLOCKED, "Redirect hop limit exceeded", {
@@ -252,6 +393,62 @@ export class SSRFGuard {
     }
     chain.forEach((url) => this.validateUrl(url));
     return true;
+  }
+}
+
+/**
+ * Synchronously checks whether a URL is permitted according to SSRF policies.
+ * Parses the URL with the standard URL parser, normalizes hostname case, trailing dots,
+ * and IDN/IDNA representations, and performs safe exact hostname matching (e.g. `*.domain.com`).
+ * Enforces HTTPS by default; permits other schemes only through explicit opt-in.
+ * Blocks private, loopback, link-local, and reserved IP/host targets.
+ *
+ * @param {string | URL} url - The URL to validate.
+ * @param {{allowHosts?: string[] | Iterable<string>, allowProtocols?: string[] | Iterable<string>, allowSchemes?: string[] | Iterable<string>} | string[] | Iterable<string> | SSRFGuard} [options]
+ * @returns {boolean} True if the URL is allowed, false otherwise.
+ */
+export function isAllowedUrl(url, options = {}) {
+  try {
+    if (!url || (typeof url !== "string" && !(url instanceof URL))) {
+      return false;
+    }
+    const parsed = url instanceof URL ? url : new URL(url);
+
+    let opts = options;
+    if (Array.isArray(options) || options instanceof Set) {
+      opts = { allowHosts: options };
+    } else if (options instanceof SSRFGuard) {
+      opts = {
+        allowHosts: options.allowHosts,
+        allowProtocols: options.allowProtocols
+      };
+    }
+
+    const rawProtocols = opts.allowProtocols || opts.allowSchemes;
+    const allowedProtocols = rawProtocols
+      ? new Set(Array.from(rawProtocols).map(normalizeProtocol))
+      : new Set(["https:"]);
+
+    if (!allowedProtocols.has(parsed.protocol)) {
+      return false;
+    }
+
+    const guard = new SSRFGuard();
+    if (guard.isPrivateHost(parsed.hostname)) {
+      return false;
+    }
+
+    if (opts.allowHosts !== undefined) {
+      const allowHostsList = Array.isArray(opts.allowHosts) ? opts.allowHosts : Array.from(opts.allowHosts);
+      if (allowHostsList.length === 0) {
+        return false;
+      }
+      return matchHostAllowlist(parsed.hostname, allowHostsList);
+    }
+
+    return true;
+  } catch {
+    return false;
   }
 }
 
