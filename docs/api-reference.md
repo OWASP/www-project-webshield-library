@@ -216,14 +216,17 @@ console.log(findings, report);
 ### A06 Vulnerable Components
 
 ```js
-import { ComponentPolicy, DependencyRiskScanner } from "@owasp-webshield/core";
+import { ComponentPolicy, DependencyRiskScanner, NpmAuditProvider } from "@owasp-webshield/core";
 
-const scanner = new DependencyRiskScanner({
-  scan: async () => [
-    { name: "left-pad", severity: "high", currentVersion: "1.0.0", fixedVersion: "1.1.0" }
-  ]
-});
+// Shipped provider: runs `npm audit --json` in `cwd` (defaults to process.cwd())
+// and normalizes the report into { name, severity, currentVersion, range,
+// fixedVersion } findings. Note: npm audit output does not reliably provide the
+// installed package version, so currentVersion may be null.
+const provider = new NpmAuditProvider();
+const findings = await provider.scan();
 
+// Drops straight into DependencyRiskScanner and passesPolicy().
+const scanner = new DependencyRiskScanner(provider);
 const results = await scanner.scan();
 const gate = await scanner.passesPolicy("high");
 
@@ -234,8 +237,12 @@ const policy = new ComponentPolicy({
 });
 
 policy.evaluate({ name: "react", version: "18.3.1" });
-console.log(results, gate.pass);
+console.log(findings, results, gate.pass);
 ```
+
+`NpmAuditProvider` is Node-only (it shells out to `npm`). Because npm audit output does not reliably provide the installed package version, `currentVersion` may be `null`. Any object with an async
+`scan()` returning that same finding shape still works as a custom provider — for a
+vulnerability feed, an SBOM, or a browser app that cannot spawn a subprocess.
 
 ### A07 Auth Session
 

@@ -17,6 +17,7 @@ import {
   HTTPClient,
   InputSanitizer,
   InputValidator,
+  NpmAuditProvider,
   PermissionChecker,
   RBACManager,
   SSRFGuard,
@@ -71,13 +72,10 @@ const validator = new InputValidator();
 const sanitizer = new InputSanitizer("moderate");
 const cryptoManager = new CryptoManager();
 
-const scanProvider = {
-  scan: async () => [
-    { name: "left-pad", severity: "high", currentVersion: "1.0.0", fixedVersion: "1.1.0" }
-  ]
-};
-
-const dependencyScanner = new DependencyRiskScanner(scanProvider);
+// A06 — a real `npm audit --json` run of this project (Node only), normalized
+// into the { name, severity, fixedVersion, currentVersion } findings the
+// scanner and its severity gate consume.
+const dependencyScanner = new DependencyRiskScanner(new NpmAuditProvider());
 
 const configManager = new SecurityConfigManager({
   debug: false,
@@ -163,6 +161,7 @@ export async function runSecurityChecks() {
 - `HTTPClient` accepts both synchronous and asynchronous `tokenProvider` functions.
 - `PermissionChecker` combines RBAC and ACL with deny-overrides behavior.
 - `AuthManager.isAuthenticated()` depends on both a live session and a non-expired access token.
+- `NpmAuditProvider` shells out to `npm audit --json` in `process.cwd()`; if the audit cannot run or its output is malformed, `scan()` rejects with a `SecurityError` rather than silently reporting a clean tree.
 
 ## Runnable Example
 

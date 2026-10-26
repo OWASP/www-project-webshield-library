@@ -15,6 +15,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- A06: `NpmAuditProvider`, a `DependencyRiskScanner` provider backed by `npm audit --json` that normalizes audit reports into `{ name, severity, currentVersion, range, fixedVersion }` findings and fails closed on malformed output or subprocess failures.
+
 ## [2.0.0] — 2026-10-04
 
 ### Added
