@@ -15,6 +15,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- A01: `RBACManager.can()` now checks every assigned role when given an array, so server-side checks agree with the React and Vue permission hooks for multi-role sessions.
+
 ## [2.0.0] — 2026-10-04
 
 ### Added

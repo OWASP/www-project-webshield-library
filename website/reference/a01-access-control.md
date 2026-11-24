@@ -28,11 +28,13 @@ acl.setPolicy("*", "read", "allow");
 const checker = new PermissionChecker({ rbacManager: rbac, aclManager: acl });
 
 checker.check({ role: "analyst", action: "read", resource: "reports" });
+checker.check({ role: ["viewer", "support"], action: "read", resource: "tickets" });
 checker.check({ role: "support", action: "read", resource: "tickets" });
 console.log(ACCESS_CONTROL_TYPES);
 ```
 
-- `RBACManager` resolves inherited permissions and wildcard grants.
+- `RBACManager.can()` accepts one role or an array of roles. A grant from any
+  assigned role allows the action; inherited and wildcard grants still apply.
 - `ACLManager` applies direct or wildcard policies with deterministic deny overrides.
 - `PermissionChecker` combines RBAC and ACL and returns `{ allowed, reason, metadata }`.
 - `ACCESS_CONTROL_TYPES` is a reserved runtime placeholder for category-local type exports.

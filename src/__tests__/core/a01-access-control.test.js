@@ -10,6 +10,33 @@ describe("A01 access control", () => {
     expect(rbac.can("analyst", "export", "report")).toBe(true);
   });
 
+  test("combines grants from all assigned roles while keeping single-role calls", () => {
+    const rbac = new RBACManager();
+    rbac.defineRole("viewer", ["read:report"]);
+    rbac.defineRole("billing", ["pay:invoice"]);
+    rbac.defineRole("billing-admin", [], ["billing"]);
+
+    expect(rbac.can("viewer", "read", "report")).toBe(true);
+    expect(rbac.can(["viewer", "billing-admin"], "pay", "invoice")).toBe(true);
+    expect(rbac.can(["viewer", "unknown"], "delete", "report")).toBe(false);
+    expect(rbac.can([], "read", "report")).toBe(false);
+  });
+
+  test("ACL deny still overrides an allow from a later role", () => {
+    const rbac = new RBACManager();
+    const acl = new ACLManager();
+    rbac.defineRole("viewer", []);
+    rbac.defineRole("billing", ["pay:invoice"]);
+    acl.setPolicy("invoice", "pay", "deny");
+
+    const checker = new PermissionChecker({ rbacManager: rbac, aclManager: acl });
+    expect(checker.check({ role: ["viewer", "billing"], action: "pay", resource: "invoice" })).toMatchObject({
+      allowed: false,
+      reason: "acl_deny_override",
+      metadata: { rbacAllowed: true }
+    });
+  });
+
   test("matches wildcard permissions and wildcard ACL policies", () => {
     const rbac = new RBACManager();
     const acl = new ACLManager();
