@@ -34,11 +34,7 @@ export function usePermission(action, resource) {
     const currentResource = toValue(resource);
     if (roles.length === 0 || !checker) return { allowed: false, reason: "no_role" };
 
-    let result;
-    for (const role of roles) {
-      result = checker.check({ role, action: currentAction, resource: currentResource });
-      if (result.allowed || result.reason === "acl_deny_override") break;
-    }
+    const result = checker.check({ role: roles, action: currentAction, resource: currentResource });
     return { allowed: result.allowed, reason: result.reason };
   });
 }
