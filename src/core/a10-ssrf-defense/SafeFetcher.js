@@ -27,7 +27,7 @@ export class SafeFetcher {
       const validated = await this.guard.assertResolvedSafe(target);
       const response = await this.fetchImpl(validated.toString(), init);
 
-      const isRedirect = response.status >= 300 && response.status < 400;
+      const isRedirect = [301, 302, 303, 307, 308].includes(response.status);
       const location = isRedirect ? response.headers?.get?.("location") : null;
       if (!location) {
         return response;
