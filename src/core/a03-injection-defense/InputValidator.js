@@ -50,7 +50,7 @@ export class InputValidator {
   }
 
   validateLength(value, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
-    const len = String(value || "").length;
+    const len = String(value ?? "").length;
     return len >= min && len <= max;
   }
 }

@@ -2,6 +2,18 @@ import { describe, expect, test } from "@jest/globals";
 import { InputSanitizer, InputValidator } from "../../core/a03-injection-defense/index.js";
 
 describe("A03 injection defense", () => {
+  test("validateLength measures falsy values after string conversion", () => {
+    const validator = new InputValidator();
+    expect(validator.validateLength(0, { min: 1, max: 1 })).toBe(true);
+    expect(validator.validateLength(0, { max: 0 })).toBe(false);
+    expect(validator.validateLength(false, { min: 5, max: 5 })).toBe(true);
+    expect(validator.validateLength(false, { max: 4 })).toBe(false);
+    for (const empty of [null, undefined, ""]) {
+      expect(validator.validateLength(empty, { max: 0 })).toBe(true);
+      expect(validator.validateLength(empty, { min: 1 })).toBe(false);
+    }
+  });
+
   test("sanitizes malicious payload", () => {
     const sanitizer = new InputSanitizer("strict");
     const result = sanitizer.sanitizeHTML('<img src=x onerror=alert(1)><script>alert(1)</script>safe');
